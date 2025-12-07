@@ -1,7 +1,7 @@
-import { EmailEvent } from "./EmailEvent.ts";
-import { HttpEvent } from "./HttpEvent.ts";
-import { Schedule } from "./Schedule.ts";
-import { SchedulerEvent } from "./SchedulerEvent.ts";
+import { EmailEvent } from "./EmailEvent";
+import { HttpEvent } from "./HttpEvent";
+import { Schedule } from "./Schedule";
+import { SchedulerEvent } from "./SchedulerEvent";
 
 export class EventFactory {
     static create(type: string, payload: any, schedule?: Schedule): SchedulerEvent<any> {

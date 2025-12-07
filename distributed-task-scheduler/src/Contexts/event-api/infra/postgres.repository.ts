@@ -1,11 +1,11 @@
-import pool from './postgres.config.ts';
-import { EventRepository } from "../domain/EventRepository.ts";
-import { SchedulerEvent } from "../domain/SchedulerEvent.ts";
+import pool from './postgres.config';
+import { EventRepository } from "../domain/EventRepository";
+import { SchedulerEvent } from "../domain/SchedulerEvent";
 
 export class PostgresRepository implements EventRepository {
     async schedule(event: SchedulerEvent<any>): Promise<void> {
         const query = `
-            INSERT INTO events (type, schedule, payload, nextrun)
+            INSERT INTO event (type, schedule, payload, nextrun)
             VALUES ($1, $2, $3, $4)
         `;
 
@@ -23,7 +23,7 @@ export class PostgresRepository implements EventRepository {
         try {
             await pool.query(query, valuesToInsert);
         } catch (error) {
-            console.log('ERROR INSERT EVENT: ' + error);
+            console.log('ERROR INSERT EVENT: ' + error); 
             throw new Error('Error when trying to insert to event');
         }
     }

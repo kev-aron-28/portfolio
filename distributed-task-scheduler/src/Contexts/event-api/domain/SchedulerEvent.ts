@@ -1,4 +1,29 @@
-import { Schedule } from "./Schedule.ts";
+import { Schedule } from "./Schedule";
+
+export type EventType = 'HTTP' | 'EMAIL';
+
+export interface HttpPayload {
+    url: string;
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+    body?: any;
+}
+
+export interface EmailPayload {
+    to: string;
+    subject: string;
+    body: string;
+}
+
+export interface InternalPayload {
+    taskId: string;
+    metadata?: Record<string, any>;
+}
+
+export type EventPayloadMap = {
+    http: HttpPayload;
+    email: EmailPayload;
+    internal: InternalPayload;
+};
 
 export abstract class SchedulerEvent<TPayload> {
     constructor(
@@ -63,6 +88,7 @@ export abstract class SchedulerEvent<TPayload> {
                 const next = new Date();
 
                 next.setHours(hours, minutes,0 ,0);
+                
                 next.setDate(dayOfTheMonth);
                 
                 if(next <= now) next.setMonth(now.getMonth() + 1);

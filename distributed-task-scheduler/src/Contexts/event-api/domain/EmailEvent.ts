@@ -1,5 +1,5 @@
-import { Schedule } from "./Schedule.ts";
-import { SchedulerEvent } from "./SchedulerEvent.ts";
+import { Schedule } from "./Schedule";
+import { SchedulerEvent } from "./SchedulerEvent";
 
 export type EmailPayload = { subject: string; to: string; body: string; };
 

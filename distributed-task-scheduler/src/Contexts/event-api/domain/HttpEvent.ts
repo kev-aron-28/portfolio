@@ -1,5 +1,5 @@
-import { Schedule } from "./Schedule.ts";
-import { SchedulerEvent } from "./SchedulerEvent.ts";
+import { Schedule } from "./Schedule";
+import { SchedulerEvent } from "./SchedulerEvent";
 
 type Methods = 'GET' | 'POST' | 'PUT' | 'DELETE';
 export type HTTPPayload = { url: string; method: Methods; body?: any };
