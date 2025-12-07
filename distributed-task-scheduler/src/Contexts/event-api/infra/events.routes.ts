@@ -14,7 +14,9 @@ export class EventRoutes {
 
     private initRoutes() {
         const eventRepository: EventRepository = new PostgresRepository();
+
         const scheduleUseCase: ScheduleUseCase = new ScheduleUseCase(eventRepository);
+        
         const scheduleController: ScheduleController = new ScheduleController(
             scheduleUseCase
         );
