@@ -1,0 +1,3 @@
+RULE This is a test RULE
+WHEN GREATER_THAN_0 and 
+THEN ADD_1
