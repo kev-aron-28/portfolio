@@ -45,7 +45,7 @@ RULE <rulId>
 ## Conditions
 Each line should have a condition with AND or OR and the conditions section starts with
 the WHEN keyword
-
+Only one condition per line
 ```
 RULE <id>
 WHEN <condition>
@@ -65,4 +65,20 @@ AND <condition>
 THEN <action>
 THEN <action>
 THEN <action>
+```
+
+## Examples
+1. 
+```
+RULE rule_1
+WHEN property > 8
+THEN sum_one
+```
+2. 
+```
+RULE rule_2
+WHEN condition_one
+AND property < 8
+THEN sum_one
+THEN mult_two
 ```

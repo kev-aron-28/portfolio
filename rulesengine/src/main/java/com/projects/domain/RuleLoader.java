@@ -21,7 +21,6 @@ public class RuleLoader<C> {
         this.conditionsRegistry = conditionsRegistry;
     }
     
-    
     /**
      * 
      * @param The path there the rule file is located
@@ -36,7 +35,6 @@ public class RuleLoader<C> {
         try (BufferedReader file = Files.newBufferedReader(path, Charset.defaultCharset())) {
             String line;
             while((line = file.readLine()) != null) {
-                
                 currentLine++;
 
                 if(line.startsWith("RULE")) {
@@ -52,26 +50,45 @@ public class RuleLoader<C> {
                         currentRule = null;
                     }
 
-                    String id = getRuleId(line, currentLine);
+                    String id = this.getRuleId(line, currentLine);
 
-                    System.out.println("RULE WITH ID: " + id);
+                    if(id == null) {
+                        errors.add(new RuleError(currentLine, "You must provide a valid RULE id section"));
+                    }
 
                     currentRule = new Rule<>(id);
+
+                    continue;
                 }
 
 
-                // TODO: parse the conditions acordinly
                 if(line.startsWith("WHEN") || line.startsWith("OR") || line.startsWith("AND")) {
-                    // If no RULE statement was provided
+                    // If you reach here and there is no rule, means there was no RULE ID section
                     if(currentRule == null) {
-                        errors.add(new RuleError(currentLine, "You must provide a RULE id before a WHEN or a THEN"));
+                        errors.add(new RuleError(currentLine, "You must provide a RULE id before a WHEN section"));
+
+                        continue;
                     }
 
+                    Condition<C> currentCondition = this.getConditionFromLine(line, currentLine);
+
+                    if(currentCondition == null) {
+                        errors.add(new RuleError(currentLine, "You must provide a valid condition when using WHEN,OR,AND: " + line));
+                        
+                        continue;
+                    }
+
+                    currentRule.addCondition(currentCondition);
 
                 }
 
                 // TODO: Parse all the actions acordingly
                 if(line.startsWith("THEN")) {
+                    if(currentRule == null) {
+                        errors.add(new RuleError(currentLine, "You must provide a RULE Id and a WHEN section before a THEN section"));
+
+                        continue;
+                    }
                 }
             }
         } catch (IOException e) {
@@ -85,12 +102,54 @@ public class RuleLoader<C> {
         return List.copyOf(rules);
     }
 
+    private Condition<C> getConditionFromLine(String line, int currentLine) {
+
+        String[] parts = line.split("\\s+", 2);
+
+        if(parts.length < 2) {
+            return null;
+        }
+        
+        String typeOfConditional = parts[0];
+
+        String condition = parts[1];
+
+
+        // A condition can only be compounded of max 3 parts
+        // - <property> <operand> <property>
+        String conditionParts[] = condition.split("\\s+");
+
+        // So you cannot have more than 3 elements in the array
+        if(conditionParts.length > 3) {
+            return null;
+        }
+
+        // Case when only a condition is provided, so the array only has 1 element
+        if(conditionParts.length == 1) {
+            Condition<C> conditionFromRegistry = conditionsRegistry.get(conditionParts[0]);
+
+            // If no condition is available in the registry then the user introduced a invalid condition
+            if(conditionFromRegistry == null) return null;
+
+            return conditionFromRegistry;
+        } 
+        // Case when there is a full comparision between properties <property> <operand> <property>
+        else if(conditionParts.length == 3) {
+            String property1 = conditionParts[0];
+            String operand = conditionParts[1];
+            String property2 = conditionParts[2];
+
+
+        }
+    
+        return null;
+    }
+
     private String getRuleId(String line, int currentLine) {
         String parts[] = line.split("\\s+", 2);
         
         if(parts.length < 2) {
-            errors.add(new RuleError(currentLine, "RULE section is missing"));
-            return "";
+            return null;
         }
         
         String id = parts[1];

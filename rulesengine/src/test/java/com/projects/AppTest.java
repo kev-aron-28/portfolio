@@ -2,7 +2,6 @@ package com.projects;
 
 import java.nio.file.Path;
 
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,11 +16,6 @@ import com.projects.domain.RuleLoader;
  */
 public class AppTest 
 {
-    /**
-     * Rigorous Test :-)
-     */
-
-
     RuleLoader<TestContext> loader;
     ActionRegistry<TestContext> actions;
     ConditionRegistry<TestContext> conditions;
@@ -32,13 +26,6 @@ public class AppTest
         conditions = new ConditionRegistry<>();
         loader = new RuleLoader<>(actions, conditions);
     }
-
-    @Test
-    public void shouldAnswerWithTrue()
-    {
-        assertTrue( true );
-    }
-
 
     @Test(expected=ParseException.class)
     public void shouldFailWhenNoIdIsProvided() {
