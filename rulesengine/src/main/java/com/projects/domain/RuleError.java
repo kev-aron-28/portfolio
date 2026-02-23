@@ -16,4 +16,9 @@ public class RuleError {
     public String getMessage() {
         return message;
     }
+
+    @Override
+    public String toString() {
+        return "[ERROR]: " + line + " " + message;
+    }
 }

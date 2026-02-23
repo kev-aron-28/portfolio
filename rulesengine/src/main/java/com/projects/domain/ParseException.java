@@ -6,8 +6,8 @@ public class ParseException extends RuntimeException {
     private final List<RuleError> errors;
 
     public ParseException(List<RuleError> errors) {
-        super("Error while parsing the rules file");
-
+        super("Error while parsing the rules file " + errors);
+        
         this.errors = List.copyOf(errors);
     }
 

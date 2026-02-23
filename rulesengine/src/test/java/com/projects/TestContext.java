@@ -14,4 +14,8 @@ public class TestContext {
     public void setNumber(int number) {
         this.number = number;
     }
+
+    public void add_one() {
+        this.number++;
+    }
 }

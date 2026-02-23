@@ -28,9 +28,10 @@ public class Main {
         ActionRegistry<NumberContext> actionRegistry = new ActionRegistry<>();
         
         conditionRegistry.add("GREATER_THAN_0", ctx -> ctx.getNumber() > 0);
-        actionRegistry.add("ADD_1", arg -> ctx -> ctx.add_one());
+        actionRegistry.add("ADD_2", arg -> ctx -> ctx.add_one());
 
         RuleLoader<NumberContext> loader = new RuleLoader<>(actionRegistry, conditionRegistry);
-        loader.load(Path.of("src/main/java/com/projects/domain/test_rules/rule01.rule"));
+        var rules = loader.load(Path.of("src/main/java/com/projects/domain/test_rules/rule01.rule"));
+
     }
 }

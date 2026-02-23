@@ -11,7 +11,11 @@ public class ActionRegistry<C> {
     }
 
     public Action<C> get(String key, List<String> params) {
-        return actions.getOrDefault(key, null).build(params);
+        if(actions.containsKey(key)) {
+            return actions.get(key).build(params);
+        }
+
+        return null;
     }
 
 }

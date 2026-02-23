@@ -27,10 +27,10 @@ if (task.isOverdue() && task.getPriority() == Priority.HIGH) {
 You can write an external file with the rules to be matched like this:
 
 ```
-RULE: OVERDUE_HIGH_PRIORITY
-WHEN overdue = true 
-AND priority = HIGH
-THEN ADD_SCORE 10
+RULE OVERDUE_HIGH_PRIORITY
+WHEN is_overdue
+AND priority_is_high
+THEN add_score 10
 ```
 
 # Rules of the engine rule file:
@@ -71,14 +71,14 @@ THEN <action>
 1. 
 ```
 RULE rule_1
-WHEN property > 8
+WHEN condition_1
 THEN sum_one
 ```
 2. 
 ```
 RULE rule_2
 WHEN condition_one
-AND property < 8
+AND condition_two
 THEN sum_one
 THEN mult_two
 ```
