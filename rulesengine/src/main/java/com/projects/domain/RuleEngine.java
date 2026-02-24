@@ -3,7 +3,11 @@ package com.projects.domain;
 import java.util.List;
 
 public class RuleEngine<C> {
-    List<Rule<C>> rules;
+    private final List<Rule<C>> rules;
+
+    public RuleEngine(List<Rule<C>> rules) {
+        this.rules = rules;
+    }
 
     public void test (C ctx) {
         if(rules.isEmpty()) throw new Error("You need to provide the rules");

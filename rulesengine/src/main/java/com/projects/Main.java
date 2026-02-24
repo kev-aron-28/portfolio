@@ -4,6 +4,7 @@ import java.nio.file.Path;
 
 import com.projects.domain.ActionRegistry;
 import com.projects.domain.ConditionRegistry;
+import com.projects.domain.RuleEngine;
 import com.projects.domain.RuleLoader;
 
 class NumberContext {
@@ -28,10 +29,18 @@ public class Main {
         ActionRegistry<NumberContext> actionRegistry = new ActionRegistry<>();
         
         conditionRegistry.add("GREATER_THAN_0", ctx -> ctx.getNumber() > 0);
-        actionRegistry.add("ADD_2", arg -> ctx -> ctx.add_one());
+        actionRegistry.add("ADD_1", arg -> ctx -> ctx.add_one());
 
         RuleLoader<NumberContext> loader = new RuleLoader<>(actionRegistry, conditionRegistry);
         var rules = loader.load(Path.of("src/main/java/com/projects/domain/test_rules/rule01.rule"));
 
+        RuleEngine<NumberContext> engine = new RuleEngine<>(rules);
+
+        NumberContext ctx = new NumberContext();
+        ctx.setNumber(10);
+
+        engine.test(ctx);
+
+        System.out.println(ctx.getNumber());
     }
 }
