@@ -52,4 +52,18 @@ public class RuleLoaderTest
 
         loader.load(path);
     }
+
+    @Test(expected=ParseException.class)
+    public void shouldFailWhenConditionNotExists() {
+        Path path = Path.of("src/main/java/com/projects/domain/test_rules/invalid_condition.rule");
+
+        loader.load(path);
+    }
+
+    @Test(expected=ParseException.class)
+    public void shouldFailWhenActionNotExists() {
+        Path path = Path.of("src/main/java/com/projects/domain/test_rules/invalid_action.rule");
+
+        loader.load(path);
+    }
 }

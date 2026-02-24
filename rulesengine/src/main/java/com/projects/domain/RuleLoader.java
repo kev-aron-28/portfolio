@@ -59,6 +59,13 @@ public class RuleLoader<C> {
                 }
 
                 if(line.startsWith("WHEN") || line.startsWith("OR") || line.startsWith("AND")) {
+
+                    if(currentRule == null) {
+                        errors.add(new RuleError(currentLine, "You must provide a valid RULE <ID> block before a condition block"));
+
+                        continue;
+                    }
+
                     rootCondition = this.parseCondition(line, rootCondition, errors, currentLine);
 
                     continue;
