@@ -62,7 +62,6 @@ public class RuleLoader<C> {
 
                     if(currentRule == null) {
                         errors.add(new RuleError(currentLine, "You must provide a valid RULE <ID> block before a condition block"));
-
                         continue;
                     }
 
@@ -72,6 +71,11 @@ public class RuleLoader<C> {
                 }
 
                 if(line.startsWith("THEN")) {
+                    if(currentRule == null) {
+                        errors.add(new RuleError(currentLine, "You must provide a valid RULE <ID> block before an action block"));
+                        continue;
+                    }
+
                     parseAction(line, currentRule, errors, currentLine);
                 }
             }
@@ -90,13 +94,6 @@ public class RuleLoader<C> {
     }
 
     private void parseAction(String line, Rule<C> currentRule, List<RuleError> errors, int lineNumber) {
-
-        if(currentRule == null) {
-            errors.add(new RuleError(lineNumber, "You must provide a valid RULE <ID> block before an action"));
-        
-            return;
-        }
-
         String[] parts = line.split("\\s+", 2);
 
         if(parts.length < 2) {
@@ -189,6 +186,4 @@ public class RuleLoader<C> {
         
         return new Rule<>(id);
     }
-    
-
 }
