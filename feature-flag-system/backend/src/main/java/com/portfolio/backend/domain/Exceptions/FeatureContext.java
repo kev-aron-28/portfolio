@@ -1,23 +1,24 @@
 package com.portfolio.backend.domain.Exceptions;
 
-import java.util.UUID;
+import java.util.List;
 
 import com.portfolio.backend.domain.Role;
+import com.portfolio.backend.domain.User;
 
 public class FeatureContext {
-    private final UUID userId;
-    private final Role role;
+    private final User userId;
+    private final List<Role> role;
 
-    public FeatureContext(UUID userId, Role role) {
+    public FeatureContext(User userId, List<Role> role) {
         this.userId = userId;
         this.role = role;
     }
 
-    public Role getRole() {
+    public List<Role> getRole() {
         return role;
     }
 
-    public UUID getUserId() {
+    public User getUser() {
         return userId;
     }
 }

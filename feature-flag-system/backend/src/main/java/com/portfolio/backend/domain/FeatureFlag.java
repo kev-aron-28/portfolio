@@ -2,6 +2,7 @@ package com.portfolio.backend.domain;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,9 +22,10 @@ public class FeatureFlag {
     private final List<Role> allowedRoles;
     private final List<User> allowedUsers;
 
-    public FeatureFlag(UUID id, String key, boolean enabled, Integer rolloutPercentage, LocalDateTime createdAt, LocalDateTime updatedAt, List<Role> allowedRoles, List<User> allowedUsers) {
+    public FeatureFlag(UUID id, String key, boolean enabled, String description, Integer rolloutPercentage, LocalDateTime createdAt, LocalDateTime updatedAt, List<Role> allowedRoles, List<User> allowedUsers) {
         this.id = evaluateId(id);
         this.key = evaluateKey(key);
+        this.description = description;
         this.enabled = enabled;
         this.rolloutPercentage = evaluateRollout(rolloutPercentage);
         this.createdAt = createdAt;
@@ -38,6 +40,16 @@ public class FeatureFlag {
 
         if(this.noRulesDefined()) return true;
 
+        List<Role> userRoles = context.getRole();
+
+        if(!Collections.disjoint(userRoles, this.allowedRoles)) return true;
+
+        if(this.allowedUsers.contains(context.getUser())) return true;
+
+        if(this.rolloutPercentage != null) {
+            int hash = Math.abs(context.getUser().hashCode());
+            return hash % 100 < this.rolloutPercentage;
+        }
 
         return false;
     }
@@ -54,6 +66,10 @@ public class FeatureFlag {
         return enabled;
     }
 
+    public String getDescription() {
+        return this.description;
+    }
+
     public Integer getRolloutPercentage() {
         return rolloutPercentage;
     }
@@ -66,8 +82,16 @@ public class FeatureFlag {
         return updatedAt;
     }
 
+    public List<Role> getAllowedRoles() {
+        return allowedRoles;
+    }
+
+    public List<User> getAllowedUsers() {
+        return allowedUsers;
+    }
+
     public boolean noRulesDefined() {
-        return this.rolloutPercentage == null && this.allowedRoles.isEmpty() && this.allowedRoles.isEmpty();
+        return this.rolloutPercentage == null && this.allowedRoles.isEmpty() && this.allowedUsers.isEmpty();
     }
 
     private UUID evaluateId(UUID id) {

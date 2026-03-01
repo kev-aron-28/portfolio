@@ -1,15 +1,17 @@
 package com.portfolio.backend.domain;
 
-import java.util.Objects;
 import java.util.UUID;
+
+import com.portfolio.backend.domain.Exceptions.InvalidId;
+import com.portfolio.backend.domain.Exceptions.InvalidRoleName;
 
 public class Role {
     private final UUID id;
     private String name;
 
     public Role(UUID id, String name) {
-        this.id = Objects.requireNonNull(id);
-        this.name = name;
+        this.id = evaluateId(id);
+        this.name = evaluateName(name);
     }
 
     public UUID getId() {
@@ -38,5 +40,19 @@ public class Role {
     @Override
     public int hashCode() {
         return name.hashCode();
+    }
+
+    private String evaluateName(String name) {
+        if(name == null || name.isBlank()) throw new InvalidRoleName();
+
+        return name;
+    }
+
+    private UUID evaluateId(UUID id) {
+        if(id == null) {
+            throw new InvalidId();
+        }
+
+        return id;
     }
 }

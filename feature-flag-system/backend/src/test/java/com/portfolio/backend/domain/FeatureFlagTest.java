@@ -17,7 +17,7 @@ public class FeatureFlagTest {
     void shouldThrowWhenFeatureFlagIdIsNull() {
         assertThrows(
             InvalidId.class,
-            () -> new FeatureFlag(null, "KEY", false, 10, LocalDateTime.now(), LocalDateTime.now(), new ArrayList<>(), new ArrayList<>())
+            () -> new FeatureFlag(null, "KEY", false, "", 10, LocalDateTime.now(), LocalDateTime.now(), new ArrayList<>(), new ArrayList<>())
         );
     }
 
@@ -25,7 +25,7 @@ public class FeatureFlagTest {
     void shouldThrowWhenKeyIsInvalid() {
         assertThrows(
             InvalidFeatureKey.class,
-            () -> new FeatureFlag(UUID.randomUUID(), null, false, 10, LocalDateTime.now(), LocalDateTime.now(), new ArrayList<>(), new ArrayList<>())
+            () -> new FeatureFlag(UUID.randomUUID(), null, false, "", 10, LocalDateTime.now(), LocalDateTime.now(), new ArrayList<>(), new ArrayList<>())
         );
     }
 
@@ -33,7 +33,7 @@ public class FeatureFlagTest {
     void shouldThrowWhenRolloutIsInvalid() {
         assertThrows(
             InvalidRollout.class,
-            () -> new FeatureFlag(UUID.randomUUID(), "KEY_FLAG", false, -1, LocalDateTime.now(), LocalDateTime.now(), new ArrayList<>(), new ArrayList<>())
+            () -> new FeatureFlag(UUID.randomUUID(), "KEY_FLAG", false, "", -1, LocalDateTime.now(), LocalDateTime.now(), new ArrayList<>(), new ArrayList<>())
         );
     }
 }
