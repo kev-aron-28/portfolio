@@ -76,6 +76,8 @@ DELETE /api/features/{key}
 GET    /api/features
 GET    /api/features/{key}
 
+---
+
 # Errors
 In the system there are 3 kinds of errors:
 - Domain Exceptions
