@@ -1,10 +1,13 @@
 package com.portfolio.backend.application;
 
+import org.springframework.stereotype.Service;
+
+import com.portfolio.backend.domain.Exceptions.UserNotFound;
 import com.portfolio.backend.domain.PlatformUser;
 import com.portfolio.backend.domain.PlatformUserRepository;
 import com.portfolio.backend.domain.UseCase;
-import com.portfolio.backend.domain.Exceptions.UserNotFound;
 
+@Service
 public class FindUserByEmailUseCase implements UseCase<String, PlatformUser>{
     private final PlatformUserRepository repository;
 

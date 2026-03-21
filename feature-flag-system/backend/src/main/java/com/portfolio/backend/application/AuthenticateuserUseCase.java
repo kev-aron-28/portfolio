@@ -2,6 +2,7 @@ package com.portfolio.backend.application;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.stereotype.Service;
 
 import com.portfolio.backend.domain.Exceptions.UserNotFound;
 import com.portfolio.backend.domain.PlatformUser;
@@ -9,6 +10,7 @@ import com.portfolio.backend.domain.PlatformUserRepository;
 import com.portfolio.backend.domain.UseCase;
 import com.portfolio.backend.infra.dto.LoginUserDto;
 
+@Service
 public class AuthenticateuserUseCase implements UseCase<LoginUserDto, PlatformUser> {
     private final PlatformUserRepository repository;
     private final AuthenticationManager authManager;

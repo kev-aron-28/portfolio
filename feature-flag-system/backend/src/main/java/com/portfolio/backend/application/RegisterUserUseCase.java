@@ -3,12 +3,14 @@ package com.portfolio.backend.application;
 import java.util.UUID;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 import com.portfolio.backend.domain.PlatformUser;
 import com.portfolio.backend.domain.PlatformUserRepository;
 import com.portfolio.backend.domain.UseCase;
 import com.portfolio.backend.infra.dto.RegisterUserDto;
 
+@Service
 public class RegisterUserUseCase implements UseCase<RegisterUserDto, Void> {
 
     private final PlatformUserRepository repository;

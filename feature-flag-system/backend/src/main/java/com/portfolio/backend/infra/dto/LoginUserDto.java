@@ -11,7 +11,6 @@ public class LoginUserDto {
     @NotBlank
     private String password;
 
-
     public String getEmail() {
         return email;
     }
