@@ -34,7 +34,7 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<ApiResponse> register(@RequestBody RegisterUserDto user) {
+    public ResponseEntity<ApiResponse<RegisterReponse>> register(@RequestBody RegisterUserDto user) {
         this.register.run(user);
 
         return ResponseEntity.ok(new ApiResponse<>(
@@ -44,7 +44,7 @@ public class AuthController {
     
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse> login(@RequestBody LoginUserDto login) {
+    public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody LoginUserDto login) {
         PlatformUser user = authenticate.run(login);
         
         String jwtToken = jwtService.generateToken(user.getUsername());

@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
@@ -24,5 +25,10 @@ public class GlobalExceptionHandler {
             "error", "METHOD_NOT_ALLOWED",
             "message", "Método HTTP no permitido"
         ));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Void> handleInvalidArgs(MethodArgumentNotValidException ex) {
+        return ResponseEntity.noContent().build();
     }
 }
