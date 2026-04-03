@@ -1,0 +1,49 @@
+//COMPCIC JOB  (123),'KEVIN',CLASS=A,                                   
+//             MSGCLASS=A,                                              
+//             MSGLEVEL=(1,1),                                          
+//             PRTY=15,                                                 
+//             NOTIFY=&SYSUID                                           
+//**********************************************************************
+//* JCL USED TO COMPILE AND LINKEDIT A COBOL + CICS PROGRAM             
+//**********************************************************************
+//        SET  PROGRAM=MAINMENU                                         
+//* CICS ----------------------------------------------------           
+//STEP1   EXEC PGM=DFHECP1$                                             
+//STEPLIB DD   DSN=DFH410.CICS.SDFHLOAD,DISP=SHR                        
+//SYSPRINT DD  SYSOUT=*                                                 
+//SYSPUNCH DD  DSN=&&SYSCIN,                                            
+//             DISP=(,PASS),UNIT=SYSDA,                                 
+//             DCB=BLKSIZE=400,                                         
+//             SPACE=(400,(400,100))                                    
+//SYSIN   DD   DSN=PROJECT1.SRC(&PROGRAM),DISP=SHR                      
+//* COBOL ---------------------------------------------------           
+//STEP2   EXEC PGM=IGYCRCTL,REGION=4M,                                 
+//             PARM='NODYNAM,LIB,OBJECT,RES,APOST,MAP,XREF,NOSEQUENCE' 
+//STEPLIB DD   DSN=IGY420.SIGYCOMP,DISP=SHR                            
+//SYSLIB  DD   DSN=DFH410.CICS.ADFHCOB,DISP=SHR                        
+//        DD   DSN=DFH410.CICS.ADFHMAC,DISP=SHR                        
+//        DD   DSN=DFH410.CICS.ADFHSAMP,DISP=SHR                       
+//        DD   DSN=DFH410.CICS.SDFHMAC,DISP=SHR                        
+//SYSPRINT DD  SYSOUT=*                                                
+//SYSIN   DD   DSN=&&SYSCIN,DISP=(OLD,DELETE)                          
+//SYSLIN  DD   DSN=&&LOADSET,DISP=(MOD,PASS),                          
+//             UNIT=SYSDA,SPACE=(80,(250,100))                         
+//SYSUT1  DD   UNIT=SYSDA,SPACE=(460,(350,100))                        
+//SYSUT2  DD   UNIT=SYSDA,SPACE=(460,(350,100))                        
+//SYSUT3  DD   UNIT=SYSDA,SPACE=(460,(350,100))                        
+//SYSUT4  DD   UNIT=SYSDA,SPACE=(460,(350,100))                        
+//SYSUT5  DD   UNIT=SYSDA,SPACE=(460,(350,100))                        
+//SYSUT6  DD   UNIT=SYSDA,SPACE=(460,(350,100))                        
+//SYSUT7  DD   UNIT=SYSDA,SPACE=(460,(350,100))                        
+//*LINK EDIT UTILITY                                                   
+//STEP3   EXEC PGM=IEWL,REGION=4M,PARM='LIST,XREF',COND=(5,LT,STEP2)   
+//SYSLIB  DD   DSN=DFH410.CICS.SDFHLOAD,DISP=SHR                        
+//        DD   DSN=IGY420.SIGYCOMP,DISP=SHR                             
+//        DD   DSN=CEE.SCEELKED,DISP=SHR                                
+//SYSLMOD DD   DSN=DFH410.CICS.SDFHLOAD(&PROGRAM),DISP=SHR              
+//SYSUT1  DD   UNIT=SYSDA,DCB=BLKSIZE=1024,                             
+//             SPACE=(1024,(200,20))                                    
+//SYSPRINT DD  SYSOUT=*                                                 
+//SYSLIN  DD   DSN=&&LOADSET,DISP=(OLD,DELETE)                          
+//        DD   DDNAME=SYSIN                                             
+//SYSIN   DD   DUMMY                                                    
