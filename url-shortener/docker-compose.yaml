@@ -1,0 +1,11 @@
+version: ''
+services:
+  db:
+    image: postgres
+    container_name: shorten-db-test
+    ports:
+      - "5432:5432"
+    volumes:
+      - db:
+volumes:
+  db
