@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.projects.api_service.infra.entities.UrlEntity;
 
 @Repository
-public interface JpaUrlRepository extends JpaRepository<UrlEntity, Long> {
+public interface JpaUrlRepository extends JpaRepository<UrlEntity, String> {
     
 }
