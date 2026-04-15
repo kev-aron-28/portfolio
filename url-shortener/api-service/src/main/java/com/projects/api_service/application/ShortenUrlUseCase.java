@@ -28,7 +28,7 @@ public class ShortenUrlUseCase {
             String attempt = shortener.hash(longUrl.toString());
             
             try {
-                repository.save(new UrlEntity(attempt, url.longUrl()));
+                repository.saveAndFlush(new UrlEntity(attempt, url.longUrl()));
                 shortUrl = attempt;
                 break;
             } catch (Exception e) {
