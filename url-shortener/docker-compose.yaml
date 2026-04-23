@@ -1,6 +1,23 @@
 version: "3.9"
 
 services:
+  url_shortener_api:
+    build: ./api-service
+    container_name: ur-shortener-api
+    ports:
+      - "8080:8080"
+    environment:
+        DB_HOST: db
+        DB_PORT: 5432
+        DB_NAME: shortener
+        DB_USER: admin
+        DB_PASS: admin
+        REDIS_HOST: cache
+        REDIS_PORT: 6379
+        SPRING_PROFILES_ACTIVE: staging
+    depends_on:
+      - db
+      - cache
   db:
     image: postgres:15
     container_name: shorten-db
