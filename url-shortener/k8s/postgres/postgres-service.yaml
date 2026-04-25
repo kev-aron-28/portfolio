@@ -1,0 +1,10 @@
+apiVersion: v1
+Kind: Service
+metadata: 
+  name: postgres
+  namespace: shortener
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432

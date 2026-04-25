@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: shortener
+  name: api-shortener
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: api-shortener
+  template:
+    metadata:
+      labels:
+        app: api-shortener
+  spec:
+    containers:
+      - name: api-shortener
+        image: kevin475/url-shortener-api
+        ports:
+          - containerPort: 8080
+        env:
+          - name: DB_HOST
+            value: postgres
+          - name: DB_PORT
+            value: 5432
+          - name: DB_NAME
+            value: shortener
+          - name: DB_USER
+            value: admin
+          - name: DB_PASS
+            value: admin
+          - name: REDIS_HOST
+            value: redis
+          - name: REDIS_PORT
+            value: 6379
+          - name: SPRING_PROFILES_ACTIVE
+            value: staging
