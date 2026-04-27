@@ -5,7 +5,6 @@ metadata:
   namespace: shortener
 spec:
   replicas: 1
-  serviceName: redis
   selector:
     matchLabels:
       app: redis
