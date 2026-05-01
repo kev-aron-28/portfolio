@@ -2,6 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: url-ingress
+  namespace: shortener
 spec:
   rules:
     - host: short.local
@@ -11,4 +12,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name:
+                name: api-shortener
+                port:
+                  number: 80

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: api-shortener
-          image: kevin475/url-shortener-api
+          image: kevin475/url-shortener-api:v2
           ports:
             - containerPort: 8080
           resources:
