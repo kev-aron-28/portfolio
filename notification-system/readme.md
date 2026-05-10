@@ -56,5 +56,3 @@ If we store metadata : 1kb per notification
 
 So 1M/day = ~1Gb/day
 30 GB/month
-
-Well implement a data retention strategy

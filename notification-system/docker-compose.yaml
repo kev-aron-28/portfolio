@@ -1,0 +1,53 @@
+version: '3.9'
+
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: notification-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: notifications
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - notification-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: notification-rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    ports:
+      - "5672:5672"     # RabbitMQ protocol
+      - "15672:15672"   # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - notification-network
+
+  redis:
+    image: redis:7
+    container_name: notification-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - notification-network
+
+volumes:
+  postgres_data:
+  rabbitmq_data:
+  redis_data:
+
+networks:
+  notification-network:
+    driver: bridge
