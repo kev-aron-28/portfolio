@@ -1,0 +1,29 @@
+//DBBIND  JOB  (123),'KEVIN',                                           
+//             CLASS=A,                                                 
+//             MSGCLASS=A,                                              
+//             MSGLEVEL=(1,1),                                          
+//             PRTY=15,                                                 
+//             NOTIFY=&SYSUID                                           
+//********************************************************************* 
+//* AFTER A SUCCESFUL COMPILE: BIND DBRMLIB                             
+//********************************************************************* 
+//BIND    EXEC PGM=IKJEFT01                                             
+//STEPLIB DD   DSN=DSN910.DB9G.SDSNEXIT,DISP=SHR                        
+//        DD   DSN=DSN910.SDSNLOAD,DISP=SHR                             
+//DBRMLIB DD   DSN=PROJECT1.DBRMLIB,DISP=SHR                            
+//SYSTSIN DD   *                                                        
+DSN  SYSTEM    (DB9G)                                                   
+BIND PLAN      (LOGINM)     -                                           
+     MEMBER    (LOGINM)     -                                           
+     ACTION    (REP)     -                                              
+     ISOLATION (CS)      -                                              
+     VALIDATE  (BIND)    -                                             
+     RELEASE   (COMMIT)  -                                             
+     OWNER     (IBMUSER) -                                             
+     QUALIFIER (IBMUSER) -                                             
+     ENCODING  (1047)                                                  
+END                                                                    
+/*                                                                     
+//SYSPRINT DD  SYSOUT=*                                                
+//SYSTSPRT DD  SYSOUT=*                                                
+//SYSUDUMP DD  SYSOUT=*                                                    
