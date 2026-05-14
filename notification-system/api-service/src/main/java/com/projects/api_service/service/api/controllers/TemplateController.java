@@ -1,4 +1,4 @@
-package com.projects.api_service.service.api;
+package com.projects.api_service.service.api.controllers;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,7 +14,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/templates")
-public class TemplateApi {
+public class TemplateController {
     
     @PostMapping()
     public ResponseEntity<ApiResponse<String>> postMethodName(@Valid @RequestBody CreateTemplateDto entity) {

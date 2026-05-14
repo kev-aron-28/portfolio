@@ -1,10 +1,12 @@
 package com.projects.api_service.domain;
 
 import java.time.LocalDateTime;
+import java.util.regex.Pattern;
 
 import com.projects.api_service.domain.errors.InvalidArgument;
+import com.projects.api_service.domain.errors.InvalidTemplate;
 
-public class Template {
+public final class Template {
     private Long id;
 
     private String name;
@@ -27,10 +29,20 @@ public class Template {
             throw new InvalidArgument();
         }
 
+        this.validateTemplate(content);
+
         this.name = name;
         this.channel = channel;
         this.subject = subject;
         this.content = content;
+    }
+
+    public void validateTemplate(String content) {
+        Pattern templatePattern = Pattern.compile(".*\\{[a-zA-Z_][a-zA-Z0-9_]*\\}.*");
+
+        if (!templatePattern.matcher(content).matches()) {
+            throw new InvalidTemplate();
+        }
     }
 
     public Long getId() {

@@ -20,6 +20,6 @@ public record CreateTemplateDto(
     String subject,
 
     @NotBlank
-    @Size(max = 1000, message = "Content cannot exceed 1000 characters")
+    @Size(min=3, max = 1000, message = "Content cannot exceed 1000 characters")
     String content
 ) {}

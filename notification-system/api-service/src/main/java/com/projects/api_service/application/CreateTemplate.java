@@ -8,14 +8,19 @@ import com.projects.api_service.service.api.dto.CreateTemplateDto;
 
 @Service
 public class CreateTemplate {
-    private TemplateRepository repository;
+    private final TemplateRepository repository;
 
     public CreateTemplate(TemplateRepository repository) {
         this.repository = repository;
     }
 
     public void run(CreateTemplateDto dto) {
-        Template template = new Template(null, null, null, null);
+        Template template = new Template(
+            dto.name(), 
+            dto.channel(), 
+            dto.subject(), 
+            dto.content()
+        );
         
         repository.save(template);
     }
