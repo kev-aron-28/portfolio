@@ -20,7 +20,7 @@ public class TemplateController {
     public ResponseEntity<ApiResponse<String>> postMethodName(@Valid @RequestBody CreateTemplateDto entity) {
         return ResponseEntity.ok().body(
             ApiResponse.success("Template created", null)
-        );
+        ); 
     }
     
 }
