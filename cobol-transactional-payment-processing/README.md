@@ -38,3 +38,10 @@ To simulate a high-volume enterprise system that processes critical financial op
 # Screens
 There is a maps folder where we define all the mapset definitions 
 Main
+
+
+#  STRACCM
+
+1. [TODO] Should verify user exists from DFHCOMMAREA
+2. [DONE] Validate quantity is >= 0
+3. [TODO] create the new account balance = quantity
