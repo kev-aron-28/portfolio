@@ -4,5 +4,5 @@ import java.util.Optional;
 
 public interface TemplateRepository {
     public void save(Template template);
-    public Optional<Template> findById(Integer id); 
+    public Optional<Template> findById(Long id); 
 }

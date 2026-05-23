@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.projects.api_service.domain.errors.DomainException;
 import com.projects.api_service.service.api.response.ApiResponse;
 
 @RestControllerAdvice
@@ -31,5 +32,12 @@ public class ErrorHandling {
         return ResponseEntity
             .internalServerError()
             .body(ApiResponse.error("Server error", null));
+    }
+
+    @ExceptionHandler(DomainException.class)
+    public ResponseEntity<ApiResponse<String>> handlDomain(DomainException ex) {
+        return ResponseEntity
+            .badRequest()
+            .body(ApiResponse.error(ex.getMessage(), null));
     }
 }

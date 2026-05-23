@@ -38,7 +38,7 @@ public class TemplatePostgresRepository implements TemplateRepository {
     }
 
     @Override
-    public Optional<Template> findById(Integer id) {
+    public Optional<Template> findById(Long id) {
         String query = """
                 SELECT
                     id,
