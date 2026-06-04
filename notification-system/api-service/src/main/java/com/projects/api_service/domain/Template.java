@@ -44,7 +44,7 @@ public final class Template {
             throw new InvalidTemplate();
         }
     }
-
+    
     public Long getId() {
         return id;
     }

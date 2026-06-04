@@ -3,6 +3,8 @@ package com.projects.api_service.application;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
+import com.projects.api_service.domain.Notification;
+import com.projects.api_service.domain.NotificationRepository;
 import com.projects.api_service.domain.Template;
 import com.projects.api_service.domain.errors.ChannelMismatch;
 import com.projects.api_service.domain.services.TemplatePayloadValidator;
@@ -13,25 +15,42 @@ public class SendNotification {
     private final RabbitTemplate rabbitTemplate;
     private final GetTemplate getTemplate;
     private final TemplatePayloadValidator validator;
+    private final NotificationRepository repository;
 
-    public SendNotification(RabbitTemplate rabbitTemplate, GetTemplate getTemplate, TemplatePayloadValidator validator) {
+    public SendNotification(RabbitTemplate rabbitTemplate, GetTemplate getTemplate, TemplatePayloadValidator validator, NotificationRepository repository) {
         this.rabbitTemplate = rabbitTemplate;
         this.getTemplate = getTemplate;
-        this.validator = validator;
+        this.validator = new TemplatePayloadValidator();
+        this.repository = repository;
     }
 
-    public void publish(SendNotificationDto notification) {
-        Template template = this.getTemplate.run(notification.templateId());
+    public void publish(SendNotificationDto dto) {
+        Template template = this.getTemplate.run(dto.templateId());
         
-        this.validateTemplate(template, notification);
+        //  Channel must be the same as the template
+        this.validateTemplate(template, dto);
 
-        this.validator.validate(template.getContent(), notification.payload());
+        // Must check paylaod fields with template fields
+        this.validator.validate(template.getContent(), dto.payload());
 
-        String routingKey = switch(notification.channel()) {
+        String routingKey = switch(dto.channel()) {
             case EMAIL -> "notification.email";
             case SMS -> "notification.sms";
         };
 
+        Notification notification = Notification.create(
+                dto.templateId(),
+                dto.channel(),
+                dto.payload(),
+                dto.recipient()
+            );
+
+        this.repository.save(notification);
+        // [TODO]: Create a infra service for notifications
+
+        // [TODO]: Send to exchange
+
+        // this.rabbitTemplate.send(routingKey, message);
         // this.rabbitTemplate.convertAndSend(
         //     RabbitMQConfig.NOTIFICATION_EXCHANGE,
         //     routingKey,

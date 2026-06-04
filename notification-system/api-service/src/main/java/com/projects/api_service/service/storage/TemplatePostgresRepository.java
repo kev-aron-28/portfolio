@@ -73,8 +73,6 @@ public class TemplatePostgresRepository implements TemplateRepository {
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
-        
-        
     }
     
     

@@ -11,6 +11,7 @@ import com.projects.api_service.domain.errors.MissingTemplateVariable;
 public class TemplatePayloadValidator {
     private final TemplateVariableExtractor extractor = new TemplateVariableExtractor();
 
+    // Used to validate the payload contains all the fields expected in the template
     public void validate(String template, Map<String, Object> payload) {
         Set<String> requriedFields = this.extractor.extract(template);
         

@@ -27,17 +27,19 @@ public class ErrorHandling {
             .body(ApiResponse.error("Bad request", map));
     }
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<String>> handleException(Exception ex) {
-        return ResponseEntity
-            .internalServerError()
-            .body(ApiResponse.error("Server error", null));
-    }
-
     @ExceptionHandler(DomainException.class)
     public ResponseEntity<ApiResponse<String>> handlDomain(DomainException ex) {
         return ResponseEntity
             .badRequest()
             .body(ApiResponse.error(ex.getMessage(), null));
     }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<String>> handleException(Exception ex) {
+        System.out.println(ex.getMessage());
+        return ResponseEntity
+            .internalServerError()
+            .body(ApiResponse.error("Server error", null));
+    }
+
 }
