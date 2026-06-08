@@ -18,6 +18,7 @@ public final class Template {
     private String content;
 
     private LocalDateTime createdAt;
+    private final static Pattern templatePattern = Pattern.compile(".*\\{\\{\\s*[a-zA-Z_][a-zA-Z0-9_]*\\s*\\}\\}.*");
 
     public Template(
             String name,
@@ -38,7 +39,6 @@ public final class Template {
     }
 
     public void validateTemplate(String content) {
-        Pattern templatePattern = Pattern.compile(".*\\{[a-zA-Z_][a-zA-Z0-9_]*\\}.*");
 
         if (!templatePattern.matcher(content).matches()) {
             throw new InvalidTemplate();

@@ -3,6 +3,7 @@ package com.projects.api_service.service.storage;
 import java.sql.Types;
 import java.util.Optional;
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import com.projects.api_service.domain.NotificationChannel;
 import com.projects.api_service.domain.Template;
 import com.projects.api_service.domain.TemplateRepository;
+import com.projects.api_service.domain.errors.TemplateAlreadyExists;
 
 @Repository
 public class TemplatePostgresRepository implements TemplateRepository {
@@ -30,11 +32,15 @@ public class TemplatePostgresRepository implements TemplateRepository {
                 ) values (?,?,?)
                 """;
 
-        jdbcTemplate.update(
-            sql, 
-            new Object[] { template.getName(), template.getChannel().name(), template.getContent() },
-            new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR }
-        );
+        try {
+            jdbcTemplate.update(
+                sql, 
+                new Object[] { template.getName(), template.getChannel().name(), template.getContent() },
+                new int[] { Types.VARCHAR, Types.VARCHAR, Types.VARCHAR }
+            );
+        } catch (DuplicateKeyException e) {
+            throw new TemplateAlreadyExists();
+        }
     }
 
     @Override
@@ -44,8 +50,7 @@ public class TemplatePostgresRepository implements TemplateRepository {
                     id,
                     name,
                     channel,
-                    content,
-                    created_at
+                    content
                 FROM templates
                 WHERE id = ?
                 """;
@@ -61,8 +66,8 @@ public class TemplatePostgresRepository implements TemplateRepository {
                         rs.getString("content")
                     );
 
-                    t.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
-    
+                    t.setId(rs.getLong("id"));
+
                     return t;
                 },
                 id

@@ -19,7 +19,7 @@ public class NotificationPostgresRepository implements NotificationRepository {
     }
 
     @Override
-    public void save(Notification notification) {
+    public Long save(Notification notification) {
         String sql = """
         INSERT INTO notifications (
             channel,
@@ -27,19 +27,25 @@ public class NotificationPostgresRepository implements NotificationRepository {
             template,
             payload,
             status
-        ) values (?,?,?,?,?)
+        ) values (?,?,?,CAST(? as JSONB),?)
+         RETURNING id
                 """;
 
-        String payload = objectMapper.writeValueAsString(notification.getPayload());
+        try {
+            String payload = objectMapper.writeValueAsString(notification.getPayload());
 
-        template.update(
-            sql,
-            notification.getChannel().name(), 
-            notification.getRecipient(), 
-            notification.getTemplateId(), 
-            payload,
-            notification.getStatus().name() 
-        );
+            return template.queryForObject(
+                sql,
+                Long.class,
+                notification.getChannel().name(), 
+                notification.getRecipient(), 
+                notification.getTemplateId(), 
+                payload,
+                notification.getStatus().name() 
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to serialized payload");
+        }
     }
     
     

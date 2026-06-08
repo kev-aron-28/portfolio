@@ -38,12 +38,15 @@ public class SendNotification {
             case SMS -> "notification.sms";
         };
 
+        // Instantiate the notification to send
         Notification notification = Notification.create(
                 dto.templateId(),
                 dto.channel(),
                 dto.payload(),
                 dto.recipient()
             );
+
+        System.out.println("NOTIFICATION ABOUT TO BE CREATED: ");
 
         this.repository.save(notification);
         // [TODO]: Create a infra service for notifications
