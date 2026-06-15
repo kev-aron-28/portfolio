@@ -3,7 +3,6 @@ package com.projects.api_service.service.queue;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
-import com.projects.api_service.domain.Notification;
 import com.projects.api_service.domain.NotificationChannel;
 import com.projects.api_service.domain.NotificationMessage;
 import com.projects.api_service.domain.NotificationSender;
@@ -26,10 +25,21 @@ public class RabbitNotificationSender implements NotificationSender {
         NotificationMessage message = new NotificationMessage(notificationId);
 
         rabbitTemplate.convertAndSend(
-            
+            RabbitMQConfig.NOTIFICATION_EXCHANGE,
+            routingKey,
+            message
         );
-
-        throw new UnsupportedOperationException("Not supported yet.");
     }
     
 }
+
+
+
+
+
+
+
+
+
+
+

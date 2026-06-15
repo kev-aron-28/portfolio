@@ -1,10 +1,10 @@
 package com.projects.api_service.application;
 
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import com.projects.api_service.domain.Notification;
 import com.projects.api_service.domain.NotificationRepository;
+import com.projects.api_service.domain.NotificationSender;
 import com.projects.api_service.domain.Template;
 import com.projects.api_service.domain.errors.ChannelMismatch;
 import com.projects.api_service.domain.services.TemplatePayloadValidator;
@@ -12,13 +12,13 @@ import com.projects.api_service.service.api.dto.SendNotificationDto;
 
 @Service
 public class SendNotification {
-    private final RabbitTemplate rabbitTemplate;
+    private final NotificationSender notificationSender;
     private final GetTemplate getTemplate;
     private final TemplatePayloadValidator validator;
     private final NotificationRepository repository;
 
-    public SendNotification(RabbitTemplate rabbitTemplate, GetTemplate getTemplate, TemplatePayloadValidator validator, NotificationRepository repository) {
-        this.rabbitTemplate = rabbitTemplate;
+    public SendNotification(NotificationSender notificationSender, GetTemplate getTemplate, TemplatePayloadValidator validator, NotificationRepository repository) {
+        this.notificationSender = notificationSender;
         this.getTemplate = getTemplate;
         this.validator = new TemplatePayloadValidator();
         this.repository = repository;
@@ -33,11 +33,6 @@ public class SendNotification {
         // Must check paylaod fields with template fields
         this.validator.validate(template.getContent(), dto.payload());
 
-        String routingKey = switch(dto.channel()) {
-            case EMAIL -> "notification.email";
-            case SMS -> "notification.sms";
-        };
-
         // Instantiate the notification to send
         Notification notification = Notification.create(
                 dto.templateId(),
@@ -48,17 +43,10 @@ public class SendNotification {
 
         System.out.println("NOTIFICATION ABOUT TO BE CREATED: ");
 
-        this.repository.save(notification);
-        // [TODO]: Create a infra service for notifications
-
-        // [TODO]: Send to exchange
-
-        // this.rabbitTemplate.send(routingKey, message);
-        // this.rabbitTemplate.convertAndSend(
-        //     RabbitMQConfig.NOTIFICATION_EXCHANGE,
-        //     routingKey,
-        //     message
-        // );
+        Long id = this.repository.save(notification);
+        System.out.println("NOTIFICATION ID " + id );
+        
+        this.notificationSender.publish(id, notification.getChannel());
     }
 
     private void validateTemplate(Template template, SendNotificationDto dto) {
