@@ -1,5 +1,6 @@
 package com.projects.api_service.application;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.projects.api_service.domain.Template;
@@ -14,6 +15,10 @@ public class GetTemplate {
         this.repository = repository;
     }
 
+    @Cacheable(
+        value = "templates",
+        key="#templateId"
+    )
     public Template run(Long templateId) {
         return this.repository.findById(templateId)
             .orElseThrow(() -> new TemplateNotFound(templateId));

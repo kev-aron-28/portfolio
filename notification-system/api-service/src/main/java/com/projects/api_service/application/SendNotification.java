@@ -41,10 +41,7 @@ public class SendNotification {
                 dto.recipient()
             );
 
-        System.out.println("NOTIFICATION ABOUT TO BE CREATED: ");
-
         Long id = this.repository.save(notification);
-        System.out.println("NOTIFICATION ID " + id );
         
         this.notificationSender.publish(id, notification.getChannel());
     }

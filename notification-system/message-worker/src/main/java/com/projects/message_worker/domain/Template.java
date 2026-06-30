@@ -1,11 +1,12 @@
-package com.projects.api_service.domain;
+package com.projects.message_worker.domain;
+
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.regex.Pattern;
 
-import com.projects.api_service.domain.errors.InvalidArgument;
-import com.projects.api_service.domain.errors.InvalidTemplate;
+import com.projects.message_worker.domain.errors.InvalidArgument;
+import com.projects.message_worker.domain.errors.InvalidTemplate;
 
 public final class Template implements Serializable {
     private Long id;
