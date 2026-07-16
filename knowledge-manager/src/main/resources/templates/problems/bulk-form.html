@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Add Multiple Problems</h1>
+      <p class="page-subtitle">Each problem needs a title, description, solution, topic, and optional tags.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-secondary" th:href="@{/problems/new}">
+        <i class="bi bi-file-earmark-plus me-1"></i>Single problem
+      </a>
+      <a class="btn btn-outline-secondary" th:href="@{/problems}">
+        <i class="bi bi-arrow-left me-1"></i>Back
+      </a>
+    </div>
+  </div>
+
+  <form th:action="@{/problems/bulk}" th:object="${bulkProblemForm}" method="post" id="bulkProblemForm" novalidate>
+    <div class="invalid-feedback d-block mb-3" th:if="${#fields.hasErrors('rows')}" th:errors="*{rows}"></div>
+
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <div class="section-title mb-0">Problems</div>
+      <button type="button" class="btn btn-sm btn-outline-primary" id="addRowBtn">
+        <i class="bi bi-plus-lg me-1"></i>Add problem
+      </button>
+    </div>
+
+    <div id="problemRows" class="d-flex flex-column gap-3 mb-4">
+      <article class="card-surface p-4 bulk-problem-card"
+               th:each="row, stat : *{rows}"
+               th:data-row-index="${stat.index}">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h2 class="h6 mb-0">
+            Problem <span class="row-number" th:text="${stat.index + 1}">1</span>
+          </h2>
+          <button type="button" class="btn btn-sm btn-light border-0 remove-row-btn" title="Remove problem">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-md-8">
+            <label class="form-label" th:for="${'row-' + stat.index + '-title'}">Title</label>
+            <input type="text" class="form-control"
+                   th:id="${'row-' + stat.index + '-title'}"
+                   th:field="*{rows[__${stat.index}__].title}"
+                   th:classappend="${#fields.hasErrors('rows[__${stat.index}__].title')} ? ' is-invalid'"
+                   placeholder="e.g. Two Sum">
+            <div class="invalid-feedback"
+                 th:if="${#fields.hasErrors('rows[__${stat.index}__].title')}"
+                 th:errors="*{rows[__${stat.index}__].title}"></div>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" th:for="${'row-' + stat.index + '-url'}">External link</label>
+            <input type="url" class="form-control"
+                   th:id="${'row-' + stat.index + '-url'}"
+                   th:field="*{rows[__${stat.index}__].url}"
+                   placeholder="https://...">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label" th:for="${'row-' + stat.index + '-topicId'}">Topic</label>
+            <select class="form-select"
+                    th:id="${'row-' + stat.index + '-topicId'}"
+                    th:field="*{rows[__${stat.index}__].topicId}"
+                    th:classappend="${#fields.hasErrors('rows[__${stat.index}__].topicId')} ? ' is-invalid'"
+                    required>
+              <option value="">Select a topic</option>
+              <option th:each="topic : ${topics}"
+                      th:value="${topic.id()}"
+                      th:text="${topic.name()}">Arrays</option>
+            </select>
+            <div class="invalid-feedback"
+                 th:if="${#fields.hasErrors('rows[__${stat.index}__].topicId')}"
+                 th:errors="*{rows[__${stat.index}__].topicId}"></div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label" th:for="${'row-' + stat.index + '-difficulty'}">Difficulty</label>
+            <select class="form-select"
+                    th:id="${'row-' + stat.index + '-difficulty'}"
+                    th:field="*{rows[__${stat.index}__].difficulty}">
+              <option th:each="level : ${difficulties}"
+                      th:value="${level}"
+                      th:text="${level}">MEDIUM</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label" th:for="${'row-' + stat.index + '-language'}">Language</label>
+            <select class="form-select"
+                    th:id="${'row-' + stat.index + '-language'}"
+                    th:field="*{rows[__${stat.index}__].language}">
+              <option th:each="lang : ${languages}"
+                      th:value="${lang}"
+                      th:text="${lang}">java</option>
+            </select>
+          </div>
+
+          <div class="col-md-8">
+            <label class="form-label" th:for="${'row-' + stat.index + '-description'}">Description</label>
+            <textarea class="form-control font-monospace"
+                      rows="4"
+                      th:id="${'row-' + stat.index + '-description'}"
+                      th:field="*{rows[__${stat.index}__].description}"
+                      th:classappend="${#fields.hasErrors('rows[__${stat.index}__].description')} ? ' is-invalid'"
+                      placeholder="Problem statement, constraints, examples..."></textarea>
+            <div class="invalid-feedback"
+                 th:if="${#fields.hasErrors('rows[__${stat.index}__].description')}"
+                 th:errors="*{rows[__${stat.index}__].description}"></div>
+          </div>
+          <div class="col-md-4">
+            <div th:replace="~{problems/fragments/bulk-row-tags :: bulk-row-tags(${stat.index}, *{rows[__${stat.index}__].tagIds}, *{rows[__${stat.index}__].newTagNames})}"></div>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label" th:for="${'row-' + stat.index + '-sourceCode'}">Solution code</label>
+            <textarea class="form-control font-monospace bulk-code-input"
+                      rows="8"
+                      th:id="${'row-' + stat.index + '-sourceCode'}"
+                      th:field="*{rows[__${stat.index}__].sourceCode}"
+                      th:classappend="${#fields.hasErrors('rows[__${stat.index}__].sourceCode')} ? ' is-invalid'"
+                      placeholder="class Solution { ... }"></textarea>
+            <div class="invalid-feedback"
+                 th:if="${#fields.hasErrors('rows[__${stat.index}__].sourceCode')}"
+                 th:errors="*{rows[__${stat.index}__].sourceCode}"></div>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-primary">Create problems</button>
+      <a class="btn btn-outline-secondary" th:href="@{/problems}">Cancel</a>
+    </div>
+  </form>
+
+  <template id="rowTemplate">
+    <article class="card-surface p-4 bulk-problem-card">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 class="h6 mb-0">Problem <span class="row-number">1</span></h2>
+        <button type="button" class="btn btn-sm btn-light border-0 remove-row-btn" title="Remove problem">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <div class="row g-3">
+        <div class="col-md-8">
+          <label class="form-label row-title-label">Title</label>
+          <input type="text" class="form-control" data-field="title" placeholder="e.g. Two Sum">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label row-url-label">External link</label>
+          <input type="url" class="form-control" data-field="url" placeholder="https://...">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label row-topic-label">Topic</label>
+          <select class="form-select" data-field="topicId" required>
+            <option value="">Select a topic</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label row-difficulty-label">Difficulty</label>
+          <select class="form-select" data-field="difficulty"></select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label row-language-label">Language</label>
+          <select class="form-select" data-field="language"></select>
+        </div>
+        <div class="col-md-8">
+          <label class="form-label row-description-label">Description</label>
+          <textarea class="form-control font-monospace" rows="4" data-field="description"
+                    placeholder="Problem statement, constraints, examples..."></textarea>
+        </div>
+        <div class="col-md-4 row-tags-slot"></div>
+        <div class="col-12">
+          <label class="form-label row-source-label">Solution code</label>
+          <textarea class="form-control font-monospace bulk-code-input" rows="8" data-field="sourceCode"
+                    placeholder="class Solution { ... }"></textarea>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <script th:inline="javascript">
+    const bulkTopics = /*[[${topics}]]*/ [];
+    const bulkTags = /*[[${tags}]]*/ [];
+    const bulkDifficulties = /*[[${difficulties}]]*/ [];
+    const bulkLanguages = /*[[${languages}]]*/ [];
+  </script>
+  <script>
+    const rowsContainer = document.getElementById('problemRows');
+    const rowTemplate = document.getElementById('rowTemplate');
+    const addRowBtn = document.getElementById('addRowBtn');
+
+    function buildTagsHtml(index) {
+      let tagsHtml = '';
+      if (bulkTags.length > 0) {
+        tagsHtml = '<div class="tag-checkbox-grid">';
+        bulkTags.forEach((tag) => {
+          const id = `row-${index}-tag-${tag.id}`;
+          tagsHtml += `
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="${id}"
+                     name="rows[${index}].tagIds" value="${tag.id}">
+              <label class="form-check-label small" for="${id}">${tag.name}</label>
+            </div>`;
+        });
+        tagsHtml += '</div>';
+      } else {
+        tagsHtml = '<p class="text-muted small mb-0">No tags yet.</p>';
+      }
+
+      return `
+        <div class="mb-2">
+          <label class="form-label small mb-1">Tags</label>
+          ${tagsHtml}
+        </div>
+        <div>
+          <label class="form-label small mb-1" for="row-${index}-newTagNames">Create new tags</label>
+          <input type="text" class="form-control form-control-sm" id="row-${index}-newTagNames"
+                 name="rows[${index}].newTagNames" placeholder="e.g. Two Pointers, DP">
+          <div class="form-text">Comma-separated. New tags are created automatically.</div>
+        </div>`;
+    }
+
+    function fillSelect(select, options, includeBlank, blankLabel) {
+      select.innerHTML = '';
+      if (includeBlank) {
+        const blank = document.createElement('option');
+        blank.value = '';
+        blank.textContent = blankLabel || 'Select...';
+        select.appendChild(blank);
+      }
+      options.forEach((option) => {
+        const el = document.createElement('option');
+        if (typeof option === 'object') {
+          el.value = option.id;
+          el.textContent = option.name;
+        } else {
+          el.value = option;
+          el.textContent = option;
+        }
+        select.appendChild(el);
+      });
+    }
+
+    function reindexRows() {
+      rowsContainer.querySelectorAll('.bulk-problem-card').forEach((card, index) => {
+        card.dataset.rowIndex = index;
+        card.querySelector('.row-number').textContent = index + 1;
+
+        card.querySelectorAll('[data-field]').forEach((input) => {
+          input.name = `rows[${index}].${input.dataset.field}`;
+        });
+
+        const tagsSlot = card.querySelector('.row-tags-slot');
+        if (tagsSlot) {
+          tagsSlot.innerHTML = buildTagsHtml(index);
+        }
+
+        const idFields = ['title', 'url', 'topicId', 'difficulty', 'language', 'description', 'sourceCode'];
+        idFields.forEach((field) => {
+          const input = card.querySelector(`[data-field="${field}"]`);
+          if (input) {
+            input.id = `row-${index}-${field}`;
+          }
+        });
+
+        const titleLabel = card.querySelector('.row-title-label');
+        if (titleLabel) titleLabel.setAttribute('for', `row-${index}-title`);
+        const urlLabel = card.querySelector('.row-url-label');
+        if (urlLabel) urlLabel.setAttribute('for', `row-${index}-url`);
+        const topicLabel = card.querySelector('.row-topic-label');
+        if (topicLabel) topicLabel.setAttribute('for', `row-${index}-topicId`);
+        const difficultyLabel = card.querySelector('.row-difficulty-label');
+        if (difficultyLabel) difficultyLabel.setAttribute('for', `row-${index}-difficulty`);
+        const languageLabel = card.querySelector('.row-language-label');
+        if (languageLabel) languageLabel.setAttribute('for', `row-${index}-language`);
+        const descriptionLabel = card.querySelector('.row-description-label');
+        if (descriptionLabel) descriptionLabel.setAttribute('for', `row-${index}-description`);
+        const sourceLabel = card.querySelector('.row-source-label');
+        if (sourceLabel) sourceLabel.setAttribute('for', `row-${index}-sourceCode`);
+      });
+    }
+
+    function bindRemoveButtons() {
+      rowsContainer.querySelectorAll('.remove-row-btn').forEach((button) => {
+        button.onclick = () => {
+          const cards = rowsContainer.querySelectorAll('.bulk-problem-card');
+          if (cards.length <= 1) {
+            cards[0].querySelectorAll('input, textarea, select').forEach((input) => {
+              if (input.type === 'checkbox') {
+                input.checked = false;
+              } else if (input.tagName === 'SELECT') {
+                input.selectedIndex = 0;
+              } else {
+                input.value = '';
+              }
+            });
+            return;
+          }
+          button.closest('.bulk-problem-card').remove();
+          reindexRows();
+        };
+      });
+    }
+
+    addRowBtn.addEventListener('click', () => {
+      const clone = rowTemplate.content.cloneNode(true);
+      const card = clone.querySelector('.bulk-problem-card');
+
+      fillSelect(card.querySelector('[data-field="topicId"]'), bulkTopics, true, 'Select a topic');
+      fillSelect(card.querySelector('[data-field="difficulty"]'), bulkDifficulties, false);
+      fillSelect(card.querySelector('[data-field="language"]'), bulkLanguages, false);
+
+      const difficultySelect = card.querySelector('[data-field="difficulty"]');
+      if (difficultySelect) {
+        difficultySelect.value = 'MEDIUM';
+      }
+      const languageSelect = card.querySelector('[data-field="language"]');
+      if (languageSelect) {
+        languageSelect.value = 'java';
+      }
+
+      rowsContainer.appendChild(clone);
+      reindexRows();
+      bindRemoveButtons();
+    });
+
+    bindRemoveButtons();
+  </script>
+</div>
+</body>
+</html>

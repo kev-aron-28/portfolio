@@ -1,0 +1,45 @@
+version: "3.9"
+
+services:
+  url_shortener_api:
+    build: ./api-service
+    container_name: ur-shortener-api
+    ports:
+      - "8080:8080"
+    environment:
+        DB_HOST: db
+        DB_PORT: 5432
+        DB_NAME: shortener
+        DB_USER: admin
+        DB_PASS: admin
+        REDIS_HOST: cache
+        REDIS_PORT: 6379
+        SPRING_PROFILES_ACTIVE: staging
+    depends_on:
+      - db
+      - cache
+  db:
+    image: postgres:15
+    container_name: shorten-db
+    restart: always
+    environment:
+      POSTGRES_DB: shortener
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_shorten_data:/var/lib/postgresql/data
+
+  cache:
+    image: redis:7
+    container_name: shorten-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_shorten_data:/data
+
+volumes:
+  db_shorten_data:
+  redis_shorten_data:

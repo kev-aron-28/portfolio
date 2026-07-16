@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title" th:text="${problem.title()}">Problem</h1>
+      <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
+        <span class="topic-color-dot" th:style="'background-color:' + ${problem.topicColor()}"></span>
+        <span class="text-muted small" th:text="${problem.topicName()}">Arrays</span>
+        <span class="difficulty-badge"
+              th:classappend="' difficulty-' + ${#strings.toLowerCase(problem.difficulty().name())}"
+              th:text="${problem.difficulty()}">MEDIUM</span>
+        <span class="badge rounded-pill due-badge-overdue" th:if="${reviewStatus.overdue()}">Overdue</span>
+        <span class="badge rounded-pill due-badge-today"
+              th:if="${reviewStatus.dueToday() and !reviewStatus.overdue()}">Due today</span>
+      </div>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+      <div class="review-timer" title="Time since you started this review">
+        <i class="bi bi-stopwatch me-1"></i>
+        <span id="reviewTimerDisplay">0:00</span>
+      </div>
+      <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" th:href="@{/problems/{id}(id=${problem.id()})}">
+          <i class="bi bi-file-text me-1"></i>Detail
+        </a>
+        <a class="btn btn-outline-secondary" th:href="@{/dashboard}">
+          <i class="bi bi-arrow-left me-1"></i>Queue
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="review-session">
+    <section class="card-surface p-4 mb-3" th:if="${problem.url() != null}">
+      <div class="section-title">External link</div>
+      <a class="small" th:href="${problem.url()}" target="_blank" rel="noopener noreferrer" th:text="${problem.url()}">Link</a>
+    </section>
+
+    <section class="card-surface p-4 mb-3">
+      <div class="section-title">Description</div>
+      <textarea id="description" th:if="${problem.description() != null and !#strings.isEmpty(problem.description())}"
+                th:text="${problem.description()}"></textarea>
+      <p class="text-muted small mb-0" th:if="${problem.description() == null or #strings.isEmpty(problem.description())}">
+        No description stored. Use the external link if available, then recall the approach before revealing.
+      </p>
+    </section>
+
+    <div id="revealPrompt" class="card-surface p-4 mb-3 text-center">
+      <p class="text-muted small mb-3 mb-md-2">Try to solve it from memory first.</p>
+      <button type="button" class="btn btn-primary" id="revealSolutionBtn">
+        <i class="bi bi-eye me-1"></i>Show solution
+      </button>
+    </div>
+
+    <div id="solutionPanel" class="review-solution-panel" hidden>
+      <section class="card-surface p-4 mb-3">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <div class="section-title mb-0">Source code</div>
+          <button type="button" class="btn btn-sm btn-outline-secondary" id="hideSolutionBtn">
+            Hide solution
+          </button>
+        </div>
+        <div class="editor-container editor-container-compact">
+          <div id="sourceCodeViewer" class="monaco-container monaco-container-compact"></div>
+        </div>
+      </section>
+
+      <section class="card-surface p-4 mb-3"
+               th:if="${problem.solution().explanation() != null and !#strings.isEmpty(problem.solution().explanation())}">
+        <div class="section-title">Explanation</div>
+        <textarea id="explanation" th:text="${problem.solution().explanation()}"></textarea>
+      </section>
+
+      <section class="card-surface p-4 mb-3"
+               th:if="${problem.solution().complexity() != null and !#strings.isEmpty(problem.solution().complexity())}">
+        <div class="section-title">Complexity</div>
+        <textarea id="complexity" th:text="${problem.solution().complexity()}"></textarea>
+      </section>
+
+      <section class="card-surface p-4 mb-3"
+               th:if="${problem.solution().mistakes() != null and !#strings.isEmpty(problem.solution().mistakes())}">
+        <div class="section-title">Common mistakes</div>
+        <textarea id="mistakes" th:text="${problem.solution().mistakes()}"></textarea>
+      </section>
+    </div>
+
+    <section class="card-surface p-4">
+      <div class="section-title">Finish review</div>
+      <form th:action="@{/problems/{id}/reviews(id=${problem.id()})}"
+            th:object="${reviewForm}"
+            method="post"
+            id="reviewSessionForm"
+            novalidate>
+        <input type="hidden" th:field="*{reviewDate}">
+        <input type="hidden" th:field="*{reviewDuration}" id="reviewDuration">
+
+        <div class="mb-3">
+          <label class="form-label">How hard was it?</label>
+          <div class="d-flex flex-wrap gap-2">
+            <label class="tag-checkbox-item" th:each="value : ${#numbers.sequence(1, 5)}">
+              <input class="form-check-input me-2" type="radio" th:field="*{rating}" th:value="${value}">
+              <span th:text="${value}">1</span>
+            </label>
+          </div>
+          <div class="form-text">1 = couldn't solve · 5 = solved easily</div>
+          <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('rating')}" th:errors="*{rating}"></div>
+        </div>
+
+        <div class="mb-3">
+          <label for="notes" class="form-label">Notes <span class="text-muted fw-normal">(optional)</span></label>
+          <textarea id="notes" class="form-control" rows="3"
+                    th:classappend="${#fields.hasErrors('notes')} ? ' is-invalid'"
+                    th:field="*{notes}"
+                    placeholder="What was hard? What clicked?"></textarea>
+          <div class="invalid-feedback" th:if="${#fields.hasErrors('notes')}" th:errors="*{notes}"></div>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-3">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check2-square me-1"></i>Save review
+          </button>
+          <span class="text-muted small">
+            Time recorded:
+            <strong id="reviewDurationLabel">1 min</strong>
+          </span>
+        </div>
+        <div class="invalid-feedback d-block mt-2"
+             th:if="${#fields.hasErrors('reviewDuration')}"
+             th:errors="*{reviewDuration}"></div>
+      </form>
+    </section>
+  </div>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js"></script>
+  <script th:inline="javascript">
+    const easyMdeOptions = {
+      spellChecker: false,
+      status: false,
+      minHeight: '140px'
+    };
+
+    function createReadOnlyEditor(elementId) {
+      const element = document.getElementById(elementId);
+      if (!element) {
+        return null;
+      }
+      const editor = new EasyMDE(Object.assign({ element }, easyMdeOptions));
+      editor.codemirror.setOption('readOnly', true);
+      editor.togglePreview();
+      return editor;
+    }
+
+    createReadOnlyEditor('description');
+    createReadOnlyEditor('explanation');
+    createReadOnlyEditor('complexity');
+    createReadOnlyEditor('mistakes');
+
+    const sourceCode = /*[[${problem.solution().sourceCode()}]]*/ '';
+    const language = /*[[${problem.solution().language()}]]*/ 'java';
+    let editor = null;
+
+    const revealPrompt = document.getElementById('revealPrompt');
+    const solutionPanel = document.getElementById('solutionPanel');
+    const revealBtn = document.getElementById('revealSolutionBtn');
+    const hideBtn = document.getElementById('hideSolutionBtn');
+    const timerDisplay = document.getElementById('reviewTimerDisplay');
+    const durationInput = document.getElementById('reviewDuration');
+    const durationLabel = document.getElementById('reviewDurationLabel');
+    const problemId = /*[[${problem.id()}]]*/ 0;
+    const storageKey = 'review-timer-' + problemId;
+    const maxAgeMs = 4 * 60 * 60 * 1000;
+    let startedAt = Number(sessionStorage.getItem(storageKey));
+    if (!Number.isFinite(startedAt) || startedAt <= 0 || Date.now() - startedAt > maxAgeMs) {
+      startedAt = Date.now();
+      sessionStorage.setItem(storageKey, String(startedAt));
+    }
+
+    function elapsedMinutes() {
+      const minutes = Math.ceil((Date.now() - startedAt) / 60000);
+      return Math.max(1, minutes);
+    }
+
+    function formatElapsed(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      return minutes + ':' + String(seconds).padStart(2, '0');
+    }
+
+    function syncDuration() {
+      const minutes = elapsedMinutes();
+      durationInput.value = String(minutes);
+      durationLabel.textContent = minutes === 1 ? '1 min' : minutes + ' min';
+      timerDisplay.textContent = formatElapsed(Date.now() - startedAt);
+    }
+
+    syncDuration();
+    setInterval(syncDuration, 1000);
+
+    document.getElementById('reviewSessionForm').addEventListener('submit', () => {
+      syncDuration();
+      sessionStorage.removeItem(storageKey);
+    });
+
+    function ensureEditor() {
+      if (editor) {
+        return;
+      }
+      require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
+      require(['vs/editor/editor.main'], function () {
+        editor = monaco.editor.create(document.getElementById('sourceCodeViewer'), {
+          value: sourceCode || '',
+          language: language,
+          readOnly: true,
+          minimap: { enabled: false },
+          fontSize: 13,
+          scrollBeyondLastLine: false,
+          automaticLayout: true,
+          wordWrap: 'on'
+        });
+      });
+    }
+
+    function showSolution() {
+      revealPrompt.hidden = true;
+      solutionPanel.hidden = false;
+      ensureEditor();
+    }
+
+    function hideSolution() {
+      solutionPanel.hidden = true;
+      revealPrompt.hidden = false;
+    }
+
+    revealBtn.addEventListener('click', showSolution);
+    hideBtn.addEventListener('click', hideSolution);
+  </script>
+</div>
+</body>
+</html>

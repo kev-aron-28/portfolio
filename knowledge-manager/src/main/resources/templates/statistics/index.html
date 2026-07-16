@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Statistics</h1>
+      <p class="page-subtitle">Detailed learning metrics and review performance.</p>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card-surface stat-card">
+        <div class="stat-value" th:text="${statistics.totalReviewTimeMinutes()}">0</div>
+        <div class="stat-label">Minutes studied</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card-surface stat-card">
+        <div class="stat-value" th:text="${statistics.currentStreak()}">0</div>
+        <div class="stat-label">Current streak (days)</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card-surface stat-card">
+        <div class="stat-value" th:text="${statistics.longestStreak()}">0</div>
+        <div class="stat-label">Longest streak (days)</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card-surface stat-card">
+        <div class="stat-value" th:text="${statistics.masteredProblems()}">0</div>
+        <div class="stat-label">Mastered problems</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <section class="card-surface p-4 mb-4">
+        <h2 class="h5 mb-3">Rating distribution</h2>
+        <div th:each="stat : ${statistics.ratingStats()}" class="mb-3">
+          <div class="d-flex justify-content-between small mb-1">
+            <span th:text="'Rating ' + ${stat.rating()}">Rating 3</span>
+            <span th:text="${stat.count()}">0</span>
+          </div>
+          <div class="progress-thin">
+            <div class="progress-thin-bar" th:style="'width:' + ${stat.barWidth()} + '%'"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card-surface p-4">
+        <h2 class="h5 mb-3">Scheduler</h2>
+        <p class="mb-2">
+          Active algorithm:
+          <span class="badge text-bg-light border text-uppercase" th:text="${statistics.schedulerName()}">sm2</span>
+        </p>
+        <p class="text-muted small mb-0">
+          Configure via <code>app.review.scheduler</code> in application.properties
+          (<code>sm2</code> or <code>fixed-interval</code>).
+        </p>
+      </section>
+    </div>
+
+    <div class="col-lg-6">
+      <section class="card-surface p-4 mb-4">
+        <h2 class="h5 mb-3">Reviews by month</h2>
+        <div th:each="stat : ${statistics.monthlyStats()}" class="mb-3">
+          <div class="d-flex justify-content-between small mb-1">
+            <span th:text="${stat.label()}">Jan 2026</span>
+            <span th:text="${stat.count()}">0</span>
+          </div>
+          <div class="progress-thin">
+            <div class="progress-thin-bar" th:style="'width:' + ${stat.barWidth()} + '%'"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card-surface p-4">
+        <h2 class="h5 mb-3">Coverage</h2>
+        <dl class="mb-0">
+          <dt class="text-muted small">Problems without review</dt>
+          <dd class="mb-3" th:text="${statistics.problemsWithoutReview()}">0</dd>
+          <dt class="text-muted small">Mastered problems</dt>
+          <dd class="mb-0 text-muted small">Last 2 reviews with rating ≥ 4</dd>
+        </dl>
+      </section>
+    </div>
+  </div>
+</div>
+</body>
+</html>

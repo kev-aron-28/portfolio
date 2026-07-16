@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="tags-panel" th:with="selectedTagIds=*{tagIds}">
+  <section class="card-surface p-4 mb-4">
+    <div class="section-title">Tags</div>
+
+    <div class="tag-checkbox-grid" th:if="${!#lists.isEmpty(tags)}">
+      <label class="tag-checkbox-item" th:each="tag : ${tags}">
+        <input class="form-check-input me-2" type="checkbox" name="tagIds"
+               th:value="${tag.id()}"
+               th:checked="${selectedTagIds != null and #lists.contains(selectedTagIds, tag.id())}">
+        <span th:text="${tag.name()}">BFS</span>
+      </label>
+    </div>
+    <p class="text-muted small mb-3" th:if="${#lists.isEmpty(tags)}">No tags yet. Create new ones below.</p>
+
+    <label for="newTagNames" class="form-label">Create new tags</label>
+    <input type="text" class="form-control"
+           th:classappend="${#fields.hasErrors('newTagNames')} ? ' is-invalid'"
+           id="newTagNames" th:field="*{newTagNames}"
+           placeholder="BFS, DFS, Sliding Window">
+    <div class="form-text">Separate multiple tags with commas.</div>
+    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('newTagNames')}" th:errors="*{newTagNames}"></div>
+    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('tagIds')}" th:errors="*{tagIds}"></div>
+  </section>
+</div>
+</html>

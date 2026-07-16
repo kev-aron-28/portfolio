@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title" th:text="${question.title()}">Question</h1>
+      <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
+        <span class="badge text-bg-light border" th:text="${question.category().label}">Category</span>
+        <span class="badge rounded-pill due-badge-overdue" th:if="${question.overdue()}">Overdue</span>
+        <span class="badge rounded-pill due-badge-today"
+              th:if="${question.dueToday() and !question.overdue()}">Due today</span>
+        <span class="badge rounded-pill text-bg-info" th:if="${question.neverPracticed()}">Never practiced</span>
+      </div>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-primary" th:href="@{/behavioral/{id}/practice(id=${question.id()})}">
+        <i class="bi bi-mic me-1"></i>Practice
+      </a>
+      <a class="btn btn-outline-secondary" th:href="@{/behavioral/{id}/edit(id=${question.id()})}">
+        <i class="bi bi-pencil me-1"></i>Edit
+      </a>
+      <form th:action="@{/behavioral/{id}/delete(id=${question.id()})}" method="post"
+            onsubmit="return confirm('Delete this question and its practice history?');">
+        <button class="btn btn-outline-secondary" type="submit">Delete</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <section class="card-surface p-4 mb-4">
+        <div class="section-title">Question</div>
+        <p class="mb-0 behavioral-prompt" th:text="${question.question()}">Prompt</p>
+      </section>
+
+      <section class="card-surface p-4 mb-4">
+        <div class="section-title">STAR answer</div>
+        <div class="mb-3">
+          <div class="fw-medium small text-muted mb-1">Situation</div>
+          <p class="mb-0" th:text="${question.answerSituation() != null} ? ${question.answerSituation()} : '—'">—</p>
+        </div>
+        <div class="mb-3">
+          <div class="fw-medium small text-muted mb-1">Task</div>
+          <p class="mb-0" th:text="${question.answerTask() != null} ? ${question.answerTask()} : '—'">—</p>
+        </div>
+        <div class="mb-3">
+          <div class="fw-medium small text-muted mb-1">Action</div>
+          <p class="mb-0" th:text="${question.answerAction() != null} ? ${question.answerAction()} : '—'">—</p>
+        </div>
+        <div>
+          <div class="fw-medium small text-muted mb-1">Result</div>
+          <p class="mb-0" th:text="${question.answerResult() != null} ? ${question.answerResult()} : '—'">—</p>
+        </div>
+      </section>
+
+      <section class="card-surface p-4" th:if="${question.notes() != null}">
+        <div class="section-title">Notes</div>
+        <p class="mb-0" th:text="${question.notes()}">Notes</p>
+      </section>
+    </div>
+
+    <div class="col-lg-4">
+      <section class="card-surface p-4 mb-4">
+        <div class="section-title">Schedule</div>
+        <dl class="mb-0 small">
+          <dt class="text-muted">Next review</dt>
+          <dd th:text="${#temporals.format(question.nextReviewDate(), 'MMM d, yyyy')}">Date</dd>
+          <dt class="text-muted mt-2">Created</dt>
+          <dd th:text="${#temporals.format(question.createdAt(), 'MMM d, yyyy')}">Date</dd>
+        </dl>
+      </section>
+
+      <section class="card-surface p-4">
+        <div class="section-title">Practice history</div>
+        <div th:if="${#lists.isEmpty(history)}" class="text-muted small">No sessions yet.</div>
+        <div class="review-history-item" th:each="item : ${history}">
+          <div class="d-flex justify-content-between gap-2">
+            <span th:text="${#temporals.format(item.practiceDate(), 'MMM d, yyyy')}">Date</span>
+            <span class="rating-badge" th:text="${item.rating()}">4</span>
+          </div>
+          <div class="text-muted small mt-1">
+            <span th:text="${item.durationSeconds()} + 's'">30s</span>
+            · Next
+            <span th:text="${#temporals.format(item.nextReviewDate(), 'MMM d')}">Date</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+</body>
+</html>

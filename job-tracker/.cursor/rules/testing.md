@@ -1,0 +1,4 @@
+- JUnit 5.
+- Mockito.
+- Parser tests use saved HTML.
+- No internet access during tests.

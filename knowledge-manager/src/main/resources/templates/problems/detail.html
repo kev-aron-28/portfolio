@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title" th:text="${problem.title()}">Problem</h1>
+      <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
+        <span class="topic-color-dot" th:style="'background-color:' + ${problem.topicColor()}"></span>
+        <span class="text-muted small" th:text="${problem.topicName()}">Arrays</span>
+        <span class="difficulty-badge"
+              th:classappend="' difficulty-' + ${#strings.toLowerCase(problem.difficulty().name())}"
+              th:text="${problem.difficulty()}">MEDIUM</span>
+        <span class="badge text-bg-secondary" th:if="${problem.archived()}">Archived</span>
+      </div>
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-primary" th:href="@{/problems/{id}/reviews/session(id=${problem.id()})}">
+        <i class="bi bi-check2-square me-1"></i>Review
+      </a>
+      <form th:action="@{/problems/{id}/toggle-favorite(id=${problem.id()})}" method="post">
+        <button class="btn btn-outline-secondary" type="submit">
+          <i th:class="${problem.favorite()} ? 'bi bi-star-fill text-warning' : 'bi bi-star'"></i>
+        </button>
+      </form>
+      <a class="btn btn-outline-secondary" th:href="@{/problems/{id}/edit(id=${problem.id()})}">
+        <i class="bi bi-pencil me-1"></i>Edit
+      </a>
+      <form th:action="@{/problems/{id}/toggle-archive(id=${problem.id()})}" method="post">
+        <button class="btn btn-outline-secondary" type="submit"
+                th:text="${problem.archived()} ? 'Unarchive' : 'Archive'">Archive</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <section class="card-surface p-4 mb-4" th:if="${problem.url() != null}">
+        <div class="section-title">External link</div>
+        <a th:href="${problem.url()}" target="_blank" rel="noopener noreferrer" th:text="${problem.url()}">Link</a>
+      </section>
+
+      <section class="card-surface p-4 mb-4" th:if="${problem.description() != null and !#strings.isEmpty(problem.description())}">
+        <div class="section-title">Description</div>
+        <textarea id="description" th:text="${problem.description()}"></textarea>
+      </section>
+
+      <section class="card-surface p-4 mb-4">
+        <div class="section-title">Source code</div>
+        <div class="editor-container">
+          <div id="sourceCodeViewer" class="monaco-container"></div>
+        </div>
+      </section>
+
+      <section class="card-surface p-4 mb-4"
+               th:if="${problem.solution().explanation() != null and !#strings.isEmpty(problem.solution().explanation())}">
+        <div class="section-title">Explanation</div>
+        <textarea id="explanation" th:text="${problem.solution().explanation()}"></textarea>
+      </section>
+
+      <section class="card-surface p-4 mb-4"
+               th:if="${problem.solution().complexity() != null and !#strings.isEmpty(problem.solution().complexity())}">
+        <div class="section-title">Complexity</div>
+        <textarea id="complexity" th:text="${problem.solution().complexity()}"></textarea>
+      </section>
+
+      <section class="card-surface p-4 mb-4"
+               th:if="${problem.solution().mistakes() != null and !#strings.isEmpty(problem.solution().mistakes())}">
+        <div class="section-title">Common mistakes</div>
+        <textarea id="mistakes" th:text="${problem.solution().mistakes()}"></textarea>
+      </section>
+    </div>
+
+    <div class="col-lg-4">
+      <section class="card-surface p-4 mb-4">
+        <div class="section-title">Review schedule</div>
+        <dl class="mb-0 small">
+          <dt class="text-muted">Next review</dt>
+          <dd>
+            <span th:text="${#temporals.format(reviewStatus.nextReviewDate(), 'MMM d, yyyy')}">Date</span>
+            <span class="badge rounded-pill text-bg-secondary ms-1" th:if="${reviewStatus.neverReviewed()}">Scheduled first review</span>
+            <span class="badge rounded-pill due-badge-overdue ms-1" th:if="${reviewStatus.overdue()}">Overdue</span>
+            <span class="badge rounded-pill due-badge-today ms-1"
+                  th:if="${reviewStatus.dueToday() and !reviewStatus.overdue()}">Due today</span>
+          </dd>
+        </dl>
+      </section>
+
+      <section class="card-surface p-4 mb-4">
+        <div class="section-title">Tags</div>
+        <div class="d-flex flex-wrap gap-1" th:if="${!#lists.isEmpty(problem.tags())}">
+          <span class="tag-pill" th:each="tag : ${problem.tags()}" th:text="${tag.name()}">BFS</span>
+        </div>
+        <p class="text-muted small mb-0" th:if="${#lists.isEmpty(problem.tags())}">No tags assigned.</p>
+      </section>
+
+      <section class="card-surface p-4">
+        <div class="section-title">Metadata</div>
+        <dl class="mb-0 small">
+          <dt class="text-muted">Language</dt>
+          <dd th:text="${problem.solution().language()}">java</dd>
+          <dt class="text-muted mt-2">Created</dt>
+          <dd th:text="${#temporals.format(problem.createdAt(), 'MMM d, yyyy HH:mm')}">Date</dd>
+          <dt class="text-muted mt-2">Updated</dt>
+          <dd th:text="${#temporals.format(problem.updatedAt(), 'MMM d, yyyy HH:mm')}">Date</dd>
+        </dl>
+      </section>
+    </div>
+  </div>
+
+  <section class="card-surface p-4 mt-4" th:if="${!#lists.isEmpty(reviewStatus.history())}">
+    <div class="section-title">Review history</div>
+    <div class="review-history-item" th:each="review : ${reviewStatus.history()}">
+      <div class="d-flex justify-content-between align-items-start gap-3">
+        <div>
+          <div class="fw-medium" th:text="${#temporals.format(review.reviewDate(), 'MMM d, yyyy')}">Date</div>
+          <div class="text-muted small mt-1" th:if="${review.notes() != null}" th:text="${review.notes()}">Notes</div>
+        </div>
+        <div class="text-end">
+          <span class="rating-badge" th:text="${review.rating()}">3</span>
+          <div class="text-muted small mt-1" th:text="${review.reviewDuration()} + ' min'">15 min</div>
+          <div class="text-muted small">Next: <span th:text="${#temporals.format(review.nextReviewDate(), 'MMM d')}">Date</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card-surface p-4 mt-4 empty-state" th:if="${#lists.isEmpty(reviewStatus.history())}">
+    <i class="bi bi-clock-history fs-4 d-block mb-2"></i>
+    <p class="mb-2">No reviews yet for this problem.</p>
+    <a class="btn btn-primary btn-sm" th:href="@{/problems/{id}/reviews/session(id=${problem.id()})}">Start review</a>
+  </section>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js"></script>
+  <script th:inline="javascript">
+    const easyMdeOptions = {
+      spellChecker: false,
+      status: false,
+      minHeight: '140px'
+    };
+
+    function createReadOnlyEditor(elementId) {
+      const element = document.getElementById(elementId);
+      if (!element) {
+        return null;
+      }
+      const editor = new EasyMDE(Object.assign({ element }, easyMdeOptions));
+      editor.codemirror.setOption('readOnly', true);
+      editor.togglePreview();
+      return editor;
+    }
+
+    createReadOnlyEditor('description');
+    createReadOnlyEditor('explanation');
+    createReadOnlyEditor('complexity');
+    createReadOnlyEditor('mistakes');
+
+    const sourceCode = /*[[${problem.solution().sourceCode()}]]*/ '';
+    const language = /*[[${problem.solution().language()}]]*/ 'java';
+
+    require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
+    require(['vs/editor/editor.main'], function () {
+      monaco.editor.create(document.getElementById('sourceCodeViewer'), {
+        value: sourceCode,
+        language: language,
+        readOnly: true,
+        minimap: { enabled: false },
+        fontSize: 14,
+        scrollBeyondLastLine: false,
+        automaticLayout: true
+      });
+    });
+  </script>
+</div>
+</body>
+</html>

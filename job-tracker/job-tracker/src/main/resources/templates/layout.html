@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:fragment="layout (content)">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title th:text="${pageTitle} + ' · Job Tracker'">Job Tracker</title>
+	<link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+	<link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="app-body">
+<header class="app-topbar">
+	<div class="topbar-inner">
+		<div class="topbar-start">
+			<button type="button" class="btn btn-sm btn-ghost sidebar-toggle" data-bs-toggle="offcanvas"
+					data-bs-target="#appSidebar" aria-controls="appSidebar" aria-label="Toggle navigation">
+				<i data-lucide="menu" aria-hidden="true"></i>
+			</button>
+			<a class="topbar-brand" th:href="@{/}">Job Tracker</a>
+		</div>
+		<div class="topbar-actions">
+			<a th:href="@{/scraping}" class="btn btn-sm btn-primary">
+				<i data-lucide="play" aria-hidden="true"></i>
+				<span class="topbar-action-label">Ejecutar scrape</span>
+			</a>
+		</div>
+	</div>
+</header>
+
+<div class="app-shell">
+	<aside class="app-sidebar">
+		<div th:replace="~{fragments/nav :: sidebar}"></div>
+	</aside>
+
+	<div class="offcanvas offcanvas-start app-sidebar-offcanvas" tabindex="-1" id="appSidebar"
+		 aria-labelledby="appSidebarLabel">
+		<div class="offcanvas-header border-bottom py-2">
+			<h2 class="offcanvas-title h6 mb-0" id="appSidebarLabel">Navegación</h2>
+			<button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+		</div>
+		<div class="offcanvas-body p-0">
+			<div th:replace="~{fragments/nav :: sidebar}"></div>
+		</div>
+	</div>
+
+	<div class="app-main">
+		<header class="page-header" th:if="${pageTitle != null && detailLayout != true}">
+			<nav aria-label="Breadcrumb" th:if="${breadcrumbSection == 'jobs'}">
+				<ol class="breadcrumb breadcrumb-compact mb-1">
+					<li class="breadcrumb-item"><a th:href="@{/jobs}">Vacantes</a></li>
+					<li class="breadcrumb-item active" aria-current="page" th:text="${pageTitle}">Detalle</li>
+				</ol>
+			</nav>
+			<div class="page-header-row">
+				<div>
+					<h1 class="page-title mb-0" th:text="${pageTitle}">Page</h1>
+					<p class="page-description mb-0" th:if="${pageDescription}" th:text="${pageDescription}"></p>
+				</div>
+				<div class="page-header-actions" th:if="${pageActions != null}">
+					<div th:replace="${pageActions}"></div>
+				</div>
+			</div>
+		</header>
+
+		<main class="page-content" th:classappend="${detailLayout} ? ' page-content--detail' : ''">
+			<div th:replace="${content}">Content</div>
+		</main>
+	</div>
+</div>
+
+<script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/js/lucide.min.js}"></script>
+<script>lucide.createIcons();</script>
+</body>
+</html>

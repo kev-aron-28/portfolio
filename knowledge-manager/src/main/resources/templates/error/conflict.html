@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="card-surface p-4 text-center" style="max-width: 480px; margin: 4rem auto;">
+    <i class="bi bi-exclamation-triangle text-danger fs-1 mb-3 d-block"></i>
+    <h1 class="h4 mb-2">Conflict</h1>
+    <p class="text-muted mb-4" th:text="${errorMessage}">A conflict occurred.</p>
+    <a class="btn btn-primary" th:href="@{/topics}">Back to topics</a>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:fragment="layout (content)">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${pageTitle != null ? pageTitle + ' · Algorithm Study Tracker' : 'Algorithm Study Tracker'}">
+    Algorithm Study Tracker
+  </title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link th:href="@{/css/app.css}" rel="stylesheet">
+</head>
+<body>
+<div class="app-shell d-flex flex-column flex-md-row">
+  <aside class="app-sidebar">
+    <a class="app-brand d-block mb-4" th:href="@{/}">
+      <i class="bi bi-journal-code me-2"></i>Study Tracker
+    </a>
+    <nav class="d-flex flex-column gap-1">
+      <a class="app-nav-link"
+         th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/dashboard') ? ' active' : ''}"
+         th:href="@{/dashboard}">
+        <i class="bi bi-grid-1x2"></i>
+        <span>Dashboard</span>
+      </a>
+      <a class="app-nav-link"
+         th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/problems') ? ' active' : ''}"
+         th:href="@{/problems}">
+        <i class="bi bi-puzzle"></i>
+        <span>Problems</span>
+      </a>
+      <a class="app-nav-link"
+         th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/behavioral') ? ' active' : ''}"
+         th:href="@{/behavioral}">
+        <i class="bi bi-chat-quote"></i>
+        <span>Behavioral</span>
+      </a>
+      <a class="app-nav-link"
+         th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/statistics') ? ' active' : ''}"
+         th:href="@{/statistics}">
+        <i class="bi bi-bar-chart"></i>
+        <span>Statistics</span>
+      </a>
+      <a class="app-nav-link"
+         th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/topics') ? ' active' : ''}"
+         th:href="@{/topics}">
+        <i class="bi bi-folder2-open"></i>
+        <span>Topics</span>
+      </a>
+      <a class="app-nav-link"
+         th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/tags') ? ' active' : ''}"
+         th:href="@{/tags}">
+        <i class="bi bi-tags"></i>
+        <span>Tags</span>
+      </a>
+    </nav>
+  </aside>
+
+  <main class="app-main">
+    <div th:if="${successMessage}" class="alert alert-success alert-floating" role="alert">
+      <i class="bi bi-check-circle me-2"></i>
+      <span th:text="${successMessage}">Success</span>
+    </div>
+
+    <div th:replace="${content}">Content</div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

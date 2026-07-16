@@ -1,0 +1,19 @@
+PROFILE DFHMSD TYPE=MAP,STORAGE=AUTO,LANG=COBOL,TIOAPFX=YES,           X
+               TERM=3270,CTRL=FREEKB,MODE=INOUT                         
+                                                                        
+SCRN1   DFHMDI SIZE=(24,80),LINE=1,COLUMN=1                             
+        DFHMDF POS=(3,1),INITIAL='WELCOME: ',LENGTH=9,ATTRB=(ASKIP)     
+UMAIL   DFHMDF POS=(3,11),LENGTH=50,ATTRB=(ASKIP)                       
+        DFHMDF POS=(4,1),INITIAL='BALANCE: ',LENGTH=9,ATTRB=(ASKIP)     
+BALNC   DFHMDF POS=(4,11),LENGTH=20,ATTRB=(ASKIP)                       
+        DFHMDF POS=(5,30),INITIAL='1. TRANSFER',LENGTH=11,ATTRB=(ASKIP) 
+        DFHMDF POS=(6,30),INITIAL='2. DEPOSIT',LENGTH=10,ATTRB=(ASKIP)  
+        DFHMDF POS=(7,30),INITIAL='3. WITHDRAW',LENGTH=11,ATTRB=(ASKIP) 
+        DFHMDF POS=(8,30),INITIAL='4. BALANCE',LENGTH=10,ATTRB=(ASKIP)  
+        DFHMDF POS=(9,30),INITIAL='5. LOGOFF',LENGTH=9,ATTRB=(ASKIP)    
+        DFHMDF POS=(12,25),INITIAL='OPTION:',LENGTH=7,ATTRB=ASKIP       
+OPT     DFHMDF POS=(12,33),LENGTH=2,ATTRB=(UNPROT,IC,NUM)               
+                                                                        
+MSG     DFHMDF POS=(20,10),LENGTH=40,ATTRB=(PROT)                       
+        DFHMSD TYPE=FINAL                                               
+               END                                                      

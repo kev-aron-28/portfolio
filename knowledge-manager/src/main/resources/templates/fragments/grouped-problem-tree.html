@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="grouped-tree(groups, accordionId, groupType, showColor)"
+     th:with="showColor=${showColor != null ? showColor : false}">
+  <div th:if="${#lists.isEmpty(groups)}" class="text-muted small">No groups to display.</div>
+
+  <div th:if="${!#lists.isEmpty(groups)}" class="grouped-tree-toolbar d-flex justify-content-end gap-2 mb-3">
+    <button type="button" class="btn btn-sm btn-outline-secondary grouped-tree-expand-all"
+            th:attr="data-accordion-id=${accordionId}">
+      Expand all
+    </button>
+    <button type="button" class="btn btn-sm btn-outline-secondary grouped-tree-collapse-all"
+            th:attr="data-accordion-id=${accordionId}">
+      Collapse all
+    </button>
+  </div>
+
+  <div class="accordion grouped-tree" th:id="${accordionId}" th:if="${!#lists.isEmpty(groups)}">
+    <div class="accordion-item grouped-tree-item" th:each="group, stat : ${groups}">
+      <h2 class="accordion-header" th:id="${accordionId + '-heading-' + stat.index}">
+        <button class="accordion-button collapsed grouped-tree-toggle" type="button"
+                data-bs-toggle="collapse"
+                th:attr="data-bs-target='#' + ${accordionId + '-panel-' + stat.index},
+                         aria-controls=${accordionId + '-panel-' + stat.index}"
+                aria-expanded="false">
+          <span class="grouped-tree-heading">
+            <span class="topic-color-dot me-2"
+                  th:if="${showColor and group.color() != null}"
+                  th:style="'background-color:' + ${group.color()}"></span>
+            <span class="tag-pill me-2" th:if="${!showColor}" th:text="${group.name()}">BFS</span>
+            <span class="grouped-tree-name" th:if="${showColor}" th:text="${group.name()}">Arrays</span>
+            <span class="badge rounded-pill text-bg-light grouped-tree-count ms-2"
+                  th:text="${group.problemCount()}">0</span>
+          </span>
+        </button>
+      </h2>
+      <div class="accordion-collapse collapse"
+           th:id="${accordionId + '-panel-' + stat.index}"
+           th:attr="aria-labelledby=${accordionId + '-heading-' + stat.index},
+                    data-bs-parent='#' + ${accordionId}">
+        <div class="accordion-body grouped-tree-body">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <p class="text-muted small mb-0"
+               th:text="${group.problemCount()} + ' problem' + (${group.problemCount()} == 1 ? '' : 's')">
+              0 problems
+            </p>
+            <a class="btn btn-sm btn-outline-primary"
+               th:if="${groupType == 'topic'}"
+               th:href="@{/problems(topicId=${group.id()})}">
+              View in Problems
+            </a>
+            <a class="btn btn-sm btn-outline-primary"
+               th:if="${groupType == 'tag'}"
+               th:href="@{/problems(tagId=${group.id()})}">
+              View in Problems
+            </a>
+          </div>
+
+          <p class="text-muted small mb-0" th:if="${group.problemCount() == 0}">
+            No problems in this group yet.
+          </p>
+
+          <ul class="grouped-tree-problems list-unstyled mb-0" th:if="${group.problemCount() > 0}">
+            <li class="grouped-tree-problem" th:each="problem : ${group.problems()}">
+              <a class="grouped-tree-problem-link" th:href="@{/problems/{id}(id=${problem.id()})}">
+                <span th:text="${problem.title()}">Two Sum</span>
+                <span class="difficulty-badge ms-2"
+                      th:classappend="' difficulty-' + ${#strings.toLowerCase(problem.difficulty().name())}"
+                      th:text="${problem.difficulty()}">EASY</span>
+              </a>
+              <div class="grouped-tree-problem-meta">
+                <span class="topic-color-dot"
+                      th:if="${!showColor}"
+                      th:style="'background-color:' + ${problem.topicColor()}"></span>
+                <span class="text-muted small" th:if="${!showColor}" th:text="${problem.topicName()}">Trees</span>
+                <i class="bi bi-star-fill text-warning ms-1" th:if="${problem.favorite()}"></i>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script th:if="${!#lists.isEmpty(groups)}">
+    (() => {
+      const accordionId = /*[[${accordionId}]]*/ 'groupedTree';
+      const root = document.getElementById(accordionId);
+      if (!root) return;
+
+      const setAll = (expand) => {
+        root.querySelectorAll('.accordion-collapse').forEach((panel) => {
+          const instance = bootstrap.Collapse.getOrCreateInstance(panel, { toggle: false, parent: root });
+          expand ? instance.show() : instance.hide();
+        });
+      };
+
+      document.querySelectorAll(`[data-accordion-id="${accordionId}"].grouped-tree-expand-all`)
+        .forEach((button) => button.addEventListener('click', () => setAll(true)));
+
+      document.querySelectorAll(`[data-accordion-id="${accordionId}"].grouped-tree-collapse-all`)
+        .forEach((button) => button.addEventListener('click', () => setAll(false)));
+    })();
+  </script>
+</div>
+</body>
+</html>

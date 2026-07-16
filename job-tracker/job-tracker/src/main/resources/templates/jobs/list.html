@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+	  th:replace="~{layout :: layout(~{::section})}">
+<section>
+	<div class="metrics-row metrics-row-4 mb-3" th:if="${overview.total() > 0}">
+		<div class="metric-cell">
+			<div class="metric-label">Resultados</div>
+			<div class="metric-value" th:text="${overview.total()}">0</div>
+		</div>
+		<div class="metric-cell">
+			<div class="metric-label">Sin postular</div>
+			<div class="metric-value" th:text="${overview.unapplied()}">0</div>
+		</div>
+		<div class="metric-cell">
+			<div class="metric-label">Grupos</div>
+			<div class="metric-value" th:text="${overview.groups().size()}">0</div>
+		</div>
+		<div class="metric-cell">
+			<div class="metric-label">Agrupado por</div>
+			<div class="metric-value metric-value-sm" th:text="${groupBy.label()}">Plataforma</div>
+		</div>
+	</div>
+
+	<div class="filter-chips mb-3"
+		 th:if="${overview.total() > 0 && !overview.bySource().isEmpty()}">
+		<span class="filter-chips-label">Por plataforma:</span>
+		<a th:each="entry : ${overview.bySource()}"
+		   th:if="${entry.key != 'Sin fuente'}"
+		   class="filter-chip"
+		   th:href="@{/jobs(source=${entry.key}, keyword=${keyword}, location=${location}, companyName=${companyName}, minSalary=${minSalary}, maxSalary=${maxSalary}, workMode=${workMode}, employmentType=${employmentType}, category=${category}, applicationStatus=${applicationStatus}, onlyUnapplied=${onlyUnapplied}, sortBy=${sortBy}, sortDirection=${sortDirection}, groupBy=${groupBy.param()}, view=${viewMode.param()})}">
+			<span th:text="${entry.key}">occ</span>
+			<span class="filter-chip-count" th:text="${entry.value}">0</span>
+		</a>
+	</div>
+
+	<div class="filter-chips mb-3"
+		 th:if="${overview.total() > 0 && overview.byWorkMode().size() > 1}">
+		<span class="filter-chips-label">Por modalidad:</span>
+		<a th:each="entry : ${overview.byWorkMode()}"
+		   class="filter-chip"
+		   th:href="@{/jobs(workMode=${entry.key == 'Remoto' ? 'remote' : (entry.key == 'Híbrido' ? 'hybrid' : (entry.key == 'Presencial' ? 'onsite' : ''))}, keyword=${keyword}, source=${source}, location=${location}, companyName=${companyName}, minSalary=${minSalary}, maxSalary=${maxSalary}, employmentType=${employmentType}, category=${category}, applicationStatus=${applicationStatus}, onlyUnapplied=${onlyUnapplied}, sortBy=${sortBy}, sortDirection=${sortDirection}, groupBy=${groupBy.param()}, view=${viewMode.param()})}">
+			<span th:text="${entry.key}">Remoto</span>
+			<span class="filter-chip-count" th:text="${entry.value}">0</span>
+		</a>
+	</div>
+
+	<div class="active-filters mb-3"
+		 th:if="${keyword != null || companyName != null || source != null || location != null
+			|| category != null || workMode != null || employmentType != null || minSalary != null
+			|| maxSalary != null || applicationStatus != null || onlyUnapplied}">
+		<span class="filter-chips-label">Filtros activos:</span>
+		<span class="active-filter-pill" th:if="${keyword != null}" th:text="'Keyword: ' + ${keyword}"></span>
+		<span class="active-filter-pill" th:if="${companyName != null}" th:text="'Empresa: ' + ${companyName}"></span>
+		<span class="active-filter-pill" th:if="${source != null}" th:text="'Fuente: ' + ${source}"></span>
+		<span class="active-filter-pill" th:if="${location != null}" th:text="'Ubicación: ' + ${location}"></span>
+		<span class="active-filter-pill" th:if="${workMode != null}" th:text="'Modalidad: ' + ${workMode}"></span>
+		<span class="active-filter-pill" th:if="${onlyUnapplied}">Solo sin postular</span>
+		<a th:href="@{/jobs(groupBy=${groupBy.param()}, view=${viewMode.param()})}" class="active-filter-clear">Limpiar</a>
+	</div>
+
+	<div class="filter-panel panel mb-3">
+		<div class="accordion" id="jobFilters">
+			<div class="accordion-item border-0">
+				<h2 class="accordion-header">
+					<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+							data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">
+						<i data-lucide="sliders-horizontal" class="icon-inline me-2" aria-hidden="true"></i>
+						Filtros y ordenamiento
+					</button>
+				</h2>
+				<div id="filterCollapse" class="accordion-collapse collapse"
+					 th:classappend="${keyword != null || companyName != null || source != null || location != null
+						|| category != null || workMode != null || employmentType != null || minSalary != null
+						|| maxSalary != null || applicationStatus != null || onlyUnapplied} ? 'show' : ''">
+					<div class="accordion-body">
+						<form th:action="@{/jobs}" method="get">
+							<input type="hidden" name="view" th:value="${viewMode.param()}">
+							<input type="hidden" name="groupBy" th:value="${groupBy.param()}">
+							<div class="filter-grid">
+								<div>
+									<label class="form-label" for="keyword">Keyword</label>
+									<input class="form-control" id="keyword" name="keyword" type="text"
+										   th:value="${keyword}" placeholder="java, spring...">
+								</div>
+								<div>
+									<label class="form-label" for="companyName">Empresa</label>
+									<input class="form-control" id="companyName" name="companyName" type="text"
+										   th:value="${companyName}">
+								</div>
+								<div>
+									<label class="form-label" for="source">Fuente</label>
+									<select class="form-select" id="source" name="source">
+										<option value="">Todas</option>
+										<option th:each="s : ${sources}"
+												th:value="${s.source()}"
+												th:text="${s.source()}"
+												th:selected="${source == s.source()}">occ</option>
+									</select>
+								</div>
+								<div>
+									<label class="form-label" for="location">Ubicación</label>
+									<input class="form-control" id="location" name="location" type="text"
+										   th:value="${location}">
+								</div>
+								<div>
+									<label class="form-label" for="category">Categoría</label>
+									<input class="form-control" id="category" name="category" type="text"
+										   th:value="${category}" placeholder="software, backend...">
+								</div>
+								<div>
+									<label class="form-label" for="workMode">Modalidad</label>
+									<select class="form-select" id="workMode" name="workMode">
+										<option value="">Cualquiera</option>
+										<option value="remote" th:selected="${workMode == 'remote'}">Remoto</option>
+										<option value="hybrid" th:selected="${workMode == 'hybrid'}">Híbrido</option>
+										<option value="onsite" th:selected="${workMode == 'onsite'}">Presencial</option>
+									</select>
+								</div>
+								<div>
+									<label class="form-label" for="employmentType">Contratación</label>
+									<input class="form-control" id="employmentType" name="employmentType" type="text"
+										   th:value="${employmentType}" placeholder="tiempo completo">
+								</div>
+								<div>
+									<label class="form-label" for="minSalary">Salario mín.</label>
+									<input class="form-control" id="minSalary" name="minSalary" type="number"
+										   step="1000" th:value="${minSalary}">
+								</div>
+								<div>
+									<label class="form-label" for="maxSalary">Salario máx.</label>
+									<input class="form-control" id="maxSalary" name="maxSalary" type="number"
+										   step="1000" th:value="${maxSalary}">
+								</div>
+								<div>
+									<label class="form-label" for="applicationStatus">Estado postulación</label>
+									<select class="form-select" id="applicationStatus" name="applicationStatus">
+										<option value="">Cualquiera</option>
+										<option th:each="st : ${statuses}"
+												th:value="${st}"
+												th:text="${st}"
+												th:selected="${applicationStatus == st}">APPLIED</option>
+									</select>
+								</div>
+								<div>
+									<label class="form-label" for="sortBy">Ordenar por</label>
+									<select class="form-select" id="sortBy" name="sortBy">
+										<option th:each="field : ${sortFields}"
+												th:value="${field.name()}"
+												th:text="${field.name()}"
+												th:selected="${sortBy == field}">CREATED_AT</option>
+									</select>
+								</div>
+								<div>
+									<label class="form-label" for="sortDirection">Dirección</label>
+									<select class="form-select" id="sortDirection" name="sortDirection">
+										<option value="DESC" th:selected="${sortDirection.name() == 'DESC'}">Descendente</option>
+										<option value="ASC" th:selected="${sortDirection.name() == 'ASC'}">Ascendente</option>
+									</select>
+								</div>
+								<div class="d-flex align-items-end">
+									<div class="form-check mb-2">
+										<input class="form-check-input" id="onlyUnapplied" name="onlyUnapplied"
+											   type="checkbox" value="true" th:checked="${onlyUnapplied}">
+										<label class="form-check-label" for="onlyUnapplied">Solo sin postular</label>
+									</div>
+								</div>
+							</div>
+							<div class="d-flex gap-2 mt-3">
+								<button type="submit" class="btn btn-primary btn-sm">Aplicar filtros</button>
+								<a th:href="@{/jobs}" class="btn btn-outline-secondary btn-sm">Limpiar</a>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="jobs-toolbar panel mb-3" th:if="${overview.total() > 0}">
+		<div class="jobs-toolbar-body">
+			<form class="jobs-toolbar-form" th:action="@{/jobs}" method="get">
+				<input type="hidden" name="keyword" th:value="${keyword}">
+				<input type="hidden" name="companyName" th:value="${companyName}">
+				<input type="hidden" name="source" th:value="${source}">
+				<input type="hidden" name="location" th:value="${location}">
+				<input type="hidden" name="category" th:value="${category}">
+				<input type="hidden" name="workMode" th:value="${workMode}">
+				<input type="hidden" name="employmentType" th:value="${employmentType}">
+				<input type="hidden" name="minSalary" th:value="${minSalary}">
+				<input type="hidden" name="maxSalary" th:value="${maxSalary}">
+				<input type="hidden" name="applicationStatus" th:if="${applicationStatus != null}" th:value="${applicationStatus}">
+				<input type="hidden" name="onlyUnapplied" th:if="${onlyUnapplied}" value="true">
+				<input type="hidden" name="sortBy" th:value="${sortBy}">
+				<input type="hidden" name="sortDirection" th:value="${sortDirection}">
+				<input type="hidden" name="view" th:value="${viewMode.param()}">
+
+				<label class="form-label mb-0" for="groupBySelect">Agrupar por</label>
+				<select class="form-select form-select-sm" id="groupBySelect" name="groupBy"
+						onchange="this.form.submit()">
+					<option th:each="field : ${groupFields}"
+							th:value="${field.param()}"
+							th:text="${field.label()}"
+							th:selected="${groupBy == field}">Plataforma</option>
+				</select>
+			</form>
+
+			<div class="jobs-view-toggle btn-group btn-group-sm" role="group" aria-label="Modo de vista">
+				<a class="btn"
+				   th:classappend="${viewMode.name() == 'GROUPED'} ? 'btn-primary' : 'btn-outline-secondary'"
+				   th:href="@{/jobs(keyword=${keyword}, companyName=${companyName}, source=${source}, location=${location}, category=${category}, workMode=${workMode}, employmentType=${employmentType}, minSalary=${minSalary}, maxSalary=${maxSalary}, applicationStatus=${applicationStatus}, onlyUnapplied=${onlyUnapplied}, sortBy=${sortBy}, sortDirection=${sortDirection}, groupBy=${groupBy.param()}, view='grouped')}">
+					<i data-lucide="layout-grid" class="icon-inline" aria-hidden="true"></i>
+					Grupos
+				</a>
+				<a class="btn"
+				   th:classappend="${viewMode.name() == 'TABLE'} ? 'btn-primary' : 'btn-outline-secondary'"
+				   th:href="@{/jobs(keyword=${keyword}, companyName=${companyName}, source=${source}, location=${location}, category=${category}, workMode=${workMode}, employmentType=${employmentType}, minSalary=${minSalary}, maxSalary=${maxSalary}, applicationStatus=${applicationStatus}, onlyUnapplied=${onlyUnapplied}, sortBy=${sortBy}, sortDirection=${sortDirection}, groupBy=${groupBy.param()}, view='table')}">
+					<i data-lucide="table" class="icon-inline" aria-hidden="true"></i>
+					Tabla
+				</a>
+			</div>
+
+			<span class="toolbar-meta"
+				  th:text="${overview.total()} + ' vacante' + (${overview.total()} != 1 ? 's' : '') + ' · ' + ${overview.groups().size()} + ' grupo' + (${overview.groups().size()} != 1 ? 's' : '')">
+				0 vacantes
+			</span>
+			<span class="toolbar-meta" th:if="${groupBy.name() == 'TECHNOLOGY'}">
+				· Una vacante puede aparecer en varios grupos
+			</span>
+		</div>
+	</div>
+
+	<div th:if="${viewMode.name() == 'GROUPED' && overview.total() > 0}" class="job-groups">
+		<div class="job-group panel mb-3" th:each="group, iter : ${overview.groups()}">
+			<button class="job-group-header"
+					type="button"
+					data-bs-toggle="collapse"
+					th:attr="data-bs-target='#job-group-' + ${iter.index}, aria-controls='job-group-' + ${iter.index}"
+					aria-expanded="true">
+				<div class="job-group-title-wrap">
+					<span class="job-group-title" th:text="${group.label()}">linkedin</span>
+					<span class="job-group-subtitle" th:text="${group.count()} + ' vacante' + (${group.count()} != 1 ? 's' : '')">0</span>
+				</div>
+				<div class="job-group-bar-wrap">
+					<div class="job-group-bar"
+						 th:style="${overview.total() > 0}
+							? 'width:' + (${group.count()} * 100 / ${overview.total()}) + '%'
+							: 'width:0%'"></div>
+				</div>
+				<i data-lucide="chevron-down" class="job-group-chevron icon-inline" aria-hidden="true"></i>
+			</button>
+			<div class="collapse show" th:id="'job-group-' + ${iter.index}">
+				<div class="job-group-body">
+					<div class="job-card-grid">
+						<th:block th:each="job : ${group.jobs()}">
+							<article th:replace="~{fragments/components :: jobCard(job=${job})}"></article>
+						</th:block>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="panel" th:if="${viewMode.name() == 'TABLE' && !jobs.isEmpty()}">
+		<div class="panel-body-flush">
+			<div class="table-responsive">
+				<table class="table table-app mb-0">
+					<thead>
+					<tr>
+						<th>Título</th>
+						<th>Empresa</th>
+						<th>Ubicación</th>
+						<th>Modalidad</th>
+						<th>Categoría</th>
+						<th>Salario</th>
+						<th>Fuente</th>
+						<th>Estado</th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr th:each="job : ${jobs}">
+						<td class="cell-truncate">
+							<a th:href="@{/jobs/{id}(id=${job.id()})}" th:text="${job.title()}">Title</a>
+						</td>
+						<td th:text="${job.companyName()}">Company</td>
+						<td class="cell-muted" th:text="${job.location() ?: '—'}">—</td>
+						<td class="cell-muted" th:text="${job.workMode() ?: '—'}">—</td>
+						<td class="cell-muted" th:text="${job.category() ?: '—'}">—</td>
+						<td class="cell-muted">
+							<span th:if="${job.salaryMin() != null && job.salaryMax() != null}"
+								  th:text="${job.salaryMin()} + ' - ' + ${job.salaryMax()}">—</span>
+							<span th:if="${job.salaryMin() != null && job.salaryMax() == null}"
+								  th:text="${job.salaryMin()}">—</span>
+							<span th:if="${job.salaryMin() == null && job.salaryMax() == null}">—</span>
+						</td>
+						<td><span th:replace="~{fragments/components :: sourceBadge(${job.source()})}"></span></td>
+						<td>
+							<span th:if="${job.applicationStatus() != null}"
+								  th:replace="~{fragments/components :: statusBadge(${job.applicationStatus()})}"></span>
+							<span th:if="${job.applicationStatus() == null}"
+								  th:replace="~{fragments/components :: newBadge}"></span>
+						</td>
+					</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div class="panel" th:if="${overview.total() == 0}">
+		<div class="empty-state">
+			<i data-lucide="filter-x" aria-hidden="true"></i>
+			<div>No hay vacantes que coincidan con los filtros.</div>
+			<a th:href="@{/jobs}" class="btn btn-sm btn-outline-secondary mt-2">Limpiar filtros</a>
+		</div>
+	</div>
+</section>
+</html>

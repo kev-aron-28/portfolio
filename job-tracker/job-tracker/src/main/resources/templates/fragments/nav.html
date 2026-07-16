@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav th:fragment="sidebar" class="sidebar-nav" aria-label="Main navigation">
+	<div class="sidebar-section">
+		<span class="sidebar-label">Overview</span>
+		<a th:href="@{/}" class="sidebar-link" th:classappend="${activeNav == 'dashboard'} ? 'active'">
+			<i data-lucide="layout-dashboard" aria-hidden="true"></i>
+			<span>Dashboard</span>
+		</a>
+	</div>
+	<div class="sidebar-section">
+		<span class="sidebar-label">Pipeline</span>
+		<a th:href="@{/jobs}" class="sidebar-link" th:classappend="${activeNav == 'jobs'} ? 'active'">
+			<i data-lucide="briefcase" aria-hidden="true"></i>
+			<span>Vacantes</span>
+		</a>
+		<a th:href="@{/scraping}" class="sidebar-link" th:classappend="${activeNav == 'scraping'} ? 'active'">
+			<i data-lucide="radar" aria-hidden="true"></i>
+			<span>Scraping</span>
+		</a>
+	</div>
+</nav>
+</body>
+</html>

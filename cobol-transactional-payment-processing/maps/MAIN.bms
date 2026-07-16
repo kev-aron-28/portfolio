@@ -1,0 +1,16 @@
+MAIN    DFHMSD TYPE=MAP,STORAGE=AUTO,LANG=COBOL,TIOAPFX=YES,           X
+               TERM=3270,CTRL=FREEKB,MODE=INOUT                         
+                                                                        
+SCRN1   DFHMDI SIZE=(24,80),LINE=1,COLUMN=1                             
+        DFHMDF POS=(3,30),INITIAL='BANK SYSTEM',LENGTH=11,ATTRB=(ASKIP) 
+                                                                        
+        DFHMDF POS=(8,30),INITIAL='1. LOGIN',LENGTH=9,ATTRB=(ASKIP)     
+        DFHMDF POS=(9,30),INITIAL='2. SIGN ON',LENGTH=11,ATTRB=(ASKIP)  
+        DFHMDF POS=(10,30),INITIAL='3. EXIT',LENGTH=8,ATTRB=(ASKIP)     
+                                                                        
+        DFHMDF POS=(13,25),INITIAL='OPTION:',LENGTH=7,ATTRB=ASKIP       
+OPT     DFHMDF POS=(13,35),LENGTH=2,ATTRB=(UNPROT,IC,NUM)               
+                                                                        
+MSG     DFHMDF POS=(20,10),LENGTH=40,ATTRB=(PROT)                       
+        DFHMSD TYPE=FINAL                                               
+               END                                                      

@@ -1,0 +1,5 @@
+- Every website implements JobScraper.
+- Fetching and parsing are separate.
+- Prefer JSON endpoints over HTML.
+- Use Playwright.
+- Parse HTML with Jsoup.

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title" th:text="${pageTitle}">Topic Form</h1>
+      <p class="page-subtitle">Define a category for grouping algorithm problems.</p>
+    </div>
+    <a class="btn btn-outline-secondary" th:href="@{/topics}">
+      <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+  </div>
+
+  <div class="card-surface p-4" style="max-width: 640px;">
+    <form th:action="${formAction}" th:object="${topicForm}" method="post" novalidate>
+      <div class="mb-3">
+        <label for="name" class="form-label">Name</label>
+        <input type="text" id="name" class="form-control"
+               th:classappend="${#fields.hasErrors('name')} ? ' is-invalid'"
+               th:field="*{name}" placeholder="e.g. Dynamic Programming" required>
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+      </div>
+
+      <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <textarea id="description" class="form-control" rows="4"
+                  th:classappend="${#fields.hasErrors('description')} ? ' is-invalid'"
+                  th:field="*{description}"
+                  placeholder="Optional notes about this topic"></textarea>
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+      </div>
+
+      <div class="mb-4">
+        <label for="color" class="form-label">Color</label>
+        <div class="d-flex align-items-center gap-3">
+          <input type="color" id="colorPicker" class="form-control form-control-color"
+                 th:value="*{color}" style="width: 3rem; height: 2.5rem;">
+          <input type="text" id="color" class="form-control"
+                 th:classappend="${#fields.hasErrors('color')} ? ' is-invalid'"
+                 th:field="*{color}" placeholder="#6366f1" maxlength="7">
+        </div>
+        <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('color')}" th:errors="*{color}"></div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Save topic</button>
+        <a class="btn btn-outline-secondary" th:href="@{/topics}">Cancel</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const colorPicker = document.getElementById('colorPicker');
+    const colorInput = document.getElementById('color');
+
+    colorPicker.addEventListener('input', () => {
+      colorInput.value = colorPicker.value;
+    });
+
+    colorInput.addEventListener('input', () => {
+      if (/^#[0-9A-Fa-f]{6}$/.test(colorInput.value)) {
+        colorPicker.value = colorInput.value;
+      }
+    });
+  </script>
+</div>
+</body>
+</html>

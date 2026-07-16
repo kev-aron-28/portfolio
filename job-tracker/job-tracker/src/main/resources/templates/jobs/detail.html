@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+	  th:replace="~{layout :: layout(~{::section})}">
+<section class="job-detail" th:with="job=${detail.job()}, view=${jobView}, app=${detail.application().orElse(null)}">
+	<div class="job-detail-wrap">
+		<nav class="job-detail-nav" aria-label="Navegación de vacante">
+			<a class="job-detail-back" th:href="@{/jobs}">
+				<i data-lucide="arrow-left" aria-hidden="true"></i>
+				Vacantes
+			</a>
+			<a th:href="${job.url()}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary job-detail-cta">
+				<i data-lucide="external-link" aria-hidden="true"></i>
+				Ver publicación
+			</a>
+		</nav>
+
+		<header class="job-detail-head">
+			<div class="job-detail-identity">
+				<div class="job-detail-logo" aria-hidden="true"
+					 th:text="${#strings.toUpperCase(#strings.substring(detail.companyName(), 0, 1))}">A</div>
+				<div class="job-detail-identity-text">
+					<p class="job-detail-eyebrow">
+						<span th:text="${detail.companyName()}">Company</span>
+						<a th:if="${detail.companyWebsite() != null}" th:href="${detail.companyWebsite()}"
+						   target="_blank" rel="noopener noreferrer" class="job-detail-eyebrow-link"
+						   aria-label="Sitio web">
+							<i data-lucide="globe" class="icon-inline" aria-hidden="true"></i>
+						</a>
+					</p>
+					<h1 class="job-detail-title" th:text="${job.title()}">Job title</h1>
+				</div>
+			</div>
+
+			<div class="job-detail-badges">
+				<span th:replace="~{fragments/components :: sourceBadge(source=${job.source()})}"></span>
+				<th:block th:if="${app != null}">
+					<span th:replace="~{fragments/components :: statusBadge(status=${app.status()})}"></span>
+				</th:block>
+				<span th:if="${app == null}" th:replace="~{fragments/components :: newBadge}"></span>
+				<span class="job-detail-pill job-detail-pill--exp" th:if="${view.experienceLevel() != 'No especificado'}"
+					  th:text="${view.experienceLevel()}">Senior</span>
+			</div>
+
+			<ul class="job-detail-stats">
+				<li class="job-detail-stat" th:if="${job.location() != null}">
+					<i data-lucide="map-pin" aria-hidden="true"></i>
+					<span th:text="${job.location()}">CDMX</span>
+				</li>
+				<li class="job-detail-stat" th:if="${view.workModeLabel() != 'Sin modalidad'}">
+					<i data-lucide="laptop" aria-hidden="true"></i>
+					<span th:text="${view.workModeLabel()}">Remoto</span>
+				</li>
+				<li class="job-detail-stat" th:if="${view.employmentTypeLabel() != 'Sin especificar'}">
+					<i data-lucide="briefcase" aria-hidden="true"></i>
+					<span th:text="${view.employmentTypeLabel()}">Tiempo completo</span>
+				</li>
+				<li class="job-detail-stat job-detail-stat--salary" th:if="${view.salaryLabel() != null}">
+					<i data-lucide="wallet" aria-hidden="true"></i>
+					<span th:text="${view.salaryLabel()}">Salario</span>
+				</li>
+				<li class="job-detail-stat" th:if="${job.category() != null}">
+					<i data-lucide="layers" aria-hidden="true"></i>
+					<span>
+						<span th:text="${job.category()}">TI</span>
+						<span th:if="${job.subcategory() != null}" th:text="' · ' + ${job.subcategory()}"></span>
+					</span>
+				</li>
+			</ul>
+
+			<div class="job-detail-techs" th:if="${!view.technologies().isEmpty()}">
+				<span class="job-detail-tech" th:each="tech : ${view.technologies()}" th:text="${tech}">Java</span>
+			</div>
+		</header>
+
+		<div class="job-detail-body">
+			<main class="job-detail-main">
+				<section class="job-detail-block" th:if="${view.hasDescription()}">
+					<h2 class="job-detail-block-title">Descripción</h2>
+					<div class="job-detail-prose" th:text="${job.description()}">Description</div>
+				</section>
+
+				<section class="job-detail-block" th:if="${view.hasRequirements()}">
+					<h2 class="job-detail-block-title">Requisitos</h2>
+					<div class="job-detail-prose" th:text="${job.requirements()}">Requirements</div>
+				</section>
+
+				<section class="job-detail-block" th:if="${view.hasBenefits()}">
+					<h2 class="job-detail-block-title">Beneficios</h2>
+					<div class="job-detail-prose" th:text="${job.benefits()}">Benefits</div>
+				</section>
+
+				<div class="job-detail-card job-detail-empty" th:if="${!view.hasContent()}">
+					<i data-lucide="file-search" aria-hidden="true"></i>
+					<h2 class="job-detail-empty-title">Sin contenido en el sistema</h2>
+					<p>La descripción completa está en la publicación original de la plataforma.</p>
+					<a th:href="${job.url()}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary">
+						Abrir en la fuente
+					</a>
+				</div>
+			</main>
+
+			<aside class="job-detail-aside">
+				<div class="job-detail-card job-detail-card--track">
+					<h2 class="job-detail-card-title">Seguimiento</h2>
+
+					<div th:if="${app != null}" class="job-detail-track-summary">
+						<span th:replace="~{fragments/components :: statusBadge(status=${app.status()})}"></span>
+						<p class="job-detail-track-date" th:if="${app.appliedAt() != null}">
+							Postulado el
+							<span th:text="${#temporals.format(app.appliedAt(), 'dd MMM yyyy', new java.util.Locale('es'))}">—</span>
+						</p>
+						<p class="job-detail-track-notes" th:if="${app.notes() != null && !app.notes().isBlank()}"
+						   th:text="${app.notes()}">Notas</p>
+					</div>
+
+					<form th:action="@{/jobs/{id}/apply(id=${job.id()})}" method="post" class="job-detail-form">
+						<div class="mb-3">
+							<label class="form-label" for="status">Estado</label>
+							<select class="form-select" id="status" name="status" required>
+								<option th:each="st : ${statuses}"
+										th:value="${st}"
+										th:text="${st}"
+										th:selected="${app != null && app.status() == st}">APPLIED</option>
+							</select>
+						</div>
+						<div class="mb-3">
+							<label class="form-label" for="notes">Notas</label>
+							<textarea class="form-control" id="notes" name="notes" rows="4"
+									  placeholder="Contactos, entrevistas, feedback…"
+									  th:text="${app != null ? app.notes() : ''}"></textarea>
+						</div>
+						<button type="submit" class="btn btn-primary w-100"
+								th:text="${app != null} ? 'Guardar cambios' : 'Registrar postulación'">
+							Registrar
+						</button>
+					</form>
+				</div>
+
+				<div class="job-detail-card">
+					<h2 class="job-detail-card-title">Detalles</h2>
+					<dl class="job-detail-facts">
+						<div class="job-detail-fact">
+							<dt>Importado</dt>
+							<dd th:text="${#temporals.format(job.createdAt(), 'dd MMM yyyy, HH:mm', new java.util.Locale('es'))}">—</dd>
+						</div>
+						<div class="job-detail-fact" th:if="${job.postedAt() != null}">
+							<dt>Publicado en fuente</dt>
+							<dd th:text="${#temporals.format(job.postedAt(), 'dd MMM yyyy, HH:mm', new java.util.Locale('es'))}">—</dd>
+						</div>
+						<div class="job-detail-fact">
+							<dt>Plataforma</dt>
+							<dd th:text="${job.source()}">occ</dd>
+						</div>
+						<div class="job-detail-fact" th:if="${job.externalId() != null}">
+							<dt>ID externo</dt>
+							<dd class="job-detail-mono" th:text="${job.externalId()}">—</dd>
+						</div>
+					</dl>
+				</div>
+			</aside>
+		</div>
+	</div>
+</section>
+</html>

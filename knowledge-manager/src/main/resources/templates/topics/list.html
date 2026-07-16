@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Topics</h1>
+      <p class="page-subtitle">Browse problems grouped by study area.</p>
+    </div>
+    <a class="btn btn-primary" th:href="@{/topics/new}">
+      <i class="bi bi-plus-lg me-1"></i>New Topic
+    </a>
+  </div>
+
+  <div th:if="${#lists.isEmpty(topicGroups)}" class="card-surface empty-state">
+    <i class="bi bi-folder2-open fs-2 d-block mb-3"></i>
+    <h2 class="h5 mb-2">No topics yet</h2>
+    <p class="mb-3">Create your first topic to start organizing problems.</p>
+    <a class="btn btn-primary btn-sm" th:href="@{/topics/new}">Create topic</a>
+  </div>
+
+  <section class="card-surface p-4" th:if="${!#lists.isEmpty(topicGroups)}">
+    <div th:replace="~{fragments/grouped-problem-tree :: grouped-tree(${topicGroups}, 'topicTree', 'topic', true)}"></div>
+  </section>
+</div>
+</body>
+</html>

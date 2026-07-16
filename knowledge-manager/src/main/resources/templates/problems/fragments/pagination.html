@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav th:fragment="pagination(problemPage, filter, showArchived)"
+     class="problem-pagination"
+     th:if="${problemPage.totalPages() > 1}"
+     aria-label="Problems pagination">
+  <a class="problem-pagination-btn"
+     th:classappend="${!problemPage.hasPrevious()} ? ' disabled'"
+     th:href="@{/problems(page=${problemPage.page() - 1}, archived=${showArchived}, q=${filter.query()}, topicId=${filter.topicId()}, difficulty=${filter.difficulty()}, tagId=${filter.tagId()}, favorite=${filter.favorite()}, dueStatus=${filter.dueStatus()})}">
+    <i class="bi bi-chevron-left"></i>
+    Previous
+  </a>
+
+  <div class="problem-pagination-pages"
+       th:with="start=${problemPage.page() > 2 ? problemPage.page() - 2 : 0},
+                end=${problemPage.page() + 2 < problemPage.totalPages() - 1 ? problemPage.page() + 2 : problemPage.totalPages() - 1}">
+    <a class="problem-pagination-page"
+       th:each="pageNumber : ${#numbers.sequence(start, end)}"
+       th:classappend="${pageNumber == problemPage.page()} ? ' active'"
+       th:href="@{/problems(page=${pageNumber}, archived=${showArchived}, q=${filter.query()}, topicId=${filter.topicId()}, difficulty=${filter.difficulty()}, tagId=${filter.tagId()}, favorite=${filter.favorite()}, dueStatus=${filter.dueStatus()})}"
+       th:text="${pageNumber + 1}">1</a>
+  </div>
+
+  <a class="problem-pagination-btn"
+     th:classappend="${!problemPage.hasNext()} ? ' disabled'"
+     th:href="@{/problems(page=${problemPage.page() + 1}, archived=${showArchived}, q=${filter.query()}, topicId=${filter.topicId()}, difficulty=${filter.difficulty()}, tagId=${filter.tagId()}, favorite=${filter.favorite()}, dueStatus=${filter.dueStatus()})}">
+    Next
+    <i class="bi bi-chevron-right"></i>
+  </a>
+</nav>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="behavioral-practice-shell">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <div class="text-muted small text-uppercase tracking-wide">Behavioral Practice</div>
+        <h1 class="page-title mt-1 mb-0" style="font-size: 1.25rem;">Question</h1>
+      </div>
+      <a class="btn btn-outline-secondary btn-sm" th:href="@{/behavioral}">Exit</a>
+    </div>
+
+    <section class="card-surface p-4 mb-4">
+      <p class="behavioral-prompt mb-0" th:text="${question.question()}">
+        Tell me about a time you failed.
+      </p>
+    </section>
+
+    <div id="activePhase" class="text-center mb-4">
+      <div class="behavioral-timer" id="practiceTimerDisplay">00:00:00</div>
+      <p class="text-muted small mt-2 mb-3">Answer aloud. Nothing is recorded.</p>
+      <button type="button" class="btn btn-primary" id="finishAnswerBtn">Finish Answer</button>
+    </div>
+
+    <div id="reviewPhase" hidden>
+      <section class="card-surface p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="section-title mb-0">Your stored answer</div>
+          <span class="text-muted small">Time: <span id="finalTimeLabel">00:00:00</span></span>
+        </div>
+
+        <div class="star-block mb-3">
+          <div class="section-title">Situation</div>
+          <p class="mb-0 review-scroll-pane review-scroll-pane-sm"
+             th:text="${question.answerSituation() != null} ? ${question.answerSituation()} : 'No situation saved yet.'">…</p>
+        </div>
+        <div class="star-block mb-3">
+          <div class="section-title">Task</div>
+          <p class="mb-0 review-scroll-pane review-scroll-pane-sm"
+             th:text="${question.answerTask() != null} ? ${question.answerTask()} : 'No task saved yet.'">…</p>
+        </div>
+        <div class="star-block mb-3">
+          <div class="section-title">Action</div>
+          <p class="mb-0 review-scroll-pane"
+             th:text="${question.answerAction() != null} ? ${question.answerAction()} : 'No action saved yet.'">…</p>
+        </div>
+        <div class="star-block">
+          <div class="section-title">Result</div>
+          <p class="mb-0 review-scroll-pane review-scroll-pane-sm"
+             th:text="${question.answerResult() != null} ? ${question.answerResult()} : 'No result saved yet.'">…</p>
+        </div>
+      </section>
+
+      <section class="card-surface p-4">
+        <div class="section-title">How well did you remember your answer?</div>
+        <form th:action="@{/behavioral/{id}/practices(id=${question.id()})}"
+              th:object="${practiceForm}"
+              method="post"
+              id="practiceForm"
+              novalidate>
+          <input type="hidden" th:field="*{practiceDate}">
+          <input type="hidden" th:field="*{durationSeconds}" id="durationSeconds">
+
+          <div class="behavioral-rating-grid mb-3">
+            <label class="behavioral-rating-option" th:each="option : ${ratings}">
+              <input type="radio" th:field="*{rating}" th:value="${option.quality}" required>
+              <span th:text="${option.label}">Good</span>
+            </label>
+          </div>
+          <div class="invalid-feedback d-block mb-3"
+               th:if="${#fields.hasErrors('rating')}"
+               th:errors="*{rating}"></div>
+
+          <button type="submit" class="btn btn-primary">Save practice</button>
+        </form>
+      </section>
+    </div>
+  </div>
+
+  <script th:inline="javascript">
+    const timerDisplay = document.getElementById('practiceTimerDisplay');
+    const finalTimeLabel = document.getElementById('finalTimeLabel');
+    const durationInput = document.getElementById('durationSeconds');
+    const activePhase = document.getElementById('activePhase');
+    const reviewPhase = document.getElementById('reviewPhase');
+    const finishBtn = document.getElementById('finishAnswerBtn');
+    const questionId = /*[[${question.id()}]]*/ 0;
+    const storageKey = 'behavioral-timer-' + questionId;
+    const hadErrors = /*[[${answerRevealed}]]*/ false;
+
+    let startedAt = Number(sessionStorage.getItem(storageKey));
+    if (!Number.isFinite(startedAt) || startedAt <= 0) {
+      startedAt = Date.now();
+      sessionStorage.setItem(storageKey, String(startedAt));
+    }
+
+    let stoppedAt = null;
+    let tickId = null;
+
+    function formatElapsed(ms) {
+      const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      return String(hours).padStart(2, '0') + ':'
+          + String(minutes).padStart(2, '0') + ':'
+          + String(seconds).padStart(2, '0');
+    }
+
+    function elapsedSeconds() {
+      const end = stoppedAt == null ? Date.now() : stoppedAt;
+      return Math.max(0, Math.floor((end - startedAt) / 1000));
+    }
+
+    function syncTimer() {
+      const label = formatElapsed((stoppedAt == null ? Date.now() : stoppedAt) - startedAt);
+      timerDisplay.textContent = label;
+      finalTimeLabel.textContent = label;
+      durationInput.value = String(elapsedSeconds());
+    }
+
+    function finishAnswer() {
+      stoppedAt = Date.now();
+      if (tickId) {
+        clearInterval(tickId);
+        tickId = null;
+      }
+      syncTimer();
+      activePhase.hidden = true;
+      reviewPhase.hidden = false;
+    }
+
+    finishBtn.addEventListener('click', finishAnswer);
+
+    document.getElementById('practiceForm').addEventListener('submit', () => {
+      if (stoppedAt == null) {
+        stoppedAt = Date.now();
+      }
+      syncTimer();
+      sessionStorage.removeItem(storageKey);
+    });
+
+    if (hadErrors) {
+      finishAnswer();
+    } else {
+      syncTimer();
+      tickId = setInterval(syncTimer, 250);
+    }
+  </script>
+</div>
+</body>
+</html>

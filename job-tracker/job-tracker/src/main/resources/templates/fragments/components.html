@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="alerts" class="mb-3">
+	<div th:if="${successMessage}" class="alert alert-success alert-compact d-flex align-items-start gap-2" role="alert">
+		<i data-lucide="check-circle" class="alert-icon" aria-hidden="true"></i>
+		<span th:text="${successMessage}">OK</span>
+	</div>
+	<div th:if="${errorMessage}" class="alert alert-danger alert-compact d-flex align-items-start gap-2" role="alert">
+		<i data-lucide="alert-circle" class="alert-icon" aria-hidden="true"></i>
+		<span th:text="${errorMessage}">Error</span>
+	</div>
+</div>
+
+<span th:fragment="statusBadge(status)"
+	  th:if="${status != null}"
+	  th:class="'badge status-badge status-' + ${#strings.toLowerCase(status.name())}"
+	  th:text="${status}">APPLIED</span>
+
+<span th:fragment="newBadge" class="badge status-badge status-new">New</span>
+
+<span th:fragment="sourceBadge(source)" class="badge source-badge" th:text="${source}">occ</span>
+
+<article th:fragment="jobCard(job)" class="job-card">
+	<div class="job-card-header">
+		<a class="job-card-title" th:href="@{/jobs/{id}(id=${job.id()})}" th:text="${job.title()}">Title</a>
+		<div class="job-card-badges">
+			<span th:replace="~{fragments/components :: sourceBadge(source=${job.source()})}"></span>
+			<span th:if="${job.applicationStatus() != null}"
+				  th:replace="~{fragments/components :: statusBadge(status=${job.applicationStatus()})}"></span>
+			<span th:if="${job.applicationStatus() == null}"
+				  th:replace="~{fragments/components :: newBadge}"></span>
+		</div>
+	</div>
+	<div class="job-card-meta">
+		<span class="job-card-meta-item" th:if="${job.companyName() != null}">
+			<i data-lucide="building-2" class="icon-inline" aria-hidden="true"></i>
+			<span th:text="${job.companyName()}">Company</span>
+		</span>
+		<span class="job-card-meta-item" th:if="${job.location() != null}">
+			<i data-lucide="map-pin" class="icon-inline" aria-hidden="true"></i>
+			<span th:text="${job.location()}">Location</span>
+		</span>
+		<span class="job-card-meta-item" th:if="${job.workMode() != null}">
+			<i data-lucide="laptop" class="icon-inline" aria-hidden="true"></i>
+			<span th:text="${job.workMode()}">remote</span>
+		</span>
+		<span class="job-card-meta-item" th:if="${job.category() != null}">
+			<i data-lucide="tag" class="icon-inline" aria-hidden="true"></i>
+			<span th:text="${job.category()}">Category</span>
+		</span>
+	</div>
+	<div class="job-card-footer">
+		<span class="job-card-salary cell-muted"
+			  th:if="${job.salaryMin() != null && job.salaryMax() != null}"
+			  th:text="${job.salaryMin()} + ' - ' + ${job.salaryMax()}">—</span>
+		<span class="job-card-salary cell-muted"
+			  th:if="${job.salaryMin() != null && job.salaryMax() == null}"
+			  th:text="${job.salaryMin()}">—</span>
+		<a class="job-card-link" th:href="@{/jobs/{id}(id=${job.id()})}">Ver detalle</a>
+		<a class="job-card-link" th:if="${job.url() != null}" th:href="${job.url()}" target="_blank" rel="noopener noreferrer">Original</a>
+	</div>
+</article>
+
+</body>
+</html>

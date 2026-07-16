@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+	  th:replace="~{layout :: layout(~{::section})}">
+<section>
+	<h2 class="dashboard-section-title">Tu actividad</h2>
+	<div class="metrics-row mb-3">
+		<div class="metric-cell">
+			<div class="metric-label">Total vacantes</div>
+			<div class="metric-value" th:text="${metrics.totalJobs()}">0</div>
+		</div>
+		<div class="metric-cell">
+			<div class="metric-label">Postulaciones</div>
+			<div class="metric-value" th:text="${metrics.totalApplications()}">0</div>
+		</div>
+		<div class="metric-cell">
+			<div class="metric-label">Vacantes (7 días)</div>
+			<div class="metric-value" th:text="${metrics.jobsLast7Days()}">0</div>
+		</div>
+		<div class="metric-cell">
+			<div class="metric-label">Postulaciones (7 días)</div>
+			<div class="metric-value" th:text="${metrics.applicationsLast7Days()}">0</div>
+		</div>
+	</div>
+
+	<div class="panel-grid-2 mb-3">
+		<div>
+			<div class="panel h-100">
+				<div class="panel-header">
+					<h2>Vacantes por fuente</h2>
+				</div>
+				<div class="panel-body" th:if="${!metrics.jobsBySource().isEmpty()}">
+					<table class="dist-table">
+						<tbody>
+						<tr th:each="entry : ${metrics.jobsBySource()}">
+							<td th:text="${entry.key}">occ</td>
+							<td>
+								<div class="dist-bar">
+									<div class="dist-bar-fill"
+										 th:style="${metrics.totalJobs() > 0}
+											? 'width:' + (${entry.value} * 100 / ${metrics.totalJobs()}) + '%'
+											: 'width:0%'"></div>
+								</div>
+							</td>
+							<td th:text="${entry.value}">0</td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+				<div class="empty-state" th:if="${metrics.jobsBySource().isEmpty()}">
+					<i data-lucide="inbox" aria-hidden="true"></i>
+					<div>Sin vacantes importadas.</div>
+				</div>
+			</div>
+		</div>
+		<div>
+			<div class="panel h-100">
+				<div class="panel-header">
+					<h2>Postulaciones por estado</h2>
+				</div>
+				<div class="panel-body" th:if="${!metrics.applicationsByStatus().isEmpty()}">
+					<table class="dist-table">
+						<tbody>
+						<tr th:each="entry : ${metrics.applicationsByStatus()}">
+							<td th:text="${entry.key}">APPLIED</td>
+							<td>
+								<div class="dist-bar">
+									<div class="dist-bar-fill"
+										 th:style="${metrics.totalApplications() > 0}
+											? 'width:' + (${entry.value} * 100 / ${metrics.totalApplications()}) + '%'
+											: 'width:0%'"></div>
+								</div>
+							</td>
+							<td th:text="${entry.value}">0</td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+				<div class="empty-state" th:if="${metrics.applicationsByStatus().isEmpty()}">
+					<i data-lucide="clipboard-list" aria-hidden="true"></i>
+					<div>Sin postulaciones registradas.</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<th:block th:with="market=${metrics.market()}, salary=${metrics.market().salary()}">
+		<h2 class="dashboard-section-title">Panorama del mercado</h2>
+		<p class="dashboard-section-desc" th:if="${metrics.totalJobs() > 0}">
+			Basado en <span th:text="${metrics.totalJobs()}">0</span> vacantes importadas de
+			<span th:text="${market.distinctCompanies()}">0</span> empresas.
+		</p>
+
+		<div class="metrics-row metrics-row-4 mb-3" th:if="${metrics.totalJobs() > 0}">
+			<div class="metric-cell">
+				<div class="metric-label">Salario mediano</div>
+				<div class="metric-value metric-value-sm"
+					 th:if="${salary.medianMidpoint() != null}"
+					 th:text="${#numbers.formatDecimal(salary.medianMidpoint(), 0, 'COMMA', 0, 'POINT')} + ' MXN'">—</div>
+				<div class="metric-value metric-value-sm text-muted" th:if="${salary.medianMidpoint() == null}">—</div>
+				<div class="metric-hint" th:if="${salary.medianMidpoint() != null}">mensual estimado</div>
+			</div>
+			<div class="metric-cell">
+				<div class="metric-label">Salario promedio</div>
+				<div class="metric-value metric-value-sm"
+					 th:if="${salary.averageMidpoint() != null}"
+					 th:text="${#numbers.formatDecimal(salary.averageMidpoint(), 0, 'COMMA', 0, 'POINT')} + ' MXN'">—</div>
+				<div class="metric-value metric-value-sm text-muted" th:if="${salary.averageMidpoint() == null}">—</div>
+				<div class="metric-hint" th:if="${salary.averageMidpoint() != null}">mensual estimado</div>
+			</div>
+			<div class="metric-cell">
+				<div class="metric-label">Rango salarial</div>
+				<div class="metric-value metric-value-sm"
+					 th:if="${salary.minSalary() != null && salary.maxSalary() != null}"
+					 th:text="${#numbers.formatDecimal(salary.minSalary(), 0, 'COMMA', 0, 'POINT')} + ' – ' + ${#numbers.formatDecimal(salary.maxSalary(), 0, 'COMMA', 0, 'POINT')}">—</div>
+				<div class="metric-value metric-value-sm text-muted"
+					 th:if="${salary.minSalary() == null || salary.maxSalary() == null}">—</div>
+			</div>
+			<div class="metric-cell">
+				<div class="metric-label">Con sueldo publicado</div>
+				<div class="metric-value metric-value-sm"
+					 th:if="${metrics.totalJobs() > 0}"
+					 th:text="${salary.jobsWithSalary()} + ' (' + ${#numbers.formatDecimal(salary.jobsWithSalary() * 100.0 / metrics.totalJobs(), 0, 'COMMA', 0, 'POINT')} + '%)'">0</div>
+			</div>
+		</div>
+
+		<div class="panel mb-3" th:if="${!salary.averageByWorkMode().isEmpty()}">
+			<div class="panel-header">
+				<h2>Salario promedio por modalidad</h2>
+			</div>
+			<div class="panel-body">
+				<table class="dist-table dist-table-wide">
+					<tbody>
+					<tr th:each="entry : ${salary.averageByWorkMode()}">
+						<td th:text="${entry.key}">Remoto</td>
+						<td class="text-end salary-cell"
+							th:text="${#numbers.formatDecimal(entry.value, 0, 'COMMA', 0, 'POINT')} + ' MXN'">0</td>
+					</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<div class="panel-grid-2 mb-3" th:if="${metrics.totalJobs() > 0}">
+			<div>
+				<div class="panel h-100">
+					<div class="panel-header">
+						<h2>Modalidad de trabajo</h2>
+					</div>
+					<div class="panel-body" th:if="${!market.jobsByWorkMode().isEmpty()}">
+						<table class="dist-table">
+							<tbody>
+							<tr th:each="entry : ${market.jobsByWorkMode()}">
+								<td th:text="${entry.key}">Remoto</td>
+								<td>
+									<div class="dist-bar">
+										<div class="dist-bar-fill dist-bar-fill-muted"
+											 th:style="${metrics.totalJobs() > 0}
+												? 'width:' + (${entry.value} * 100 / ${metrics.totalJobs()}) + '%'
+												: 'width:0%'"></div>
+									</div>
+								</td>
+								<td th:text="${entry.value}">0</td>
+							</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="empty-state" th:if="${market.jobsByWorkMode().isEmpty()}">
+						<div>Sin datos de modalidad.</div>
+					</div>
+				</div>
+			</div>
+			<div>
+				<div class="panel h-100">
+					<div class="panel-header">
+						<h2>Categorías</h2>
+					</div>
+					<div class="panel-body" th:if="${!market.jobsByCategory().isEmpty()}">
+						<table class="dist-table">
+							<tbody>
+							<tr th:each="entry : ${market.jobsByCategory()}">
+								<td th:text="${entry.key}">TI</td>
+								<td>
+									<div class="dist-bar">
+										<div class="dist-bar-fill dist-bar-fill-muted"
+											 th:style="${metrics.totalJobs() > 0}
+												? 'width:' + (${entry.value} * 100 / ${metrics.totalJobs()}) + '%'
+												: 'width:0%'"></div>
+									</div>
+								</td>
+								<td th:text="${entry.value}">0</td>
+							</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="empty-state" th:if="${market.jobsByCategory().isEmpty()}">
+						<div>Sin categorías registradas.</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel-grid-2 mb-3" th:if="${metrics.totalJobs() > 0}">
+			<div>
+				<div class="panel h-100">
+					<div class="panel-header">
+						<h2>Empresas que más publican</h2>
+					</div>
+					<div class="panel-body" th:if="${!market.topCompanies().isEmpty()}">
+						<table class="dist-table">
+							<tbody>
+							<tr th:each="item : ${market.topCompanies()}">
+								<td th:text="${item.label()}">Acme</td>
+								<td>
+									<div class="dist-bar">
+										<div class="dist-bar-fill dist-bar-fill-accent"
+											 th:style="${metrics.totalJobs() > 0}
+												? 'width:' + (${item.count()} * 100 / ${metrics.totalJobs()}) + '%'
+												: 'width:0%'"></div>
+									</div>
+								</td>
+								<td th:text="${item.count()}">0</td>
+							</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="empty-state" th:if="${market.topCompanies().isEmpty()}">
+						<div>Sin empresas registradas.</div>
+					</div>
+				</div>
+			</div>
+			<div>
+				<div class="panel h-100">
+					<div class="panel-header">
+						<h2>Tecnologías más demandadas</h2>
+					</div>
+					<div class="panel-body" th:if="${!market.topTechnologies().isEmpty()}">
+						<table class="dist-table">
+							<tbody>
+							<tr th:each="item : ${market.topTechnologies()}">
+								<td th:text="${item.label()}">Java</td>
+								<td>
+									<div class="dist-bar">
+										<div class="dist-bar-fill dist-bar-fill-tech"
+											 th:style="${metrics.totalJobs() > 0}
+												? 'width:' + (${item.count()} * 100 / ${metrics.totalJobs()}) + '%'
+												: 'width:0%'"></div>
+									</div>
+								</td>
+								<td th:text="${item.count()}">0</td>
+							</tr>
+							</tbody>
+						</table>
+						<p class="panel-footnote">Detectadas en título, requisitos y descripción.</p>
+					</div>
+					<div class="empty-state" th:if="${market.topTechnologies().isEmpty()}">
+						<div>Sin tecnologías detectadas en las vacantes.</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel-grid-2 mb-3" th:if="${metrics.totalJobs() > 0}">
+			<div>
+				<div class="panel h-100">
+					<div class="panel-header">
+						<h2>Experiencia requerida</h2>
+					</div>
+					<div class="panel-body" th:if="${!market.jobsByExperienceLevel().isEmpty()}">
+						<table class="dist-table">
+							<tbody>
+							<tr th:each="entry : ${market.jobsByExperienceLevel()}">
+								<td th:text="${entry.key}">Senior</td>
+								<td>
+									<div class="dist-bar">
+										<div class="dist-bar-fill dist-bar-fill-muted"
+											 th:style="${metrics.totalJobs() > 0}
+												? 'width:' + (${entry.value} * 100 / ${metrics.totalJobs()}) + '%'
+												: 'width:0%'"></div>
+									</div>
+								</td>
+								<td th:text="${entry.value}">0</td>
+							</tr>
+							</tbody>
+						</table>
+						<p class="panel-footnote">Inferida del texto de la vacante.</p>
+					</div>
+				</div>
+			</div>
+			<div>
+				<div class="panel h-100">
+					<div class="panel-header">
+						<h2>Ubicaciones principales</h2>
+					</div>
+					<div class="panel-body" th:if="${!market.topLocations().isEmpty()}">
+						<table class="dist-table">
+							<tbody>
+							<tr th:each="item : ${market.topLocations()}">
+								<td th:text="${item.label()}">CDMX</td>
+								<td>
+									<div class="dist-bar">
+										<div class="dist-bar-fill dist-bar-fill-muted"
+											 th:style="${metrics.totalJobs() > 0}
+												? 'width:' + (${item.count()} * 100 / ${metrics.totalJobs()}) + '%'
+												: 'width:0%'"></div>
+									</div>
+								</td>
+								<td th:text="${item.count()}">0</td>
+							</tr>
+							</tbody>
+						</table>
+					</div>
+					<div class="empty-state" th:if="${market.topLocations().isEmpty()}">
+						<div>Sin ubicaciones registradas.</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel mb-3" th:if="${!market.jobsByEmploymentType().isEmpty()}">
+			<div class="panel-header">
+				<h2>Tipo de empleo</h2>
+			</div>
+			<div class="panel-body">
+				<div class="filter-chips">
+					<span class="filter-chip" th:each="entry : ${market.jobsByEmploymentType()}">
+						<span th:text="${entry.key}">Tiempo completo</span>
+						<span class="filter-chip-count" th:text="${entry.value}">0</span>
+					</span>
+				</div>
+			</div>
+		</div>
+	</th:block>
+
+	<div class="panel">
+		<div class="panel-header">
+			<h2>Vacantes recientes</h2>
+			<a th:href="@{/jobs}" class="btn btn-sm btn-outline-secondary">Ver todas</a>
+		</div>
+		<div class="panel-body-flush" th:if="${!recentJobs.isEmpty()}">
+			<div class="table-responsive">
+				<table class="table table-app mb-0">
+					<thead>
+					<tr>
+						<th>Título</th>
+						<th>Empresa</th>
+						<th>Fuente</th>
+						<th>Estado</th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr th:each="job : ${recentJobs}">
+						<td class="cell-truncate">
+							<a th:href="@{/jobs/{id}(id=${job.id()})}" th:text="${job.title()}">Title</a>
+						</td>
+						<td th:text="${job.companyName()}">Company</td>
+						<td><span th:replace="~{fragments/components :: sourceBadge(${job.source()})}"></span></td>
+						<td>
+							<span th:if="${job.applicationStatus() != null}"
+								  th:replace="~{fragments/components :: statusBadge(${job.applicationStatus()})}"></span>
+							<span th:if="${job.applicationStatus() == null}"
+								  th:replace="~{fragments/components :: newBadge}"></span>
+						</td>
+					</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="empty-state" th:if="${recentJobs.isEmpty()}">
+			<i data-lucide="search" aria-hidden="true"></i>
+			<div>No hay vacantes. Ejecuta un scrape para comenzar.</div>
+			<a th:href="@{/scraping}" class="btn btn-sm btn-primary mt-2">Ir a Scraping</a>
+		</div>
+	</div>
+</section>
+</html>

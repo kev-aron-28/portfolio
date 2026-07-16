@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle">Your study queue and learning progress at a glance.</p>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-4 col-xl-2">
+      <div class="card-surface stat-card">
+        <div class="stat-value" th:text="${dashboard.stats().dueTodayCount()}">0</div>
+        <div class="stat-label">Due today</div>
+      </div>
+    </div>
+    <div class="col-md-4 col-xl-2">
+      <div class="card-surface stat-card">
+        <div class="stat-value" th:text="${dashboard.stats().activeProblems()}">0</div>
+        <div class="stat-label">Active problems</div>
+      </div>
+    </div>
+    <div class="col-md-4 col-xl-2">
+      <div class="card-surface stat-card">
+        <div class="stat-value" th:text="${dashboard.stats().totalReviews()}">0</div>
+        <div class="stat-label">Total reviews</div>
+      </div>
+    </div>
+    <div class="col-md-4 col-xl-2">
+      <div class="card-surface stat-card">
+        <div class="stat-value" th:text="${dashboard.stats().reviewsThisWeek()}">0</div>
+        <div class="stat-label">This week</div>
+      </div>
+    </div>
+    <div class="col-md-4 col-xl-2">
+      <div class="card-surface stat-card">
+        <div class="stat-value" th:text="${dashboard.stats().averageRating()}">0</div>
+        <div class="stat-label">Avg rating</div>
+      </div>
+    </div>
+    <div class="col-md-4 col-xl-2">
+      <div class="card-surface stat-card">
+        <div class="stat-value" th:text="${dashboard.stats().neverReviewedCount()}">0</div>
+        <div class="stat-label">New queue</div>
+      </div>
+    </div>
+    <div class="col-md-4 col-xl-2">
+      <div class="card-surface stat-card">
+        <div class="stat-value" th:text="${dashboard.stats().upcomingCount()}">0</div>
+        <div class="stat-label">Upcoming</div>
+      </div>
+    </div>
+    <div class="col-md-4 col-xl-2">
+      <div class="card-surface stat-card">
+        <div class="stat-value" th:text="${dashboard.stats().totalProblems()}">0</div>
+        <div class="stat-label">All problems</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <section class="card-surface p-4 mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h2 class="h5 mb-0">Due today</h2>
+          <span class="badge rounded-pill text-bg-light border"
+                th:text="${#lists.size(dashboard.dueToday())} + ' of ' + ${dashboard.dueTodayLimit()}">0 of 10</span>
+        </div>
+
+        <p class="text-muted small mb-3" th:if="${dashboard.dueTodayBacklog() > 0}">
+          Daily cap:
+          <span th:text="${dashboard.dueTodayLimit()}">10</span>
+          problems. Oldest due first —
+          <span th:text="${dashboard.dueTodayBacklog()}">0</span>
+          remain deferred until later days.
+        </p>
+
+        <div th:if="${#lists.isEmpty(dashboard.dueToday())}" class="text-muted py-3">
+          Nothing due today. Great work.
+        </div>
+
+        <div class="problem-row" th:each="item : ${dashboard.dueToday()}">
+          <div class="d-flex align-items-center justify-content-between gap-3">
+            <div>
+              <a class="problem-link" th:href="@{/problems/{id}(id=${item.problemId()})}" th:text="${item.title()}">Problem</a>
+              <div class="d-flex align-items-center gap-2 mt-1 flex-wrap">
+                <span class="topic-color-dot" th:style="'background-color:' + ${item.topicColor()}"></span>
+                <span class="text-muted small" th:text="${item.topicName()}">Topic</span>
+                <span class="badge rounded-pill due-badge-overdue" th:if="${item.overdue()}">Overdue</span>
+                <span class="badge rounded-pill due-badge-today"
+                      th:if="${!item.overdue() and !item.firstReview()}">Due today</span>
+                <span class="badge rounded-pill text-bg-info"
+                      th:if="${item.firstReview() and !item.overdue()}">First review</span>
+              </div>
+            </div>
+            <a class="btn btn-sm btn-primary"
+               th:href="@{/problems/{id}/reviews/session(id=${item.problemId()})}">Review</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="card-surface p-4 mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h2 class="h5 mb-0">Upcoming</h2>
+          <span class="text-muted small"
+                th:text="'Next ' + ${dashboard.stats().upcomingCount() > 0 ? '7 days' : 'week'}">Next 7 days</span>
+        </div>
+
+        <p class="text-muted small mb-3">Reviewed problems scheduled again soon.</p>
+
+        <p class="text-muted small" th:if="${dashboard.upcomingTotal() > #lists.size(dashboard.upcoming())}">
+          Showing <span th:text="${#lists.size(dashboard.upcoming())}">20</span> of
+          <span th:text="${dashboard.upcomingTotal()}">0</span>.
+          <a th:href="@{/problems(dueStatus=${T(com.projects.knowledge_manager.problem.model.DueStatus).UPCOMING})}">View all</a>
+        </p>
+
+        <div th:if="${#lists.isEmpty(dashboard.upcoming())}" class="text-muted py-3">
+          No follow-up reviews in the next week.
+        </div>
+
+        <div class="problem-row" th:each="item : ${dashboard.upcoming()}">
+          <div class="d-flex align-items-center justify-content-between gap-3">
+            <div>
+              <a class="problem-link" th:href="@{/problems/{id}(id=${item.problemId()})}" th:text="${item.title()}">Problem</a>
+              <div class="text-muted small mt-1">
+                <span th:text="${item.topicName()}">Topic</span>
+                ·
+                <span th:text="${#temporals.format(item.nextReviewDate(), 'MMM d')}">Date</span>
+              </div>
+            </div>
+            <span class="rating-badge" th:if="${item.lastRating() != null}" th:text="${item.lastRating()}">3</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="card-surface p-4 mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h2 class="h5 mb-0">New problem queue</h2>
+          <span class="badge rounded-pill text-bg-light border"
+                th:text="${dashboard.newQueueTotal()} + ' soon'">0 soon</span>
+        </div>
+
+        <p class="text-muted small mb-3">
+          First reviews for newly registered problems are spread over
+          <span th:text="${newProblemSpreadDays}">30</span> days.
+        </p>
+
+        <p class="text-muted small" th:if="${dashboard.stats().neverReviewedCount() > dashboard.newQueueTotal()}">
+          <span th:text="${dashboard.stats().neverReviewedCount()}">0</span> problems waiting for a first review.
+          <a th:href="@{/problems(dueStatus=${T(com.projects.knowledge_manager.problem.model.DueStatus).NEVER_REVIEWED})}">View all new</a>
+        </p>
+
+        <div th:if="${#lists.isEmpty(dashboard.newQueue())}" class="text-muted py-3">
+          No first reviews scheduled in the next week.
+        </div>
+
+        <div class="problem-row" th:each="item : ${dashboard.newQueue()}">
+          <div class="d-flex align-items-center justify-content-between gap-3">
+            <div>
+              <a class="problem-link" th:href="@{/problems/{id}(id=${item.problemId()})}" th:text="${item.title()}">Problem</a>
+              <div class="text-muted small mt-1">
+                <span th:text="${item.topicName()}">Topic</span>
+                · First review
+                <span th:text="${#temporals.format(item.nextReviewDate(), 'MMM d')}">Date</span>
+              </div>
+            </div>
+            <a class="btn btn-sm btn-outline-primary"
+               th:href="@{/problems/{id}/reviews/session(id=${item.problemId()})}">Start</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="card-surface p-4">
+        <h2 class="h5 mb-3">Activity</h2>
+        <div class="heatmap-github">
+          <div class="heatmap-column" th:each="week : ${dashboard.heatmap().weeks()}">
+            <div th:each="cell : ${week}"
+                 class="heatmap-cell"
+                 th:classappend="${cell.isEmpty()} ? ' heatmap-cell-empty' : ' level-' + ${cell.level()}"
+                 th:attr="title=${!cell.isEmpty()} ? ${#temporals.format(cell.date(), 'MMM d, yyyy') + ': ' + cell.count() + ' reviews'} : null">
+            </div>
+          </div>
+        </div>
+        <div class="d-flex justify-content-between mt-2">
+          <span class="text-muted small">Less</span>
+          <div class="d-flex gap-1">
+            <span class="heatmap-cell heatmap-cell-empty" style="width:12px;height:12px;"></span>
+            <span class="heatmap-cell level-1" style="width:12px;height:12px;"></span>
+            <span class="heatmap-cell level-2" style="width:12px;height:12px;"></span>
+            <span class="heatmap-cell level-3" style="width:12px;height:12px;"></span>
+            <span class="heatmap-cell level-4" style="width:12px;height:12px;"></span>
+          </div>
+          <span class="text-muted small">More</span>
+        </div>
+      </section>
+    </div>
+
+    <div class="col-lg-5">
+      <section class="card-surface p-4 mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h2 class="h5 mb-0">Behavioral Questions</h2>
+          <a class="btn btn-sm btn-outline-primary" th:href="@{/behavioral/practice}">Start Practice</a>
+        </div>
+        <div class="row g-3">
+          <div class="col-6">
+            <div class="stat-label">Total Questions</div>
+            <div class="stat-value" style="font-size:1.25rem;"
+                 th:text="${dashboard.behavioralStats().totalQuestions()}">0</div>
+          </div>
+          <div class="col-6">
+            <div class="stat-label">Due Today</div>
+            <div class="stat-value" style="font-size:1.25rem;"
+                 th:text="${dashboard.behavioralStats().dueTodayCount()}">0</div>
+          </div>
+          <div class="col-6">
+            <div class="stat-label">Practice Sessions</div>
+            <div class="stat-value" style="font-size:1.25rem;"
+                 th:text="${dashboard.behavioralStats().totalPractices()}">0</div>
+          </div>
+          <div class="col-6">
+            <div class="stat-label">Avg Duration</div>
+            <div class="stat-value" style="font-size:1.25rem;"
+                 th:text="${dashboard.behavioralStats().averageDurationSeconds() == 0 ? '—' : #numbers.formatDecimal(dashboard.behavioralStats().averageDurationSeconds() / 60.0, 1, 1) + 'm'}">—</div>
+          </div>
+          <div class="col-12">
+            <div class="stat-label">Last Practice</div>
+            <div class="small fw-medium"
+                 th:text="${dashboard.behavioralStats().lastPracticeDate() != null} ? ${#temporals.format(dashboard.behavioralStats().lastPracticeDate(), 'MMM d, yyyy')} : 'No sessions yet'">—</div>
+          </div>
+        </div>
+        <div class="mt-3">
+          <a class="small" th:href="@{/behavioral}">Browse questions</a>
+        </div>
+      </section>
+
+      <section class="card-surface p-4 mb-4">
+        <h2 class="h5 mb-3">Recently completed</h2>
+        <div th:if="${#lists.isEmpty(dashboard.recentReviews())}" class="text-muted">
+          No reviews logged yet.
+        </div>
+        <div class="review-history-item" th:each="review : ${dashboard.recentReviews()}">
+          <div class="d-flex justify-content-between gap-2">
+            <a class="problem-link" th:href="@{/problems/{id}(id=${review.problemId()})}" th:text="${review.problemTitle()}">Problem</a>
+            <span class="rating-badge" th:text="${review.rating()}">3</span>
+          </div>
+          <div class="text-muted small mt-1">
+            <span th:text="${review.topicName()}">Topic</span>
+            ·
+            <span th:text="${#temporals.format(review.reviewDate(), 'MMM d, yyyy')}">Date</span>
+            ·
+            <span th:text="${review.reviewDuration()} + ' min'">15 min</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="card-surface p-4">
+        <h2 class="h5 mb-3">Topic progress</h2>
+        <div th:if="${#lists.isEmpty(dashboard.topicProgress())}" class="text-muted">
+          Add problems to see topic progress.
+        </div>
+        <div class="mb-3" th:each="topic : ${dashboard.topicProgress()}">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <div class="d-flex align-items-center gap-2">
+              <span class="topic-color-dot" th:style="'background-color:' + ${topic.topicColor()}"></span>
+              <span class="small fw-medium" th:text="${topic.topicName()}">Arrays</span>
+            </div>
+            <span class="text-muted small"
+                  th:text="${topic.reviewedProblems()} + '/' + ${topic.totalProblems()} + ' reviewed'">0/0</span>
+          </div>
+          <div class="progress-thin">
+            <div class="progress-thin-bar"
+                 th:style="'width:' + (${topic.totalProblems()} > 0 ? (${topic.reviewedProblems()} * 100 / ${topic.totalProblems()}) : 0) + '%'">
+            </div>
+          </div>
+          <div class="text-muted small mt-1" th:if="${topic.dueProblems() > 0}"
+               th:text="${topic.dueProblems()} + ' due'">0 due</div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+</body>
+</html>

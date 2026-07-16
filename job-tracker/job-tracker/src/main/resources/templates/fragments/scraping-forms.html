@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="platformChecks(fieldName, idPrefix, selectedPlatforms)" class="platform-checks">
+	<label th:each="platform : ${allPlatforms}" class="platform-check">
+		<input class="form-check-input" type="checkbox"
+			   th:name="${fieldName}"
+			   th:id="${idPrefix + '-' + platform.source()}"
+			   th:value="${platform.source()}"
+			   th:checked="${selectedPlatforms.contains(platform)}">
+		<span class="platform-check-label" th:text="${platform.source()}">occ</span>
+	</label>
+</div>
+
+<select th:fragment="workModeSelect(id, name, value)" class="form-select" th:id="${id}" th:name="${name}">
+	<option value="" th:selected="${value == null || value.isBlank()}">Cualquiera</option>
+	<option value="remote" th:selected="${value == 'remote'}">Remoto</option>
+	<option value="hybrid" th:selected="${value == 'hybrid'}">Híbrido</option>
+	<option value="onsite" th:selected="${value == 'onsite'}">Presencial</option>
+</select>
+
+</body>
+</html>

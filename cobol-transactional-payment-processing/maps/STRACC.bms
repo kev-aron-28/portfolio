@@ -1,0 +1,13 @@
+STRACC  DFHMSD TYPE=MAP,STORAGE=AUTO,LANG=COBOL,TIOAPFX=YES,           X
+               TERM=3270,CTRL=FREEKB,MODE=INOUT                         
+                                                                        
+SCRN1   DFHMDI SIZE=(24,80),LINE=1,COLUMN=1                             
+        DFHMDF POS=(3,30),INITIAL='START YOUR ACCOUNT',LENGTH=18,      X
+               ATTRB=(ASKIP)                                            
+        DFHMDF POS=(9,30),INITIAL='INITIAL AMOUNT:',LENGTH=15,         X
+               ATTRB=(ASKIP)                                            
+AMOUNT  DFHMDF POS=(9,47),LENGTH=10,ATTRB=(UNPROT,IC,NUM)               
+MSG     DFHMDF POS=(20,30),LENGTH=40,ATTRB=(PROT)                       
+        DFHMSD TYPE=FINAL                                               
+                                                                        
+               END                                                      

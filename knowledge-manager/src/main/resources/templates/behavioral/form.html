@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title" th:text="${pageTitle}">Question Form</h1>
+      <p class="page-subtitle">Prepare your STAR answer, then practice recalling it aloud.</p>
+    </div>
+    <a class="btn btn-outline-secondary" th:href="@{/behavioral}">
+      <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+  </div>
+
+  <div class="card-surface p-4" style="max-width: 720px;">
+    <form th:action="${formAction}" th:object="${questionForm}" method="post" novalidate>
+      <div class="mb-3">
+        <label for="title" class="form-label">Title</label>
+        <input type="text" id="title" class="form-control"
+               th:classappend="${#fields.hasErrors('title')} ? ' is-invalid'"
+               th:field="*{title}" placeholder="Difficult teammate" required>
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+      </div>
+
+      <div class="mb-3">
+        <label for="category" class="form-label">Category</label>
+        <select id="category" class="form-select"
+                th:classappend="${#fields.hasErrors('category')} ? ' is-invalid'"
+                th:field="*{category}" required>
+          <option th:each="cat : ${categories}"
+                  th:value="${cat.name()}"
+                  th:text="${cat.label}">Category</option>
+        </select>
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('category')}" th:errors="*{category}"></div>
+      </div>
+
+      <div class="mb-4">
+        <label for="question" class="form-label">Question</label>
+        <textarea id="question" class="form-control" rows="3"
+                  th:classappend="${#fields.hasErrors('question')} ? ' is-invalid'"
+                  th:field="*{question}"
+                  placeholder="Tell me about a time you had to deal with a difficult teammate."
+                  required></textarea>
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('question')}" th:errors="*{question}"></div>
+      </div>
+
+      <div class="section-title">STAR answer</div>
+
+      <div class="mb-3">
+        <label for="answerSituation" class="form-label">Situation</label>
+        <textarea id="answerSituation" class="form-control" rows="3"
+                  th:classappend="${#fields.hasErrors('answerSituation')} ? ' is-invalid'"
+                  th:field="*{answerSituation}"
+                  placeholder="Context and who was involved"></textarea>
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('answerSituation')}" th:errors="*{answerSituation}"></div>
+      </div>
+
+      <div class="mb-3">
+        <label for="answerTask" class="form-label">Task</label>
+        <textarea id="answerTask" class="form-control" rows="3"
+                  th:classappend="${#fields.hasErrors('answerTask')} ? ' is-invalid'"
+                  th:field="*{answerTask}"
+                  placeholder="Your responsibility in that moment"></textarea>
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('answerTask')}" th:errors="*{answerTask}"></div>
+      </div>
+
+      <div class="mb-3">
+        <label for="answerAction" class="form-label">Action</label>
+        <textarea id="answerAction" class="form-control" rows="4"
+                  th:classappend="${#fields.hasErrors('answerAction')} ? ' is-invalid'"
+                  th:field="*{answerAction}"
+                  placeholder="What you personally did"></textarea>
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('answerAction')}" th:errors="*{answerAction}"></div>
+      </div>
+
+      <div class="mb-3">
+        <label for="answerResult" class="form-label">Result</label>
+        <textarea id="answerResult" class="form-control" rows="3"
+                  th:classappend="${#fields.hasErrors('answerResult')} ? ' is-invalid'"
+                  th:field="*{answerResult}"
+                  placeholder="Outcome and what you learned"></textarea>
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('answerResult')}" th:errors="*{answerResult}"></div>
+      </div>
+
+      <div class="mb-4">
+        <label for="notes" class="form-label">Notes</label>
+        <textarea id="notes" class="form-control" rows="2"
+                  th:classappend="${#fields.hasErrors('notes')} ? ' is-invalid'"
+                  th:field="*{notes}"
+                  placeholder="Optional reminders"></textarea>
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('notes')}" th:errors="*{notes}"></div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Save question</button>
+        <a class="btn btn-outline-secondary" th:href="@{/behavioral}">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+</body>
+</html>

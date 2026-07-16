@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Tags</h1>
+      <p class="page-subtitle">Browse problems grouped by technique or pattern.</p>
+    </div>
+    <a class="btn btn-primary" th:href="@{/tags/new}">
+      <i class="bi bi-plus-lg me-1"></i>New Tag
+    </a>
+  </div>
+
+  <div th:if="${#lists.isEmpty(tagGroups)}" class="card-surface empty-state">
+    <i class="bi bi-tags fs-2 d-block mb-3"></i>
+    <h2 class="h5 mb-2">No tags yet</h2>
+    <p class="mb-3">Create tags like BFS, DFS, or Sliding Window.</p>
+    <a class="btn btn-primary btn-sm" th:href="@{/tags/new}">Create tag</a>
+  </div>
+
+  <section class="card-surface p-4" th:if="${!#lists.isEmpty(tagGroups)}">
+    <div th:replace="~{fragments/grouped-problem-tree :: grouped-tree(${tagGroups}, 'tagTree', 'tag', false)}"></div>
+  </section>
+</div>
+</body>
+</html>

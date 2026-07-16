@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title" th:text="${pageTitle}">Problem Form</h1>
+      <p class="page-subtitle">Register a problem with your solution and notes.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-secondary" th:href="@{/problems/bulk/new}" th:if="${problemId == null}">
+        <i class="bi bi-list-ul me-1"></i>Add multiple
+      </a>
+      <a class="btn btn-outline-secondary" th:href="${problemId != null} ? @{/problems/{id}(id=${problemId})} : @{/problems}">
+        <i class="bi bi-arrow-left me-1"></i>Back
+      </a>
+    </div>
+  </div>
+
+  <form th:action="${formAction}" th:object="${problemForm}" method="post" id="problemForm" novalidate>
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <section class="card-surface p-4 mb-4">
+          <div class="section-title">Problem</div>
+
+          <div class="mb-3">
+            <label for="title" class="form-label">Title</label>
+            <input type="text" id="title" class="form-control"
+                   th:classappend="${#fields.hasErrors('title')} ? ' is-invalid'"
+                   th:field="*{title}" placeholder="e.g. Two Sum" required>
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+          </div>
+
+          <div class="mb-3">
+            <label for="url" class="form-label">External link</label>
+            <input type="url" id="url" class="form-control"
+                   th:classappend="${#fields.hasErrors('url')} ? ' is-invalid'"
+                   th:field="*{url}" placeholder="https://leetcode.com/problems/two-sum">
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('url')}" th:errors="*{url}"></div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label for="topicId" class="form-label">Topic</label>
+              <select id="topicId" class="form-select"
+                      th:classappend="${#fields.hasErrors('topicId')} ? ' is-invalid'"
+                      th:field="*{topicId}" required>
+                <option value="">Select a topic</option>
+                <option th:each="topic : ${topics}"
+                        th:value="${topic.id()}"
+                        th:text="${topic.name()}">Arrays</option>
+              </select>
+              <div class="invalid-feedback" th:if="${#fields.hasErrors('topicId')}" th:errors="*{topicId}"></div>
+            </div>
+            <div class="col-md-6">
+              <label for="difficulty" class="form-label">Difficulty</label>
+              <select id="difficulty" class="form-select" th:field="*{difficulty}">
+                <option th:each="level : ${difficulties}"
+                        th:value="${level}"
+                        th:text="${level}">MEDIUM</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-0">
+            <label for="description" class="form-label">Description</label>
+            <textarea id="description" th:field="*{description}"></textarea>
+            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+          </div>
+        </section>
+
+        <section class="card-surface p-4 mb-4">
+          <div class="section-title">Solution</div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-md-4">
+              <label for="language" class="form-label">Language</label>
+              <select id="language" class="form-select" th:field="*{language}">
+                <option value="java">Java</option>
+                <option value="javascript">JavaScript</option>
+                <option value="typescript">TypeScript</option>
+                <option value="python">Python</option>
+                <option value="cpp">C++</option>
+                <option value="go">Go</option>
+                <option value="rust">Rust</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Source code</label>
+            <div class="editor-container">
+              <div id="sourceCodeEditor" class="monaco-container"></div>
+            </div>
+            <textarea id="sourceCode" th:field="*{sourceCode}" class="d-none"></textarea>
+            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('sourceCode')}" th:errors="*{sourceCode}"></div>
+          </div>
+
+          <div class="mb-3">
+            <label for="explanation" class="form-label">Explanation</label>
+            <textarea id="explanation" th:field="*{explanation}"></textarea>
+            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('explanation')}" th:errors="*{explanation}"></div>
+          </div>
+
+          <div class="mb-3">
+            <label for="complexity" class="form-label">Complexity analysis</label>
+            <textarea id="complexity" th:field="*{complexity}"></textarea>
+            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('complexity')}" th:errors="*{complexity}"></div>
+          </div>
+
+          <div class="mb-0">
+            <label for="mistakes" class="form-label">Common mistakes</label>
+            <textarea id="mistakes" th:field="*{mistakes}"></textarea>
+            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('mistakes')}" th:errors="*{mistakes}"></div>
+          </div>
+        </section>
+      </div>
+
+      <div class="col-lg-4">
+        <div th:replace="~{problems/fragments/tags-panel :: tags-panel}"></div>
+
+        <section class="card-surface p-4 mb-4">
+          <div class="section-title">Options</div>
+          <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="favorite" th:field="*{favorite}">
+            <label class="form-check-label" for="favorite">Mark as favorite</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="archived" th:field="*{archived}">
+            <label class="form-check-label" for="archived">Archive problem</label>
+          </div>
+        </section>
+
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-primary">Save problem</button>
+          <a class="btn btn-outline-secondary"
+             th:href="${problemId != null} ? @{/problems/{id}(id=${problemId})} : @{/problems}">Cancel</a>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js"></script>
+  <script th:inline="javascript">
+    const easyMdeOptions = {
+      spellChecker: false,
+      status: false,
+      minHeight: '140px'
+    };
+
+    const descriptionEditor = new EasyMDE(Object.assign({ element: document.getElementById('description') }, easyMdeOptions));
+    const explanationEditor = new EasyMDE(Object.assign({ element: document.getElementById('explanation') }, easyMdeOptions));
+    const complexityEditor = new EasyMDE(Object.assign({ element: document.getElementById('complexity') }, easyMdeOptions));
+    const mistakesEditor = new EasyMDE(Object.assign({ element: document.getElementById('mistakes') }, easyMdeOptions));
+
+    let monacoEditor;
+    const sourceCodeInput = document.getElementById('sourceCode');
+    const languageSelect = document.getElementById('language');
+    const initialSourceCode = sourceCodeInput.value || '';
+
+    require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
+    require(['vs/editor/editor.main'], function () {
+      monacoEditor = monaco.editor.create(document.getElementById('sourceCodeEditor'), {
+        value: initialSourceCode,
+        language: languageSelect.value,
+        minimap: { enabled: false },
+        fontSize: 14,
+        scrollBeyondLastLine: false,
+        automaticLayout: true
+      });
+
+      languageSelect.addEventListener('change', () => {
+        monaco.editor.setModelLanguage(monacoEditor.getModel(), languageSelect.value);
+      });
+    });
+
+    document.getElementById('problemForm').addEventListener('submit', () => {
+      sourceCodeInput.value = monacoEditor.getValue();
+      document.getElementById('description').value = descriptionEditor.value();
+      document.getElementById('explanation').value = explanationEditor.value();
+      document.getElementById('complexity').value = complexityEditor.value();
+      document.getElementById('mistakes').value = mistakesEditor.value();
+    });
+  </script>
+</div>
+</body>
+</html>

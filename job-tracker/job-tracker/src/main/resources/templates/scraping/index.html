@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+	  th:replace="~{layout :: layout(~{::section})}">
+<section>
+	<div th:replace="~{fragments/components :: alerts}"></div>
+
+	<!-- Estado del sistema -->
+	<div class="scraping-status metrics-row metrics-row-6 mb-3">
+		<div class="metric-cell">
+			<div class="metric-label">Scheduler</div>
+			<div class="metric-value metric-value-sm">
+				<span th:class="${settings.schedulingEnabled()} ? 'badge status-badge status-active' : 'badge status-badge status-paused'"
+					  th:text="${settings.schedulingEnabled()} ? 'Activo' : 'Pausado'">Activo</span>
+			</div>
+		</div>
+		<div class="metric-cell">
+			<div class="metric-label">LinkedIn session</div>
+			<div class="metric-value metric-value-sm">
+				<span th:class="${linkedinSessionConfigured} ? 'badge status-badge status-active' : 'badge status-badge status-paused'"
+					  th:text="${linkedinSessionConfigured} ? 'Configurada' : 'Sin configurar'">—</span>
+			</div>
+		</div>
+		<div class="metric-cell">
+			<div class="metric-label">OCC session</div>
+			<div class="metric-value metric-value-sm">
+				<span th:class="${occSessionConfigured} ? 'badge status-badge status-active' : 'badge status-badge status-paused'"
+					  th:text="${occSessionConfigured} ? 'Configurada' : 'Sin configurar'">—</span>
+			</div>
+		</div>
+		<div class="metric-cell">
+			<div class="metric-label">Indeed session</div>
+			<div class="metric-value metric-value-sm">
+				<span th:class="${indeedSessionConfigured} ? 'badge status-badge status-active' : 'badge status-badge status-paused'"
+					  th:text="${indeedSessionConfigured} ? 'Configurada' : 'Sin configurar'">—</span>
+			</div>
+		</div>
+		<div class="metric-cell">
+			<div class="metric-label">Computrabajo</div>
+			<div class="metric-value metric-value-sm">
+				<span th:class="${computrabajoSessionConfigured} ? 'badge status-badge status-active' : 'badge status-badge status-active'"
+					  th:text="${computrabajoSessionConfigured} ? 'Sesión opcional' : 'Sin sesión requerida'">—</span>
+			</div>
+		</div>
+		<div class="metric-cell">
+			<div class="metric-label">Programación</div>
+			<div class="metric-value metric-value-sm"
+				 th:text="${activeSchedules} + ' / ' + ${schedules.size()} + ' activos'">0 / 0</div>
+		</div>
+	</div>
+
+	<!-- Resultado de ejecución -->
+	<div th:if="${scrapeResult}" class="panel mb-3">
+		<div class="panel-header">
+			<h2>Resultado de la búsqueda</h2>
+			<a th:if="${scrapeResult.imported() > 0}" th:href="@{/jobs}" class="btn btn-sm btn-primary">Ver vacantes</a>
+		</div>
+		<div class="panel-body">
+			<div class="result-metrics">
+				<div class="result-metric">
+					<div class="metric-label">Encontradas</div>
+					<div class="metric-value metric-value-sm" th:text="${scrapeResult.scraped()}">0</div>
+				</div>
+				<div class="result-metric">
+					<div class="metric-label">Importadas</div>
+					<div class="metric-value metric-value-sm" th:text="${scrapeResult.imported()}">0</div>
+				</div>
+				<div class="result-metric">
+					<div class="metric-label">Duplicadas</div>
+					<div class="metric-value metric-value-sm" th:text="${scrapeResult.duplicates()}">0</div>
+				</div>
+			</div>
+			<p th:if="${!scrapeResult.errors().isEmpty()}" class="form-error mb-0 mt-2">
+				<strong>Errores:</strong>
+				<span th:text="${#strings.listJoin(scrapeResult.errors(), '; ')}"></span>
+			</p>
+		</div>
+	</div>
+
+	<!-- Tabs -->
+	<ul class="nav nav-tabs nav-tabs-app" id="scrapingTabs" role="tablist">
+		<li class="nav-item" role="presentation">
+			<button class="nav-link" th:classappend="${activeTab == 'run'} ? 'active'" id="run-tab"
+					data-bs-toggle="tab" data-bs-target="#run-panel" type="button" role="tab"
+					aria-controls="run-panel" th:attr="aria-selected=${activeTab == 'run'}">Ejecutar</button>
+		</li>
+		<li class="nav-item" role="presentation">
+			<button class="nav-link" th:classappend="${activeTab == 'settings'} ? 'active'" id="settings-tab"
+					data-bs-toggle="tab" data-bs-target="#settings-panel" type="button" role="tab"
+					aria-controls="settings-panel" th:attr="aria-selected=${activeTab == 'settings'}">Configuración</button>
+		</li>
+		<li class="nav-item" role="presentation">
+			<button class="nav-link" th:classappend="${activeTab == 'profiles'} ? 'active'" id="profiles-tab"
+					data-bs-toggle="tab" data-bs-target="#profiles-panel" type="button" role="tab"
+					aria-controls="profiles-panel" th:attr="aria-selected=${activeTab == 'profiles'}">
+				Perfiles
+				<span class="tab-count" th:text="${profiles.size()}">0</span>
+			</button>
+		</li>
+		<li class="nav-item" role="presentation">
+			<button class="nav-link" th:classappend="${activeTab == 'schedules'} ? 'active'" id="schedules-tab"
+					data-bs-toggle="tab" data-bs-target="#schedules-panel" type="button" role="tab"
+					aria-controls="schedules-panel" th:attr="aria-selected=${activeTab == 'schedules'}">
+				Programación
+				<span class="tab-count" th:text="${schedules.size()}">0</span>
+			</button>
+		</li>
+	</ul>
+
+	<div class="tab-content scraping-tab-content" id="scrapingTabContent">
+
+		<!-- ========== EJECUTAR ========== -->
+		<div class="tab-pane fade" th:classappend="${activeTab == 'run'} ? 'show active'" id="run-panel"
+			 role="tabpanel" aria-labelledby="run-tab">
+			<div class="scraping-layout">
+				<div class="panel">
+					<div class="panel-header">
+						<h2>Buscar ahora</h2>
+					</div>
+					<div class="panel-body">
+						<form th:action="@{/scraping/run}" method="post" class="scraping-form">
+							<div class="form-section-title">Origen de criterios</div>
+							<div class="form-field form-field-wide">
+								<label class="form-label" for="profileId">Perfil guardado</label>
+								<select class="form-select" id="profileId" name="profileId">
+									<option value="">— Usar criterios manuales —</option>
+									<option th:each="p : ${profiles}"
+											th:value="${p.id()}"
+											th:text="${p.name() + ' · ' + p.keywords()}">Perfil</option>
+								</select>
+								<div class="form-field-hint">Si eliges un perfil, sus keywords y filtros tienen prioridad.</div>
+							</div>
+
+							<div class="form-section-title">Criterios de búsqueda</div>
+							<div class="filter-grid">
+								<div class="form-field">
+									<label class="form-label" for="keywords">Keywords</label>
+									<input class="form-control" id="keywords" name="keywords" type="text"
+										   placeholder="java developer">
+									<div class="form-field-hint">Requerido si no usas perfil.</div>
+								</div>
+								<div class="form-field">
+									<label class="form-label" for="location">Ubicación</label>
+									<input class="form-control" id="location" name="location" type="text"
+										   placeholder="cdmx, monterrey">
+									<div class="form-field-hint">Slug OCC: cdmx, monterrey, etc.</div>
+								</div>
+								<div class="form-field">
+									<label class="form-label" for="salaryMin">Salario mín.</label>
+									<input class="form-control" id="salaryMin" name="salaryMin" type="number"
+										   step="1000" placeholder="20000">
+								</div>
+								<div class="form-field">
+									<label class="form-label" for="salaryMax">Salario máx.</label>
+									<input class="form-control" id="salaryMax" name="salaryMax" type="number"
+										   step="1000" placeholder="80000">
+								</div>
+								<div class="form-field">
+									<label class="form-label" for="employmentType">Tipo de empleo</label>
+									<input class="form-control" id="employmentType" name="employmentType" type="text"
+										   placeholder="permanente">
+									<div class="form-field-hint">OCC: permanente, temporal, etc.</div>
+								</div>
+								<div class="form-field">
+									<label class="form-label" for="workMode">Modalidad</label>
+									<select class="form-select" id="workMode" name="workMode"
+											th:replace="~{fragments/scraping-forms :: workModeSelect('workMode', 'workMode', null)}"></select>
+								</div>
+								<div class="form-field">
+									<label class="form-label" for="postedWithinDays">Publicados (días)</label>
+									<input class="form-control" id="postedWithinDays" name="postedWithinDays"
+										   type="number" min="0" placeholder="7">
+									<div class="form-field-hint">OCC tm: 0 = hoy, 7 = última semana.</div>
+								</div>
+								<div class="form-field">
+									<label class="form-label" for="maxResults">Máximo resultados</label>
+									<input class="form-control" id="maxResults" name="maxResults" type="number"
+										   min="1" max="100" th:value="${settings.defaultMaxResults()}">
+								</div>
+							</div>
+
+							<div class="form-section-title">Plataformas</div>
+							<div th:replace="~{fragments/scraping-forms :: platformChecks('platforms', 'run-platform', ${settings.defaultPlatforms()})}"></div>
+
+							<div class="form-footer">
+								<button type="submit" class="btn btn-primary">
+									<i data-lucide="play" aria-hidden="true"></i>
+									Ejecutar búsqueda
+								</button>
+							</div>
+						</form>
+					</div>
+				</div>
+
+				<aside class="panel scraping-aside">
+					<div class="panel-header">
+						<h2>Guía rápida</h2>
+					</div>
+					<div class="panel-body">
+						<dl class="aside-list">
+							<div>
+								<dt>1. Sesiones</dt>
+								<dd>Configura los archivos Playwright en la pestaña <strong>Configuración</strong>.</dd>
+							</div>
+							<div>
+								<dt>2. Perfiles</dt>
+								<dd>Guarda combinaciones frecuentes de keywords y filtros para reutilizar.</dd>
+							</div>
+							<div>
+								<dt>3. Ejecutar</dt>
+								<dd>Elige perfil o criterios manuales, selecciona plataformas y lanza la búsqueda.</dd>
+							</div>
+						</dl>
+						<div class="form-section-title">Exportar sesiones</div>
+						<ul class="aside-commands">
+							<li><code>scripts/save-occ-session.sh</code></li>
+							<li><code>scripts/save-linkedin-session.sh</code></li>
+							<li><code>scripts/save-indeed-session.sh</code></li>
+						</ul>
+						<p class="form-field-hint mb-0">En WSL, si Chromium falla, usa los scripts <code>.ps1</code> desde Windows.</p>
+					</div>
+				</aside>
+			</div>
+		</div>
+
+		<!-- ========== CONFIGURACIÓN ========== -->
+		<div class="tab-pane fade" th:classappend="${activeTab == 'settings'} ? 'show active'" id="settings-panel"
+			 role="tabpanel" aria-labelledby="settings-tab">
+			<form th:action="@{/scraping/settings}" method="post" class="scraping-form">
+				<div class="settings-layout">
+					<div class="panel">
+						<div class="panel-header"><h2>General</h2></div>
+						<div class="panel-body">
+							<div class="filter-grid">
+								<div class="form-field">
+									<label class="form-label" for="rateLimitMs">Rate limit (ms)</label>
+									<input class="form-control" id="rateLimitMs" name="rateLimitMs" type="number"
+										   min="0" th:value="${settings.rateLimitMs()}">
+									<div class="form-field-hint">Pausa entre requests al scraper.</div>
+								</div>
+								<div class="form-field">
+									<label class="form-label" for="defaultMaxResults">Resultados por defecto</label>
+									<input class="form-control" id="defaultMaxResults" name="defaultMaxResults"
+										   type="number" min="1" th:value="${settings.defaultMaxResults()}">
+								</div>
+							</div>
+
+							<div class="form-section-title">Plataformas por defecto</div>
+							<div th:replace="~{fragments/scraping-forms :: platformChecks('defaultPlatforms', 'default-platform', ${settings.defaultPlatforms()})}"></div>
+
+							<div class="form-section-title">Scheduler automático</div>
+							<div class="filter-grid">
+								<div class="form-field form-field-check">
+									<div class="form-check">
+										<input class="form-check-input" id="schedulingEnabled" name="schedulingEnabled"
+											   type="checkbox" value="true" th:checked="${settings.schedulingEnabled()}">
+										<label class="form-check-label" for="schedulingEnabled">Scheduler activo</label>
+									</div>
+								</div>
+								<div class="form-field">
+									<label class="form-label" for="schedulingPollIntervalMs">Intervalo de poll (ms)</label>
+									<input class="form-control" id="schedulingPollIntervalMs" name="schedulingPollIntervalMs"
+										   type="number" min="15000" th:value="${settings.schedulingPollIntervalMs()}">
+									<div class="form-field-hint">Frecuencia con la que se revisan schedules pendientes.</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="panel">
+						<div class="panel-header"><h2>Sesiones Playwright</h2></div>
+						<div class="panel-body">
+							<div class="form-section-title">LinkedIn</div>
+							<div class="filter-grid mb-3">
+								<div class="form-field form-field-wide">
+									<label class="form-label" for="linkedinStorageStatePath">Ruta del session file</label>
+									<input class="form-control" id="linkedinStorageStatePath" name="linkedinStorageStatePath"
+										   type="text" th:value="${settings.linkedinStorageStatePath()}"
+										   placeholder="/home/user/linkedin-storage-state.json">
+									<div class="form-field-hint">Generado con <code>scripts/save-linkedin-session.sh</code></div>
+								</div>
+								<div class="form-field">
+									<label class="form-label" for="linkedinPageTimeoutMs">Timeout (ms)</label>
+									<input class="form-control" id="linkedinPageTimeoutMs" name="linkedinPageTimeoutMs"
+										   type="number" min="1000" th:value="${settings.linkedinPageTimeoutMs()}">
+								</div>
+							</div>
+
+							<div class="form-section-title">OCC</div>
+							<div class="filter-grid mb-3">
+								<div class="form-field form-field-wide">
+									<label class="form-label" for="occStorageStatePath">Ruta del session file</label>
+									<input class="form-control" id="occStorageStatePath" name="occStorageStatePath"
+										   type="text" th:value="${settings.occStorageStatePath()}"
+										   placeholder="/home/user/occ-storage-state.json">
+									<div class="form-field-hint">Generado con <code>scripts/save-occ-session.sh</code></div>
+								</div>
+								<div class="form-field">
+									<label class="form-label" for="occPageTimeoutMs">Timeout (ms)</label>
+									<input class="form-control" id="occPageTimeoutMs" name="occPageTimeoutMs"
+										   type="number" min="1000" th:value="${settings.occPageTimeoutMs()}">
+								</div>
+							</div>
+
+							<div class="form-section-title">Indeed</div>
+							<div class="filter-grid mb-3">
+								<div class="form-field form-field-wide">
+									<label class="form-label" for="indeedStorageStatePath">Ruta del session file</label>
+									<input class="form-control" id="indeedStorageStatePath" name="indeedStorageStatePath"
+										   type="text" th:value="${settings.indeedStorageStatePath()}"
+										   placeholder="/home/user/indeed-storage-state.json">
+									<div class="form-field-hint">Generado con <code>scripts/save-indeed-session.sh</code>. Necesario para evitar captcha de Cloudflare.</div>
+								</div>
+								<div class="form-field">
+									<label class="form-label" for="indeedPageTimeoutMs">Timeout (ms)</label>
+									<input class="form-control" id="indeedPageTimeoutMs" name="indeedPageTimeoutMs"
+										   type="number" min="1000" th:value="${settings.indeedPageTimeoutMs()}">
+								</div>
+							</div>
+
+							<div class="form-section-title">Computrabajo</div>
+							<div class="filter-grid">
+								<div class="form-field form-field-wide">
+									<label class="form-label" for="computrabajoStorageStatePath">Ruta del session file (opcional)</label>
+									<input class="form-control" id="computrabajoStorageStatePath" name="computrabajoStorageStatePath"
+										   type="text" th:value="${settings.computrabajoStorageStatePath()}"
+										   placeholder="Opcional — Computrabajo permite búsqueda sin sesión">
+									<div class="form-field-hint">No es obligatorio. Úsalo solo si quieres reutilizar cookies de una sesión iniciada.</div>
+								</div>
+								<div class="form-field">
+									<label class="form-label" for="computrabajoPageTimeoutMs">Timeout (ms)</label>
+									<input class="form-control" id="computrabajoPageTimeoutMs" name="computrabajoPageTimeoutMs"
+										   type="number" min="1000" th:value="${settings.computrabajoPageTimeoutMs()}">
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="form-footer">
+					<button type="submit" class="btn btn-primary">Guardar configuración</button>
+				</div>
+			</form>
+		</div>
+
+		<!-- ========== PERFILES ========== -->
+		<div class="tab-pane fade" th:classappend="${activeTab == 'profiles'} ? 'show active'" id="profiles-panel"
+			 role="tabpanel" aria-labelledby="profiles-tab">
+			<div class="panel mb-3">
+				<div class="panel-header">
+					<h2>Perfiles guardados</h2>
+					<span class="toolbar-meta" th:text="${profiles.size()} + ' perfil(es)'">0</span>
+				</div>
+				<div class="panel-body-flush" th:if="${!profileViews.isEmpty()}">
+					<div class="table-responsive">
+						<table class="table table-app mb-0">
+							<thead>
+							<tr>
+								<th>Nombre</th>
+								<th>Keywords</th>
+								<th>Filtros</th>
+							</tr>
+							</thead>
+							<tbody>
+							<tr th:each="pv : ${profileViews}">
+								<td th:text="${pv.profile().name()}">Backend</td>
+								<td th:text="${pv.profile().keywords()}">java</td>
+								<td>
+									<span th:if="${pv.filterLabels().isEmpty()}" class="cell-muted">—</span>
+									<span th:each="label, iter : ${pv.filterLabels()}" class="filter-chip"
+										  th:text="${label}">cdmx</span>
+								</td>
+							</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="empty-state" th:if="${profileViews.isEmpty()}">
+					<i data-lucide="bookmark" aria-hidden="true"></i>
+					<div>No hay perfiles. Crea el primero abajo.</div>
+				</div>
+			</div>
+
+			<div class="panel">
+				<div class="panel-header"><h2>Nuevo perfil</h2></div>
+				<div class="panel-body">
+					<form th:action="@{/scraping/profiles}" method="post" class="scraping-form">
+						<div class="filter-grid">
+							<div class="form-field">
+								<label class="form-label" for="profileName">Nombre</label>
+								<input class="form-control" id="profileName" name="name" type="text" required
+									   placeholder="Backend Remote">
+							</div>
+							<div class="form-field">
+								<label class="form-label" for="profileKeywords">Keywords</label>
+								<input class="form-control" id="profileKeywords" name="keywords" type="text" required
+									   placeholder="java spring">
+							</div>
+							<div class="form-field">
+								<label class="form-label" for="profileLocation">Ubicación</label>
+								<input class="form-control" id="profileLocation" name="location" type="text"
+									   placeholder="cdmx">
+							</div>
+							<div class="form-field">
+								<label class="form-label" for="profileSalaryMin">Salario mín.</label>
+								<input class="form-control" id="profileSalaryMin" name="salaryMin" type="number"
+									   step="1000">
+							</div>
+							<div class="form-field">
+								<label class="form-label" for="profileSalaryMax">Salario máx.</label>
+								<input class="form-control" id="profileSalaryMax" name="salaryMax" type="number"
+									   step="1000">
+							</div>
+							<div class="form-field">
+								<label class="form-label" for="profileEmploymentType">Tipo de empleo</label>
+								<input class="form-control" id="profileEmploymentType" name="employmentType"
+									   type="text" placeholder="permanente">
+							</div>
+							<div class="form-field">
+								<label class="form-label" for="profileWorkMode">Modalidad</label>
+								<select class="form-select" id="profileWorkMode" name="workMode"
+										th:replace="~{fragments/scraping-forms :: workModeSelect('profileWorkMode', 'workMode', null)}"></select>
+							</div>
+							<div class="form-field">
+								<label class="form-label" for="profilePostedWithinDays">Publicados (días)</label>
+								<input class="form-control" id="profilePostedWithinDays" name="postedWithinDays"
+									   type="number" min="0" placeholder="7">
+							</div>
+						</div>
+						<div class="form-footer">
+							<button type="submit" class="btn btn-primary">Crear perfil</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<!-- ========== PROGRAMACIÓN ========== -->
+		<div class="tab-pane fade" th:classappend="${activeTab == 'schedules'} ? 'show active'" id="schedules-panel"
+			 role="tabpanel" aria-labelledby="schedules-tab">
+			<div class="panel mb-3">
+				<div class="panel-header">
+					<h2>Schedules automáticos</h2>
+					<span class="toolbar-meta"
+						  th:text="${activeSchedules} + ' activo(s) · ' + ${schedules.size()} + ' total'">0</span>
+				</div>
+				<div class="panel-body-flush" th:if="${!schedules.isEmpty()}">
+					<div class="table-responsive">
+						<table class="table table-app mb-0">
+							<thead>
+							<tr>
+								<th>Perfil</th>
+								<th>Plataformas</th>
+								<th>Intervalo</th>
+								<th>Estado</th>
+								<th>Última ejecución</th>
+								<th>Acciones</th>
+							</tr>
+							</thead>
+							<tbody>
+							<tr th:each="sv : ${schedules}" th:with="s=${sv.schedule()}">
+								<td th:text="${sv.profileName()}">Perfil</td>
+								<td>
+									<th:block th:each="pl : ${s.platforms()}">
+										<span th:replace="~{fragments/components :: sourceBadge(${pl.source()})}"></span>
+									</th:block>
+								</td>
+								<td class="cell-muted" th:text="${s.intervalMinutes() + ' min'}">60 min</td>
+								<td>
+									<span th:class="${s.enabled()} ? 'badge status-badge status-active' : 'badge status-badge status-paused'"
+										  th:text="${s.enabled()} ? 'Activo' : 'Pausado'">Activo</span>
+								</td>
+								<td class="cell-muted"
+									th:text="${s.lastRunAt() != null ? #temporals.format(s.lastRunAt(), 'yyyy-MM-dd HH:mm') : 'Nunca'}">—</td>
+								<td>
+									<div class="table-actions">
+										<form th:action="@{/scraping/schedules/{id}/run(id=${s.id()})}" method="post"
+											  class="d-inline">
+											<button type="submit" class="btn btn-sm btn-outline-secondary">Ejecutar</button>
+										</form>
+										<form th:action="@{/scraping/schedules/{id}/toggle(id=${s.id()})}" method="post"
+											  class="d-inline">
+											<button type="submit" class="btn btn-sm btn-outline-secondary"
+													th:text="${s.enabled()} ? 'Pausar' : 'Activar'">Pausar</button>
+										</form>
+									</div>
+								</td>
+							</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+				<div class="empty-state" th:if="${schedules.isEmpty()}">
+					<i data-lucide="clock" aria-hidden="true"></i>
+					<div>No hay schedules. Crea uno para automatizar búsquedas recurrentes.</div>
+				</div>
+			</div>
+
+			<div class="panel" th:classappend="${profiles.isEmpty()} ? 'panel-disabled' : ''">
+				<div class="panel-header"><h2>Nuevo schedule</h2></div>
+				<div class="panel-body">
+					<p th:if="${profiles.isEmpty()}" class="form-field-hint">
+						Necesitas al menos un perfil en la pestaña <strong>Perfiles</strong> antes de crear un schedule.
+					</p>
+					<form th:action="@{/scraping/schedules}" method="post" class="scraping-form">
+						<div class="filter-grid">
+							<div class="form-field form-field-wide">
+								<label class="form-label" for="scheduleProfileId">Perfil</label>
+								<select class="form-select" id="scheduleProfileId" name="profileId" required
+										th:disabled="${profiles.isEmpty()}">
+									<option value="" disabled selected>Selecciona un perfil</option>
+									<option th:each="p : ${profiles}" th:value="${p.id()}" th:text="${p.name()}">Perfil</option>
+								</select>
+							</div>
+							<div class="form-field">
+								<label class="form-label" for="intervalMinutes">Intervalo (minutos)</label>
+								<input class="form-control" id="intervalMinutes" name="intervalMinutes"
+									   type="number" min="5" value="60" required th:disabled="${profiles.isEmpty()}">
+							</div>
+							<div class="form-field">
+								<label class="form-label" for="scheduleMaxResults">Máximo resultados</label>
+								<input class="form-control" id="scheduleMaxResults" name="maxResults"
+									   type="number" min="1" th:value="${settings.defaultMaxResults()}" required
+									   th:disabled="${profiles.isEmpty()}">
+							</div>
+						</div>
+
+						<div class="form-section-title">Plataformas</div>
+						<div th:replace="~{fragments/scraping-forms :: platformChecks('platforms', 'schedule-platform', ${settings.defaultPlatforms()})}"></div>
+
+						<div class="form-footer">
+							<button type="submit" class="btn btn-primary" th:disabled="${profiles.isEmpty()}">
+								Crear schedule
+							</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+</html>

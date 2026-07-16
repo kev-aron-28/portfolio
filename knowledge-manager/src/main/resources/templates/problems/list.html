@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title" th:text="${pageTitle}">Problems</h1>
+      <p class="page-subtitle">Browse and manage your study catalog.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <a class="btn btn-outline-secondary"
+         th:href="@{/problems(archived=${!showArchived}, q=${filter.query()}, topicId=${filter.topicId()}, difficulty=${filter.difficulty()}, tagId=${filter.tagId()}, favorite=${filter.favorite()}, dueStatus=${filter.dueStatus()})}"
+         th:text="${showArchived} ? 'Show active' : 'Show archived'">
+        Show archived
+      </a>
+      <a class="btn btn-outline-secondary" th:href="@{/problems/bulk/new}">
+        <i class="bi bi-list-ul me-1"></i>Add multiple
+      </a>
+      <a class="btn btn-primary" th:href="@{/problems/new}">
+        <i class="bi bi-plus-lg me-1"></i>New Problem
+      </a>
+    </div>
+  </div>
+
+  <section class="card-surface p-4 mb-4">
+    <form class="row g-3 align-items-end" th:action="@{/problems}" method="get">
+      <input type="hidden" name="archived" th:value="${showArchived}">
+      <input type="hidden" name="page" value="0">
+
+      <div class="col-lg-4">
+        <label for="q" class="form-label">Search</label>
+        <input type="search" id="q" name="q" class="form-control"
+               th:value="${filter.query()}" placeholder="Title or description">
+      </div>
+
+      <div class="col-md-6 col-lg-2">
+        <label for="topicId" class="form-label">Topic</label>
+        <select id="topicId" name="topicId" class="form-select">
+          <option value="">All topics</option>
+          <option th:each="topic : ${topics}"
+                  th:value="${topic.id()}"
+                  th:text="${topic.name()}"
+                  th:selected="${filter.topicId() != null and filter.topicId() == topic.id()}">Arrays</option>
+        </select>
+      </div>
+
+      <div class="col-md-6 col-lg-2">
+        <label for="difficulty" class="form-label">Difficulty</label>
+        <select id="difficulty" name="difficulty" class="form-select">
+          <option value="">All levels</option>
+          <option th:each="level : ${difficulties}"
+                  th:value="${level}"
+                  th:text="${level}"
+                  th:selected="${filter.difficulty() == level}">MEDIUM</option>
+        </select>
+      </div>
+
+      <div class="col-md-6 col-lg-2">
+        <label for="tagId" class="form-label">Tag</label>
+        <select id="tagId" name="tagId" class="form-select">
+          <option value="">All tags</option>
+          <option th:each="tag : ${tags}"
+                  th:value="${tag.id()}"
+                  th:text="${tag.name()}"
+                  th:selected="${filter.tagId() != null and filter.tagId() == tag.id()}">BFS</option>
+        </select>
+      </div>
+
+      <div class="col-md-6 col-lg-2">
+        <label for="dueStatus" class="form-label">Review status</label>
+        <select id="dueStatus" name="dueStatus" class="form-select">
+          <option th:each="status : ${dueStatuses}"
+                  th:value="${status}"
+                  th:text="${#strings.replace(status.name(), '_', ' ')}"
+                  th:selected="${filter.dueStatus() == status}">ALL</option>
+        </select>
+      </div>
+
+      <div class="col-md-6 col-lg-2">
+        <label for="favorite" class="form-label">Favorite</label>
+        <select id="favorite" name="favorite" class="form-select">
+          <option value="" th:selected="${filter.favorite() == null}">All</option>
+          <option value="true" th:selected="${filter.favorite() != null and filter.favorite()}">Favorites only</option>
+          <option value="false" th:selected="${filter.favorite() != null and !filter.favorite()}">Non-favorites</option>
+        </select>
+      </div>
+
+      <div class="col-lg-2 d-flex gap-2">
+        <button type="submit" class="btn btn-primary w-100">Apply</button>
+        <a class="btn btn-outline-secondary" th:href="@{/problems(archived=${showArchived})}">Reset</a>
+      </div>
+    </form>
+  </section>
+
+  <div class="problem-list-toolbar d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3"
+       th:if="${!problemPage.isEmpty()}">
+    <p class="text-muted small mb-0">
+      Showing <span th:text="${problemPage.fromIndex()}">1</span>–<span th:text="${problemPage.toIndex()}">24</span>
+      of <span th:text="${problemPage.totalElements()}">185</span> problems
+      <span th:if="${filter.hasActiveFilters()}">· filtered</span>
+    </p>
+    <p class="text-muted small mb-0" th:if="${problemPage.totalPages() > 1}">
+      Page <span th:text="${problemPage.page() + 1}">1</span> of <span th:text="${problemPage.totalPages()}">8</span>
+    </p>
+  </div>
+
+  <div th:if="${problemPage.isEmpty()}" class="card-surface empty-state">
+    <i class="bi bi-puzzle fs-2 d-block mb-3"></i>
+    <h2 class="h5 mb-2">No problems found</h2>
+    <p class="mb-3">Try adjusting your filters or create a new problem.</p>
+    <a class="btn btn-primary btn-sm" th:href="@{/problems/new}" th:if="${!showArchived}">Create problem</a>
+  </div>
+
+  <div class="problem-grid" th:if="${!problemPage.isEmpty()}">
+    <article class="problem-card" th:each="problem : ${problemPage.content()}">
+      <div class="problem-card-accent" th:style="'background-color:' + ${problem.topicColor()}"></div>
+      <div class="problem-card-body">
+        <div class="d-flex align-items-start justify-content-between gap-2 mb-2">
+          <a class="problem-card-title" th:href="@{/problems/{id}(id=${problem.id()})}" th:text="${problem.title()}">
+            Two Sum
+          </a>
+          <div class="dropdown">
+            <button class="btn btn-sm btn-light border-0 problem-card-menu" type="button"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="bi bi-three-dots"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li>
+                <a class="dropdown-item" th:href="@{/problems/{id}(id=${problem.id()})}">
+                  <i class="bi bi-eye me-2"></i>View
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" th:href="@{/problems/{id}/reviews/session(id=${problem.id()})}">
+                  <i class="bi bi-check2-square me-2"></i>Review
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" th:href="@{/problems/{id}/edit(id=${problem.id()})}">
+                  <i class="bi bi-pencil me-2"></i>Edit
+                </a>
+              </li>
+              <li>
+                <form th:action="@{/problems/{id}/delete(id=${problem.id()})}" method="post"
+                      onsubmit="return confirm('Delete this problem?');">
+                  <button class="dropdown-item text-danger" type="submit">
+                    <i class="bi bi-trash me-2"></i>Delete
+                  </button>
+                </form>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="problem-card-meta">
+          <span class="topic-color-dot" th:style="'background-color:' + ${problem.topicColor()}"></span>
+          <span th:text="${problem.topicName()}">Arrays</span>
+          <span class="meta-separator">·</span>
+          <span class="difficulty-badge"
+                th:classappend="' difficulty-' + ${#strings.toLowerCase(problem.difficulty().name())}"
+                th:text="${problem.difficulty()}">MEDIUM</span>
+        </div>
+
+        <div class="problem-card-status mt-2">
+          <span class="badge rounded-pill due-badge-overdue" th:if="${problem.overdue()}">Overdue</span>
+          <span class="badge rounded-pill due-badge-today"
+                th:if="${problem.nextReviewDate() != null and !problem.overdue() and !problem.nextReviewDate().isAfter(T(java.time.LocalDate).now())}">
+            Due
+          </span>
+          <span class="text-muted small"
+                th:if="${problem.nextReviewDate() != null and problem.nextReviewDate().isAfter(T(java.time.LocalDate).now())}">
+            Next <span th:text="${#temporals.format(problem.nextReviewDate(), 'MMM d')}">Jul 12</span>
+          </span>
+          <i class="bi bi-star-fill text-warning ms-1" th:if="${problem.favorite()}"></i>
+          <span class="badge text-bg-secondary" th:if="${problem.archived()}">Archived</span>
+        </div>
+
+        <div class="problem-card-tags mt-3" th:if="${!#lists.isEmpty(problem.tags())}">
+          <span class="tag-pill" th:each="tag, stat : ${problem.tags()}"
+                th:if="${stat.index < 2}" th:text="${tag.name()}">BFS</span>
+          <span class="tag-pill tag-pill-more"
+                th:if="${#lists.size(problem.tags()) > 2}"
+                th:text="'+' + (${#lists.size(problem.tags())} - 2)">+2</span>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <div th:replace="~{problems/fragments/pagination :: pagination(${problemPage}, ${filter}, ${showArchived})}"></div>
+</div>
+</body>
+</html>
