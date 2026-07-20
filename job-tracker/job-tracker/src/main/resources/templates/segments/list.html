@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+	  th:replace="~{layout :: layout(~{::section})}">
+<section>
+	<div th:replace="~{fragments/components :: alerts}"></div>
+
+	<div class="page-toolbar mb-3">
+		<a th:href="@{/segments/new}" class="btn btn-primary">
+			<i data-lucide="plus" aria-hidden="true"></i>
+			Nuevo segmento
+		</a>
+	</div>
+
+	<div class="panel" th:if="${!segments.isEmpty()}">
+		<div class="panel-body-flush">
+			<div class="table-responsive">
+				<table class="table table-app mb-0">
+					<thead>
+					<tr>
+						<th>Nombre</th>
+						<th>Keywords</th>
+						<th>Vacantes</th>
+						<th></th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr th:each="item : ${segments}">
+						<td>
+							<a th:href="@{/segments/{id}(id=${item.segment().id()})}"
+							   th:text="${item.segment().name()}">Nombre</a>
+							<div class="text-muted small" th:if="${item.segment().description()}"
+								 th:text="${item.segment().description()}"></div>
+						</td>
+						<td class="cell-truncate" th:text="${item.segment().keywords() ?: '—'}">keywords</td>
+						<td th:text="${item.jobCount()}">0</td>
+						<td class="text-end">
+							<a th:href="@{/segments/{id}(id=${item.segment().id()})}"
+							   class="btn btn-sm btn-outline-secondary">Ver</a>
+						</td>
+					</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div class="empty-state" th:if="${segments.isEmpty()}">
+		<i data-lucide="pie-chart" aria-hidden="true"></i>
+		<div>Aún no hay segmentos de mercado.</div>
+		<a th:href="@{/segments/new}" class="btn btn-sm btn-primary mt-2">Crear el primero</a>
+	</div>
+</section>
+</html>

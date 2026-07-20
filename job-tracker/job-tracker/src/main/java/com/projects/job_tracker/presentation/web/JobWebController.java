@@ -58,6 +58,7 @@ public class JobWebController {
 			@RequestParam(required = false) String category,
 			@RequestParam(required = false) ApplicationStatus applicationStatus,
 			@RequestParam(required = false, defaultValue = "false") boolean onlyUnapplied,
+			@RequestParam(required = false) Long segmentId,
 			@RequestParam(required = false) String sortBy,
 			@RequestParam(required = false) String sortDirection,
 			@RequestParam(required = false) String groupBy,
@@ -75,6 +76,7 @@ public class JobWebController {
 				category,
 				applicationStatus,
 				onlyUnapplied,
+				segmentId,
 				JobSortField.fromParam(sortBy),
 				SortDirection.fromParam(sortDirection));
 		List<JobListing> jobs = listJobListingsUseCase.execute(query);
@@ -98,6 +100,7 @@ public class JobWebController {
 		model.addAttribute("category", category);
 		model.addAttribute("applicationStatus", applicationStatus);
 		model.addAttribute("onlyUnapplied", onlyUnapplied);
+		model.addAttribute("segmentId", segmentId);
 		model.addAttribute("sortBy", JobSortField.fromParam(sortBy));
 		model.addAttribute("sortDirection", SortDirection.fromParam(sortDirection));
 		model.addAttribute("sources", Arrays.asList(JobPlatform.values()));

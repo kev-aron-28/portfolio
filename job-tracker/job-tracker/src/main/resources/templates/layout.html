@@ -50,6 +50,12 @@
 					<li class="breadcrumb-item active" aria-current="page" th:text="${pageTitle}">Detalle</li>
 				</ol>
 			</nav>
+			<nav aria-label="Breadcrumb" th:if="${breadcrumbSection == 'segments'}">
+				<ol class="breadcrumb breadcrumb-compact mb-1">
+					<li class="breadcrumb-item"><a th:href="@{/segments}">Segmentos</a></li>
+					<li class="breadcrumb-item active" aria-current="page" th:text="${pageTitle}">Detalle</li>
+				</ol>
+			</nav>
 			<div class="page-header-row">
 				<div>
 					<h1 class="page-title mb-0" th:text="${pageTitle}">Page</h1>
@@ -61,7 +67,7 @@
 			</div>
 		</header>
 
-		<main class="page-content" th:classappend="${detailLayout} ? ' page-content--detail' : ''">
+		<main class="page-content" th:classappend="${detailLayout == true} ? ' page-content--detail' : ''">
 			<div th:replace="${content}">Content</div>
 		</main>
 	</div>

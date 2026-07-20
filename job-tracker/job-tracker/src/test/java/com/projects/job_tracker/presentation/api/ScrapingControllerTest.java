@@ -40,7 +40,7 @@ class ScrapingControllerTest {
 				}
 				""";
 
-		mockMvc.perform(post("/scraping/run").contentType(MediaType.APPLICATION_JSON).content(payload))
+		mockMvc.perform(post("/api/scraping/run").contentType(MediaType.APPLICATION_JSON).content(payload))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.scraped").value(1))
 				.andExpect(jsonPath("$.imported").value(1))

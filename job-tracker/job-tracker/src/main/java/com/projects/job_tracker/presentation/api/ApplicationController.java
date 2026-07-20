@@ -17,7 +17,7 @@ import com.projects.job_tracker.presentation.api.dto.CreateApplicationRequest;
 import com.projects.job_tracker.presentation.api.dto.UpdateApplicationRequest;
 
 @RestController
-@RequestMapping("/applications")
+@RequestMapping("/api/applications")
 public class ApplicationController {
 
 	private final CreateApplicationUseCase createApplicationUseCase;
@@ -39,7 +39,7 @@ public class ApplicationController {
 				request.notes());
 
 		ApplicationResponse response = ApplicationResponse.from(createApplicationUseCase.execute(command));
-		return ResponseEntity.created(URI.create("/applications/" + response.id())).body(response);
+		return ResponseEntity.created(URI.create("/api/applications/" + response.id())).body(response);
 	}
 
 	@PatchMapping("/{id}")

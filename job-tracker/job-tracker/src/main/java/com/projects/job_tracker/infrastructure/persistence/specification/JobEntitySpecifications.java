@@ -10,6 +10,7 @@ import com.projects.job_tracker.domain.model.ApplicationStatus;
 import com.projects.job_tracker.domain.model.JobFilterCriteria;
 import com.projects.job_tracker.infrastructure.persistence.entity.ApplicationEntity;
 import com.projects.job_tracker.infrastructure.persistence.entity.JobEntity;
+import com.projects.job_tracker.infrastructure.persistence.entity.JobMarketSegmentEntity;
 
 import jakarta.persistence.criteria.Subquery;
 
@@ -31,6 +32,7 @@ public final class JobEntitySpecifications {
 		addIfPresent(specs, categorySpec(filters.category()));
 		addIfPresent(specs, applicationStatusSpec(filters.applicationStatus()));
 		addIfPresent(specs, onlyUnappliedSpec(filters.onlyUnapplied()));
+		addIfPresent(specs, segmentSpec(filters.segmentId()));
 		if (specs.isEmpty()) {
 			return null;
 		}
@@ -147,6 +149,19 @@ public final class JobEntitySpecifications {
 			var applicationRoot = subquery.from(ApplicationEntity.class);
 			subquery.select(applicationRoot.get("job").get("id"));
 			return builder.not(root.get("id").in(subquery));
+		};
+	}
+
+	private static Specification<JobEntity> segmentSpec(Long segmentId) {
+		if (segmentId == null) {
+			return null;
+		}
+		return (root, query, builder) -> {
+			Subquery<Long> subquery = query.subquery(Long.class);
+			var segmentRoot = subquery.from(JobMarketSegmentEntity.class);
+			subquery.select(segmentRoot.get("jobId"));
+			subquery.where(builder.equal(segmentRoot.get("segmentId"), segmentId));
+			return root.get("id").in(subquery);
 		};
 	}
 }

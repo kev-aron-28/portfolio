@@ -121,7 +121,8 @@ public final class TestJobs {
 				null,
 				null,
 				platforms,
-				maxResults);
+				maxResults,
+				null);
 	}
 
 	public static JobListing listing(

@@ -69,7 +69,8 @@ public class RunScheduledScrapingUseCase {
 				null,
 				null,
 				schedule.platforms(),
-				schedule.maxResults()));
+				schedule.maxResults(),
+				null));
 
 		scrapingScheduleRepository.save(schedule.withLastRunAt(now));
 

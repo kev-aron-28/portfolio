@@ -56,7 +56,7 @@ class ScrapingScheduleControllerTest {
 						null,
 						Instant.parse("2026-07-06T12:00:00Z"))));
 
-		mockMvc.perform(get("/schedules"))
+		mockMvc.perform(get("/api/schedules"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].profileId").value(2))
 				.andExpect(jsonPath("$[0].platforms[0]").value("occ"));
@@ -84,7 +84,7 @@ class ScrapingScheduleControllerTest {
 				}
 				""";
 
-		mockMvc.perform(post("/schedules").contentType(MediaType.APPLICATION_JSON).content(payload))
+		mockMvc.perform(post("/api/schedules").contentType(MediaType.APPLICATION_JSON).content(payload))
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.id").value(5));
 	}
@@ -102,7 +102,7 @@ class ScrapingScheduleControllerTest {
 						Instant.now(),
 						Instant.now()));
 
-		mockMvc.perform(patch("/schedules/5")
+		mockMvc.perform(patch("/api/schedules/5")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content("{\"enabled\": false}"))
 				.andExpect(status().isOk())

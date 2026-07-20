@@ -39,12 +39,12 @@ class JobControllerIntegrationTest {
 				}
 				""";
 
-		mockMvc.perform(post("/jobs").contentType(MediaType.APPLICATION_JSON).content(jobPayload))
+		mockMvc.perform(post("/api/jobs").contentType(MediaType.APPLICATION_JSON).content(jobPayload))
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.id").isNumber())
 				.andExpect(jsonPath("$.title").value("Java Developer"));
 
-		mockMvc.perform(get("/jobs"))
+		mockMvc.perform(get("/api/jobs"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].title").value("Java Developer"));
 	}
@@ -60,7 +60,7 @@ class JobControllerIntegrationTest {
 				}
 				""";
 
-		MvcResult jobResult = mockMvc.perform(post("/jobs").contentType(MediaType.APPLICATION_JSON).content(jobPayload))
+		MvcResult jobResult = mockMvc.perform(post("/api/jobs").contentType(MediaType.APPLICATION_JSON).content(jobPayload))
 				.andExpect(status().isCreated())
 				.andReturn();
 
@@ -76,7 +76,7 @@ class JobControllerIntegrationTest {
 				""".formatted(jobId);
 
 		MvcResult applicationResult = mockMvc.perform(
-						post("/applications").contentType(MediaType.APPLICATION_JSON).content(applicationPayload))
+						post("/api/applications").contentType(MediaType.APPLICATION_JSON).content(applicationPayload))
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.status").value("APPLIED"))
 				.andReturn();
@@ -91,7 +91,7 @@ class JobControllerIntegrationTest {
 				}
 				""";
 
-		mockMvc.perform(patch("/applications/" + applicationId)
+		mockMvc.perform(patch("/api/applications/" + applicationId)
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(updatePayload))
 				.andExpect(status().isOk())
@@ -108,11 +108,11 @@ class JobControllerIntegrationTest {
 				}
 				""";
 
-		mockMvc.perform(post("/profiles").contentType(MediaType.APPLICATION_JSON).content(profilePayload))
+		mockMvc.perform(post("/api/profiles").contentType(MediaType.APPLICATION_JSON).content(profilePayload))
 				.andExpect(status().isCreated())
 				.andExpect(jsonPath("$.name").value("Backend Remote"));
 
-		mockMvc.perform(get("/profiles"))
+		mockMvc.perform(get("/api/profiles"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[0].keywords").value("java,spring,remote"));
 	}

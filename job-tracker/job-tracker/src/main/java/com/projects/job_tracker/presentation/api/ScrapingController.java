@@ -12,7 +12,7 @@ import com.projects.job_tracker.presentation.api.dto.ScrapeJobsRequest;
 import com.projects.job_tracker.presentation.api.dto.ScrapeJobsResponse;
 
 @RestController
-@RequestMapping("/scraping")
+@RequestMapping("/api/scraping")
 public class ScrapingController {
 
 	private final ScrapeJobsUseCase scrapeJobsUseCase;

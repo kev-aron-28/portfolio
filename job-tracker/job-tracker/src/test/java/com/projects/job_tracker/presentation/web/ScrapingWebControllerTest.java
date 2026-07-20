@@ -26,6 +26,7 @@ import com.projects.job_tracker.application.profile.ListSearchProfilesUseCase;
 import com.projects.job_tracker.application.scraping.GetScrapingSettingsUseCase;
 import com.projects.job_tracker.application.scraping.ScrapeJobsUseCase;
 import com.projects.job_tracker.application.scraping.UpdateScrapingSettingsUseCase;
+import com.projects.job_tracker.application.segment.ListMarketSegmentsUseCase;
 import com.projects.job_tracker.domain.model.JobPlatform;
 import com.projects.job_tracker.domain.model.ScrapingSettings;
 
@@ -62,11 +63,15 @@ class ScrapingWebControllerTest {
 	@MockitoBean
 	private RunScheduledScrapingUseCase runScheduledScrapingUseCase;
 
+	@MockitoBean
+	private ListMarketSegmentsUseCase listMarketSegmentsUseCase;
+
 	@Test
 	void rendersScrapingPage() throws Exception {
 		when(getScrapingSettingsUseCase.execute())
 				.thenReturn(new ScrapingSettings(1000, 20, List.of(JobPlatform.OCC, JobPlatform.LINKEDIN), null, 30000, null, 30000, null, 30000, null, 30000, true, 60000));
 		when(listSearchProfilesUseCase.execute()).thenReturn(List.of());
+		when(listMarketSegmentsUseCase.execute()).thenReturn(List.of());
 		when(listScrapingSchedulesUseCase.execute()).thenReturn(List.of());
 
 		mockMvc.perform(get("/scraping"))
@@ -83,7 +88,8 @@ class ScrapingWebControllerTest {
 						.contentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED)
 						.param("keywords", "java")
 						.param("platforms", "occ")
-						.param("maxResults", "10"))
+						.param("maxResults", "10")
+						.param("segmentId", "3"))
 				.andExpect(status().is3xxRedirection())
 				.andExpect(redirectedUrl("/scraping?tab=run"))
 				.andExpect(flash().attributeExists("successMessage"));

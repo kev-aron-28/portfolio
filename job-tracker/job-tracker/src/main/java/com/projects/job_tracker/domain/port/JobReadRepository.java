@@ -15,4 +15,6 @@ public interface JobReadRepository {
 	Optional<JobDetail> findDetailById(Long id);
 
 	DashboardMetrics getDashboardMetrics();
+
+	DashboardMetrics getDashboardMetrics(Long segmentId);
 }

@@ -19,7 +19,7 @@ import com.projects.job_tracker.presentation.api.dto.CreateJobRequest;
 import com.projects.job_tracker.presentation.api.dto.JobResponse;
 
 @RestController
-@RequestMapping("/jobs")
+@RequestMapping("/api/jobs")
 public class JobController {
 
 	private final CreateJobUseCase createJobUseCase;
@@ -67,6 +67,6 @@ public class JobController {
 				null);
 
 		JobResponse response = JobResponse.from(createJobUseCase.execute(command));
-		return ResponseEntity.created(URI.create("/jobs/" + response.id())).body(response);
+		return ResponseEntity.created(URI.create("/api/jobs/" + response.id())).body(response);
 	}
 }

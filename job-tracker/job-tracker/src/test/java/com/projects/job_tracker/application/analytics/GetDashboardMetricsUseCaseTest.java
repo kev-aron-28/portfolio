@@ -40,4 +40,25 @@ class GetDashboardMetricsUseCaseTest {
 		assertThat(result.jobsBySource()).containsEntry("occ", 6L);
 		assertThat(result.applicationsByStatus()).containsEntry(ApplicationStatus.APPLIED, 3L);
 	}
+
+	@Test
+	void returnsSegmentScopedMetrics() {
+		DashboardMetrics metrics = new DashboardMetrics(
+				2, 1, 1, 0, Map.of("occ", 2L), new EnumMap<>(ApplicationStatus.class), MarketInsights.empty(2));
+		when(jobReadRepository.getDashboardMetrics(9L)).thenReturn(metrics);
+
+		DashboardMetrics result = getDashboardMetricsUseCase.execute(9L);
+
+		assertThat(result.totalJobs()).isEqualTo(2);
+		assertThat(result.jobsBySource()).containsEntry("occ", 2L);
+	}
+
+	@Test
+	void nullSegmentIdUsesGlobalMetrics() {
+		DashboardMetrics metrics = new DashboardMetrics(
+				5, 0, 0, 0, Map.of(), new EnumMap<>(ApplicationStatus.class), MarketInsights.empty(5));
+		when(jobReadRepository.getDashboardMetrics()).thenReturn(metrics);
+
+		assertThat(getDashboardMetricsUseCase.execute(null).totalJobs()).isEqualTo(5);
+	}
 }

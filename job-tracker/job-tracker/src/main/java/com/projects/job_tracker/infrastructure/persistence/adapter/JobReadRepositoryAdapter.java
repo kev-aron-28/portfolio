@@ -70,26 +70,59 @@ public class JobReadRepositoryAdapter implements JobReadRepository {
 
 	@Override
 	public DashboardMetrics getDashboardMetrics() {
+		return getDashboardMetrics(null);
+	}
+
+	@Override
+	public DashboardMetrics getDashboardMetrics(Long segmentId) {
 		Instant weekAgo = Instant.now().minus(7, ChronoUnit.DAYS);
-		long totalJobs = jpaJobRepository.count();
-		Map<String, Long> jobsBySource = toStringCountMap(jpaJobRepository.countGroupedBySource());
-		Map<ApplicationStatus, Long> applicationsByStatus = toStatusCountMap(jpaApplicationRepository.countGroupedByStatus());
+		boolean scoped = segmentId != null;
+
+		long totalJobs = scoped ? jpaJobRepository.countForSegment(segmentId) : jpaJobRepository.count();
+		Map<String, Long> jobsBySource = toStringCountMap(scoped
+				? jpaJobRepository.countGroupedBySourceForSegment(segmentId)
+				: jpaJobRepository.countGroupedBySource());
+		Map<ApplicationStatus, Long> applicationsByStatus = toStatusCountMap(scoped
+				? jpaApplicationRepository.countGroupedByStatusForSegment(segmentId)
+				: jpaApplicationRepository.countGroupedByStatus());
 		var market = MarketInsightsBuilder.build(
 				totalJobs,
-				jpaJobRepository.countDistinctCompanies(),
-				jpaJobRepository.countGroupedByWorkMode(),
-				jpaJobRepository.countGroupedByCategory(),
-				jpaJobRepository.countGroupedByEmploymentType(),
-				jpaJobRepository.countGroupedByCompany(),
-				jpaJobRepository.countGroupedByLocation(),
-				jpaJobRepository.findSalariesWithWorkMode(),
-				jpaJobRepository.findTextForMarketAnalysis());
+				scoped
+						? jpaJobRepository.countDistinctCompaniesForSegment(segmentId)
+						: jpaJobRepository.countDistinctCompanies(),
+				scoped
+						? jpaJobRepository.countGroupedByWorkModeForSegment(segmentId)
+						: jpaJobRepository.countGroupedByWorkMode(),
+				scoped
+						? jpaJobRepository.countGroupedByCategoryForSegment(segmentId)
+						: jpaJobRepository.countGroupedByCategory(),
+				scoped
+						? jpaJobRepository.countGroupedByEmploymentTypeForSegment(segmentId)
+						: jpaJobRepository.countGroupedByEmploymentType(),
+				scoped
+						? jpaJobRepository.countGroupedByCompanyForSegment(segmentId)
+						: jpaJobRepository.countGroupedByCompany(),
+				scoped
+						? jpaJobRepository.countGroupedByLocationForSegment(segmentId)
+						: jpaJobRepository.countGroupedByLocation(),
+				scoped
+						? jpaJobRepository.findSalariesWithWorkModeForSegment(segmentId)
+						: jpaJobRepository.findSalariesWithWorkMode(),
+				scoped
+						? jpaJobRepository.findTextForMarketAnalysisForSegment(segmentId)
+						: jpaJobRepository.findTextForMarketAnalysis());
 
 		return new DashboardMetrics(
 				totalJobs,
-				jpaApplicationRepository.count(),
-				jpaJobRepository.countByCreatedAtGreaterThanEqual(weekAgo),
-				jpaApplicationRepository.countByAppliedAtGreaterThanEqual(weekAgo),
+				scoped
+						? jpaApplicationRepository.countForSegment(segmentId)
+						: jpaApplicationRepository.count(),
+				scoped
+						? jpaJobRepository.countByCreatedAtGreaterThanEqualForSegment(weekAgo, segmentId)
+						: jpaJobRepository.countByCreatedAtGreaterThanEqual(weekAgo),
+				scoped
+						? jpaApplicationRepository.countByAppliedAtGreaterThanEqualForSegment(weekAgo, segmentId)
+						: jpaApplicationRepository.countByAppliedAtGreaterThanEqual(weekAgo),
 				jobsBySource,
 				applicationsByStatus,
 				market);

@@ -26,6 +26,7 @@ import com.projects.job_tracker.application.profile.ListSearchProfilesUseCase;
 import com.projects.job_tracker.application.scraping.GetScrapingSettingsUseCase;
 import com.projects.job_tracker.application.scraping.ScrapeJobsUseCase;
 import com.projects.job_tracker.application.scraping.UpdateScrapingSettingsUseCase;
+import com.projects.job_tracker.application.segment.ListMarketSegmentsUseCase;
 import com.projects.job_tracker.domain.model.JobPlatform;
 import com.projects.job_tracker.domain.model.ScrapeFilterSet;
 import com.projects.job_tracker.domain.model.ScrapingSchedule;
@@ -46,6 +47,7 @@ public class ScrapingWebController {
 	private final CreateScrapingScheduleUseCase createScrapingScheduleUseCase;
 	private final UpdateScrapingScheduleUseCase updateScrapingScheduleUseCase;
 	private final RunScheduledScrapingUseCase runScheduledScrapingUseCase;
+	private final ListMarketSegmentsUseCase listMarketSegmentsUseCase;
 
 	public ScrapingWebController(
 			ScrapeJobsUseCase scrapeJobsUseCase,
@@ -56,7 +58,8 @@ public class ScrapingWebController {
 			ListScrapingSchedulesUseCase listScrapingSchedulesUseCase,
 			CreateScrapingScheduleUseCase createScrapingScheduleUseCase,
 			UpdateScrapingScheduleUseCase updateScrapingScheduleUseCase,
-			RunScheduledScrapingUseCase runScheduledScrapingUseCase) {
+			RunScheduledScrapingUseCase runScheduledScrapingUseCase,
+			ListMarketSegmentsUseCase listMarketSegmentsUseCase) {
 		this.scrapeJobsUseCase = scrapeJobsUseCase;
 		this.getScrapingSettingsUseCase = getScrapingSettingsUseCase;
 		this.updateScrapingSettingsUseCase = updateScrapingSettingsUseCase;
@@ -66,6 +69,7 @@ public class ScrapingWebController {
 		this.createScrapingScheduleUseCase = createScrapingScheduleUseCase;
 		this.updateScrapingScheduleUseCase = updateScrapingScheduleUseCase;
 		this.runScheduledScrapingUseCase = runScheduledScrapingUseCase;
+		this.listMarketSegmentsUseCase = listMarketSegmentsUseCase;
 	}
 
 	@GetMapping
@@ -90,6 +94,7 @@ public class ScrapingWebController {
 			@RequestParam(required = false) Integer postedWithinDays,
 			@RequestParam(required = false) List<String> platforms,
 			@RequestParam(required = false) Integer maxResults,
+			@RequestParam(required = false) Long segmentId,
 			RedirectAttributes redirectAttributes) {
 		try {
 			List<JobPlatform> resolvedPlatforms = resolvePlatforms(platforms);
@@ -105,7 +110,8 @@ public class ScrapingWebController {
 					workMode,
 					postedWithinDays,
 					resolvedPlatforms,
-					resolvedMax));
+					resolvedMax,
+					segmentId));
 
 			redirectAttributes.addFlashAttribute("scrapeResult", result);
 			redirectAttributes.addFlashAttribute(
@@ -256,6 +262,7 @@ public class ScrapingWebController {
 
 		model.addAttribute("settings", settings);
 		model.addAttribute("profiles", profiles);
+		model.addAttribute("segments", listMarketSegmentsUseCase.execute());
 		model.addAttribute("profileViews", profileViews);
 		model.addAttribute("schedules", schedules);
 		model.addAttribute("allPlatforms", Arrays.asList(JobPlatform.values()));

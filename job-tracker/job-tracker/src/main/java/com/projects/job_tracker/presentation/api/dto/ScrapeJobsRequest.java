@@ -16,7 +16,8 @@ public record ScrapeJobsRequest(
 		String workMode,
 		Integer postedWithinDays,
 		List<String> platforms,
-		Integer maxResults) {
+		Integer maxResults,
+		Long segmentId) {
 
 	public ScrapeJobsUseCase.ScrapeJobsCommand toCommand() {
 		List<JobPlatform> resolvedPlatforms = platforms == null || platforms.isEmpty()
@@ -34,6 +35,7 @@ public record ScrapeJobsRequest(
 				workMode,
 				postedWithinDays,
 				resolvedPlatforms,
-				resolvedMaxResults);
+				resolvedMaxResults,
+				segmentId);
 	}
 }

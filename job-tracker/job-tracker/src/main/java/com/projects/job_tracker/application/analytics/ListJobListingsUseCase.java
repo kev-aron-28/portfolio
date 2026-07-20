@@ -34,6 +34,7 @@ public class ListJobListingsUseCase {
 				query.category(),
 				query.applicationStatus(),
 				query.onlyUnapplied(),
+				query.segmentId(),
 				query.sortBy(),
 				query.sortDirection());
 		return jobReadRepository.findListings(filters);
@@ -51,6 +52,7 @@ public class ListJobListingsUseCase {
 			String category,
 			ApplicationStatus applicationStatus,
 			boolean onlyUnapplied,
+			Long segmentId,
 			JobSortField sortBy,
 			SortDirection sortDirection) {
 
@@ -67,6 +69,7 @@ public class ListJobListingsUseCase {
 					null,
 					null,
 					false,
+					null,
 					JobSortField.CREATED_AT,
 					SortDirection.DESC);
 		}

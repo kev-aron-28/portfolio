@@ -14,6 +14,7 @@ public record JobFilterCriteria(
 		String category,
 		ApplicationStatus applicationStatus,
 		boolean onlyUnapplied,
+		Long segmentId,
 		JobSortField sortBy,
 		SortDirection sortDirection) {
 
@@ -30,6 +31,7 @@ public record JobFilterCriteria(
 				null,
 				null,
 				false,
+				null,
 				JobSortField.CREATED_AT,
 				SortDirection.DESC);
 	}

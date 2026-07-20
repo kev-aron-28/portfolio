@@ -17,5 +17,30 @@ public interface JpaApplicationRepository extends JpaRepository<ApplicationEntit
 	@Query("SELECT a.status, COUNT(a) FROM ApplicationEntity a GROUP BY a.status")
 	List<Object[]> countGroupedByStatus();
 
+	@Query("""
+			SELECT a.status, COUNT(a) FROM ApplicationEntity a
+			WHERE EXISTS (
+				SELECT 1 FROM JobMarketSegmentEntity jm
+				WHERE jm.jobId = a.job.id AND jm.segmentId = :segmentId)
+			GROUP BY a.status""")
+	List<Object[]> countGroupedByStatusForSegment(@Param("segmentId") Long segmentId);
+
 	long countByAppliedAtGreaterThanEqual(Instant appliedAt);
+
+	@Query("""
+			SELECT COUNT(a) FROM ApplicationEntity a
+			WHERE EXISTS (
+				SELECT 1 FROM JobMarketSegmentEntity jm
+				WHERE jm.jobId = a.job.id AND jm.segmentId = :segmentId)""")
+	long countForSegment(@Param("segmentId") Long segmentId);
+
+	@Query("""
+			SELECT COUNT(a) FROM ApplicationEntity a
+			WHERE a.appliedAt >= :appliedAt
+			AND EXISTS (
+				SELECT 1 FROM JobMarketSegmentEntity jm
+				WHERE jm.jobId = a.job.id AND jm.segmentId = :segmentId)""")
+	long countByAppliedAtGreaterThanEqualForSegment(
+			@Param("appliedAt") Instant appliedAt,
+			@Param("segmentId") Long segmentId);
 }

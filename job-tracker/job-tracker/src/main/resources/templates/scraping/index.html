@@ -129,6 +129,16 @@
 								</select>
 								<div class="form-field-hint">Si eliges un perfil, sus keywords y filtros tienen prioridad.</div>
 							</div>
+							<div class="form-field form-field-wide">
+								<label class="form-label" for="segmentId">Segmento (opcional)</label>
+								<select class="form-select" id="segmentId" name="segmentId">
+									<option value="">— Sin segmento —</option>
+									<option th:each="s : ${segments}"
+											th:value="${s.id()}"
+											th:text="${s.name()}">Segmento</option>
+								</select>
+								<div class="form-field-hint">Las vacantes encontradas se asociarán a este segmento.</div>
+							</div>
 
 							<div class="form-section-title">Criterios de búsqueda</div>
 							<div class="filter-grid">

@@ -17,4 +17,11 @@ public class GetDashboardMetricsUseCase {
 	public DashboardMetrics execute() {
 		return jobReadRepository.getDashboardMetrics();
 	}
+
+	public DashboardMetrics execute(Long segmentId) {
+		if (segmentId == null) {
+			return execute();
+		}
+		return jobReadRepository.getDashboardMetrics(segmentId);
+	}
 }

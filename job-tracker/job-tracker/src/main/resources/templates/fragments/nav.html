@@ -8,6 +8,10 @@
 			<i data-lucide="layout-dashboard" aria-hidden="true"></i>
 			<span>Dashboard</span>
 		</a>
+		<a th:href="@{/segments}" class="sidebar-link" th:classappend="${activeNav == 'segments'} ? 'active'">
+			<i data-lucide="pie-chart" aria-hidden="true"></i>
+			<span>Segmentos</span>
+		</a>
 	</div>
 	<div class="sidebar-section">
 		<span class="sidebar-label">Pipeline</span>

@@ -22,7 +22,7 @@ import com.projects.job_tracker.presentation.api.dto.ScrapingScheduleResponse;
 import com.projects.job_tracker.presentation.api.dto.UpdateScrapingScheduleRequest;
 
 @RestController
-@RequestMapping("/schedules")
+@RequestMapping("/api/schedules")
 public class ScrapingScheduleController {
 
 	private final CreateScrapingScheduleUseCase createScrapingScheduleUseCase;
@@ -52,7 +52,7 @@ public class ScrapingScheduleController {
 	public ResponseEntity<ScrapingScheduleResponse> createSchedule(@RequestBody CreateScrapingScheduleRequest request) {
 		ScrapingScheduleResponse response =
 				ScrapingScheduleResponse.from(createScrapingScheduleUseCase.execute(request.toCommand()));
-		return ResponseEntity.created(URI.create("/schedules/" + response.id())).body(response);
+		return ResponseEntity.created(URI.create("/api/schedules/" + response.id())).body(response);
 	}
 
 	@PatchMapping("/{id}")

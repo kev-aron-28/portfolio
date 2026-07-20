@@ -16,7 +16,7 @@ import com.projects.job_tracker.presentation.api.dto.CreateSearchProfileRequest;
 import com.projects.job_tracker.presentation.api.dto.SearchProfileResponse;
 
 @RestController
-@RequestMapping("/profiles")
+@RequestMapping("/api/profiles")
 public class SearchProfileController {
 
 	private final CreateSearchProfileUseCase createSearchProfileUseCase;
@@ -42,6 +42,6 @@ public class SearchProfileController {
 				request.filters());
 
 		SearchProfileResponse response = SearchProfileResponse.from(createSearchProfileUseCase.execute(command));
-		return ResponseEntity.created(URI.create("/profiles/" + response.id())).body(response);
+		return ResponseEntity.created(URI.create("/api/profiles/" + response.id())).body(response);
 	}
 }

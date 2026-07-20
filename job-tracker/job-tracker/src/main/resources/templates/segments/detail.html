@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+	  th:replace="~{layout :: layout(~{::section})}">
+<section>
+	<div th:replace="~{fragments/components :: alerts}"></div>
+
+	<div th:if="${scrapeResult}" class="panel mb-3">
+		<div class="panel-header">
+			<h2>Resultado de la búsqueda</h2>
+			<a th:if="${scrapeResult.imported() > 0 || scrapeResult.duplicates() > 0}"
+			   th:href="@{/jobs(segmentId=${segment.id()})}" class="btn btn-sm btn-primary">Ver vacantes del segmento</a>
+		</div>
+		<div class="panel-body">
+			<div class="result-metrics">
+				<div class="result-metric">
+					<div class="metric-label">Encontradas</div>
+					<div class="metric-value metric-value-sm" th:text="${scrapeResult.scraped()}">0</div>
+				</div>
+				<div class="result-metric">
+					<div class="metric-label">Importadas</div>
+					<div class="metric-value metric-value-sm" th:text="${scrapeResult.imported()}">0</div>
+				</div>
+				<div class="result-metric">
+					<div class="metric-label">Duplicadas</div>
+					<div class="metric-value metric-value-sm" th:text="${scrapeResult.duplicates()}">0</div>
+				</div>
+			</div>
+			<p th:if="${!scrapeResult.errors().isEmpty()}" class="form-error mb-0 mt-2">
+				<strong>Errores:</strong>
+				<span th:text="${#strings.listJoin(scrapeResult.errors(), '; ')}"></span>
+			</p>
+		</div>
+	</div>
+
+	<div class="page-toolbar mb-3">
+		<a th:href="@{/jobs(segmentId=${segment.id()})}" class="btn btn-outline-secondary">
+			Vacantes del segmento
+			<span class="tab-count" th:text="${jobCount}">0</span>
+		</a>
+	</div>
+
+	<div th:replace="~{fragments/dashboard-metrics :: panels(${metrics})}"></div>
+
+	<div class="panel mb-3">
+		<div class="panel-header">
+			<h2>Ejecutar scrape</h2>
+		</div>
+		<div class="panel-body">
+			<form th:action="@{/segments/{id}/scrape(id=${segment.id()})}" method="post" class="scraping-form">
+				<div class="form-section-title">Origen de criterios</div>
+				<div class="form-field form-field-wide">
+					<label class="form-label" for="profileId">Perfil (opcional)</label>
+					<select class="form-select" id="profileId" name="profileId">
+						<option value="">— Usar keywords del segmento / form —</option>
+						<option th:each="p : ${profiles}"
+								th:value="${p.id()}"
+								th:text="${p.name() + ' · ' + p.keywords()}">Perfil</option>
+					</select>
+				</div>
+
+				<div class="form-section-title">Criterios</div>
+				<div class="filter-grid">
+					<div class="form-field">
+						<label class="form-label" for="keywords">Keywords</label>
+						<input class="form-control" id="keywords" name="keywords" type="text"
+							   th:value="${segment.keywords()}"
+							   placeholder="java developer">
+						<div class="form-field-hint">Vacío + sin perfil = keywords del segmento.</div>
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="location">Ubicación</label>
+						<input class="form-control" id="location" name="location" type="text"
+							   th:value="${filters.location()}">
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="salaryMin">Salario mín.</label>
+						<input class="form-control" id="salaryMin" name="salaryMin" type="number" step="1000"
+							   th:value="${filters.salaryMin()}">
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="salaryMax">Salario máx.</label>
+						<input class="form-control" id="salaryMax" name="salaryMax" type="number" step="1000"
+							   th:value="${filters.salaryMax()}">
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="employmentType">Tipo de empleo</label>
+						<input class="form-control" id="employmentType" name="employmentType" type="text"
+							   th:value="${filters.employmentType()}">
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="workMode">Modalidad</label>
+						<select class="form-select" id="workMode" name="workMode"
+								th:replace="~{fragments/scraping-forms :: workModeSelect('workMode', 'workMode', ${filters.workMode()})}"></select>
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="postedWithinDays">Publicados (días)</label>
+						<input class="form-control" id="postedWithinDays" name="postedWithinDays" type="number" min="0"
+							   th:value="${filters.postedWithinDays()}">
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="maxResults">Máximo resultados</label>
+						<input class="form-control" id="maxResults" name="maxResults" type="number"
+							   min="1" max="100" th:value="${settings.defaultMaxResults()}">
+					</div>
+				</div>
+
+				<div class="form-section-title">Plataformas</div>
+				<div th:replace="~{fragments/scraping-forms :: platformChecks('platforms', 'seg-platform', ${settings.defaultPlatforms()})}"></div>
+
+				<div class="form-footer">
+					<button type="submit" class="btn btn-primary">
+						<i data-lucide="play" aria-hidden="true"></i>
+						Ejecutar y atribuir al segmento
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<div class="panel mb-3">
+		<div class="panel-header">
+			<h2>Vacantes recientes del segmento</h2>
+			<a th:href="@{/jobs(segmentId=${segment.id()})}" class="btn btn-sm btn-outline-secondary">Ver todas</a>
+		</div>
+		<div class="panel-body-flush" th:if="${!recentJobs.isEmpty()}">
+			<div class="table-responsive">
+				<table class="table table-app mb-0">
+					<thead>
+					<tr>
+						<th>Título</th>
+						<th>Empresa</th>
+						<th>Fuente</th>
+						<th>Estado</th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr th:each="job : ${recentJobs}">
+						<td class="cell-truncate">
+							<a th:href="@{/jobs/{id}(id=${job.id()})}" th:text="${job.title()}">Title</a>
+						</td>
+						<td th:text="${job.companyName()}">Company</td>
+						<td><span th:replace="~{fragments/components :: sourceBadge(${job.source()})}"></span></td>
+						<td>
+							<span th:if="${job.applicationStatus() != null}"
+								  th:replace="~{fragments/components :: statusBadge(${job.applicationStatus()})}"></span>
+							<span th:if="${job.applicationStatus() == null}"
+								  th:replace="~{fragments/components :: newBadge}"></span>
+						</td>
+					</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="empty-state" th:if="${recentJobs.isEmpty()}">
+			<i data-lucide="search" aria-hidden="true"></i>
+			<div>Sin vacantes asociadas. Ejecuta un scrape desde este segmento.</div>
+		</div>
+	</div>
+
+	<div class="panel mb-3">
+		<div class="panel-header"><h2>Editar segmento</h2></div>
+		<div class="panel-body">
+			<form th:action="@{/segments/{id}(id=${segment.id()})}" method="post" class="scraping-form">
+				<div class="filter-grid">
+					<div class="form-field form-field-wide">
+						<label class="form-label" for="edit-name">Nombre</label>
+						<input class="form-control" id="edit-name" name="name" type="text" required
+							   th:value="${segment.name()}">
+					</div>
+					<div class="form-field form-field-wide">
+						<label class="form-label" for="edit-description">Descripción</label>
+						<textarea class="form-control" id="edit-description" name="description" rows="2"
+								  th:text="${segment.description()}"></textarea>
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="edit-keywords">Keywords</label>
+						<input class="form-control" id="edit-keywords" name="keywords" type="text"
+							   th:value="${segment.keywords()}">
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="edit-location">Ubicación</label>
+						<input class="form-control" id="edit-location" name="location" type="text"
+							   th:value="${filters.location()}">
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="edit-salaryMin">Salario mín.</label>
+						<input class="form-control" id="edit-salaryMin" name="salaryMin" type="number" step="1000"
+							   th:value="${filters.salaryMin()}">
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="edit-salaryMax">Salario máx.</label>
+						<input class="form-control" id="edit-salaryMax" name="salaryMax" type="number" step="1000"
+							   th:value="${filters.salaryMax()}">
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="edit-employmentType">Tipo de empleo</label>
+						<input class="form-control" id="edit-employmentType" name="employmentType" type="text"
+							   th:value="${filters.employmentType()}">
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="edit-workMode">Modalidad</label>
+						<select class="form-select" id="edit-workMode" name="workMode"
+								th:replace="~{fragments/scraping-forms :: workModeSelect('edit-workMode', 'workMode', ${filters.workMode()})}"></select>
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="edit-postedWithinDays">Publicados (días)</label>
+						<input class="form-control" id="edit-postedWithinDays" name="postedWithinDays" type="number"
+							   min="0" th:value="${filters.postedWithinDays()}">
+					</div>
+				</div>
+				<div class="form-footer">
+					<button type="submit" class="btn btn-primary">Guardar cambios</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<form th:action="@{/segments/{id}/delete(id=${segment.id()})}" method="post"
+		  onsubmit="return confirm('¿Eliminar este segmento? Las vacantes no se borran.');">
+		<button type="submit" class="btn btn-outline-danger btn-sm">Eliminar segmento</button>
+	</form>
+</section>
+</html>

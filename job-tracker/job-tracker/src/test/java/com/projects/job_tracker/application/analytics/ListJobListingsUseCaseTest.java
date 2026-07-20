@@ -60,6 +60,7 @@ class ListJobListingsUseCaseTest {
 				null,
 				ApplicationStatus.APPLIED,
 				false,
+				null,
 				JobSortField.CREATED_AT,
 				SortDirection.DESC);
 		List<JobListing> result = listJobListingsUseCase.execute(query);
