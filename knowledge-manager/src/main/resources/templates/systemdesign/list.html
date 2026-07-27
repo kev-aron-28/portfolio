@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">System Design</h1>
+      <p class="page-subtitle">Study architecture interview questions with spaced repetition and a personal whiteboard.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-secondary" th:href="@{/system-design/new}">
+        <i class="bi bi-plus-lg me-1"></i>New design
+      </a>
+      <a class="btn btn-primary" th:href="@{/system-design/practice}">
+        <i class="bi bi-pencil-square me-1"></i>Start Practice
+      </a>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-4 col-xl">
+      <div class="card-surface stat-card">
+        <div class="stat-value" th:text="${stats.totalDesigns()}">0</div>
+        <div class="stat-label">Total Designs</div>
+      </div>
+    </div>
+    <div class="col-md-4 col-xl">
+      <div class="card-surface stat-card">
+        <div class="stat-value" th:text="${stats.dueTodayCount()}">0</div>
+        <div class="stat-label">Due Today</div>
+      </div>
+    </div>
+    <div class="col-md-4 col-xl">
+      <div class="card-surface stat-card">
+        <div class="stat-value" th:text="${stats.totalReviews()}">0</div>
+        <div class="stat-label">Total Reviews</div>
+      </div>
+    </div>
+    <div class="col-md-4 col-xl">
+      <div class="card-surface stat-card">
+        <div class="stat-value"
+             th:text="${stats.averageReviewSeconds() == 0 ? '—' : #numbers.formatDecimal(stats.averageReviewSeconds() / 60.0, 1, 1) + 'm'}">—</div>
+        <div class="stat-label">Avg Review Time</div>
+      </div>
+    </div>
+    <div class="col-md-4 col-xl">
+      <div class="card-surface stat-card">
+        <div class="stat-value"
+             th:text="${stats.averageConfidence() == 0 ? '—' : stats.averageConfidence()}">—</div>
+        <div class="stat-label">Avg Confidence</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <div class="col-lg-4">
+      <section class="card-surface p-4 h-100">
+        <div class="section-title">Most Reviewed Topics</div>
+        <div th:if="${#lists.isEmpty(stats.mostReviewedTopics())}" class="text-muted small">No reviews yet.</div>
+        <div class="d-flex justify-content-between small mb-2"
+             th:each="item : ${stats.mostReviewedTopics()}">
+          <span th:text="${item.category()}">Topic</span>
+          <span class="text-muted" th:text="${item.count()}">0</span>
+        </div>
+      </section>
+    </div>
+    <div class="col-lg-4">
+      <section class="card-surface p-4 h-100">
+        <div class="section-title">Topics Mastered</div>
+        <div th:if="${#lists.isEmpty(stats.topicsMastered())}" class="text-muted small">Keep reviewing to master topics.</div>
+        <div class="d-flex justify-content-between small mb-2"
+             th:each="item : ${stats.topicsMastered()}">
+          <span th:text="${item.category()}">Topic</span>
+          <span class="text-muted" th:text="${item.count()}">0</span>
+        </div>
+      </section>
+    </div>
+    <div class="col-lg-4">
+      <section class="card-surface p-4 h-100">
+        <div class="section-title">Review Heatmap</div>
+        <div class="heatmap-github">
+          <div class="heatmap-column" th:each="week : ${stats.heatmapWeeks()}">
+            <div th:each="cell : ${week}"
+                 class="heatmap-cell"
+                 th:classappend="${cell.isEmpty()} ? ' heatmap-cell-empty' : ' level-' + ${cell.level()}"
+                 th:attr="title=${!cell.isEmpty()} ? ${#temporals.format(cell.date(), 'MMM d, yyyy') + ': ' + cell.count() + ' reviews'} : null">
+            </div>
+          </div>
+        </div>
+        <div class="text-muted small mt-2">Last 26 weeks</div>
+      </section>
+    </div>
+  </div>
+
+  <form class="card-surface p-3 mb-4" method="get" th:action="@{/system-design}">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-3">
+        <label for="q" class="form-label small mb-1">Search</label>
+        <input type="search" id="q" name="q" class="form-control" placeholder="Title or prompt…"
+               th:value="${searchQuery}">
+      </div>
+      <div class="col-md-2">
+        <label for="category" class="form-label small mb-1">Category</label>
+        <select id="category" name="category" class="form-select">
+          <option value="">All</option>
+          <option th:each="cat : ${categories}"
+                  th:value="${cat.name()}"
+                  th:text="${cat.label}"
+                  th:selected="${selectedCategory == cat}"></option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label for="difficulty" class="form-label small mb-1">Difficulty</label>
+        <select id="difficulty" name="difficulty" class="form-select">
+          <option value="">All</option>
+          <option th:each="diff : ${difficulties}"
+                  th:value="${diff.name()}"
+                  th:text="${diff.name()}"
+                  th:selected="${selectedDifficulty == diff}"></option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label for="status" class="form-label small mb-1">Review status</label>
+        <select id="status" name="status" class="form-select">
+          <option th:each="st : ${statuses}"
+                  th:value="${st.name()}"
+                  th:text="${st.label}"
+                  th:selected="${selectedStatus == st or (selectedStatus == null and st.name() == 'ALL')}"></option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label for="tag" class="form-label small mb-1">Tag</label>
+        <input type="text" id="tag" name="tag" class="form-control" placeholder="e.g. cache"
+               th:value="${selectedTag}">
+      </div>
+      <div class="col-md-3 d-flex flex-wrap gap-3 align-items-center pb-1">
+        <div class="form-check mb-0">
+          <input class="form-check-input" type="checkbox" id="dueToday" name="dueToday" value="true"
+                 th:checked="${dueTodayOnly}">
+          <label class="form-check-label small" for="dueToday">Due today</label>
+        </div>
+        <div class="form-check mb-0">
+          <input class="form-check-input" type="checkbox" id="favorites" name="favorites" value="true"
+                 th:checked="${favoritesOnly}">
+          <label class="form-check-label small" for="favorites">Favorites</label>
+        </div>
+      </div>
+      <div class="col-md-2 d-flex gap-2">
+        <button type="submit" class="btn btn-primary flex-grow-1">Filter</button>
+        <a class="btn btn-outline-secondary" th:href="@{/system-design}">Clear</a>
+      </div>
+    </div>
+  </form>
+
+  <div th:if="${#lists.isEmpty(problems)}" class="card-surface empty-state">
+    <i class="bi bi-diagram-3 fs-2 d-block mb-3"></i>
+    <h2 class="h5 mb-2">No designs yet</h2>
+    <p class="mb-3">Add an architecture interview question and capture your own explanation.</p>
+    <a class="btn btn-primary btn-sm" th:href="@{/system-design/new}">Create design</a>
+  </div>
+
+  <section class="card-surface p-4" th:if="${!#lists.isEmpty(problems)}">
+    <div class="problem-row" th:each="item : ${problems}">
+      <div class="d-flex align-items-center justify-content-between gap-3">
+        <div>
+          <div class="d-flex align-items-center gap-2">
+            <a class="problem-link" th:href="@{/system-design/{id}(id=${item.id()})}" th:text="${item.title()}">Title</a>
+            <i class="bi bi-star-fill text-warning small" th:if="${item.favorite()}" title="Favorite"></i>
+          </div>
+          <div class="d-flex align-items-center gap-2 mt-1 flex-wrap">
+            <span class="badge text-bg-light border" th:text="${item.category().label}">Category</span>
+            <span class="difficulty-badge"
+                  th:classappend="' difficulty-' + ${#strings.toLowerCase(item.difficulty().name())}"
+                  th:text="${item.difficulty()}">MEDIUM</span>
+            <span class="badge rounded-pill due-badge-overdue" th:if="${item.overdue()}">Overdue</span>
+            <span class="badge rounded-pill due-badge-today"
+                  th:if="${item.dueToday() and !item.overdue()}">Due today</span>
+            <span class="badge rounded-pill text-bg-info" th:if="${item.neverReviewed()}">New</span>
+            <span class="badge text-bg-light border" th:each="tag : ${item.tags()}" th:text="${tag}">tag</span>
+            <span class="text-muted small"
+                  th:unless="${item.neverReviewed()}"
+                  th:text="'Next ' + ${#temporals.format(item.nextReviewDate(), 'MMM d')}">Next</span>
+          </div>
+        </div>
+        <a class="btn btn-sm btn-outline-primary"
+           th:href="@{/system-design/{id}/practice(id=${item.id()})}">Practice</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

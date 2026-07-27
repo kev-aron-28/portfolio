@@ -72,17 +72,19 @@ public class ScrapeJobsUseCase {
 						NormalizedJob normalized = jobNormalizer.normalize(scrapedJob);
 						if (duplicateJobDetector.isDuplicate(normalized)) {
 							duplicates++;
-							attachExistingJobToSegment(command.segmentId(), normalized);
+							Job existing = jobRepository
+									.findBySourceAndUrl(normalized.source(), normalized.url())
+									.orElse(null);
+							if (existing != null) {
+								attachJobToSegment(command.segmentId(), existing.id());
+								importedJobs.add(toSummary(existing.id(), normalized, true));
+							}
 							continue;
 						}
 						Job created = createJobUseCase.execute(toCreateCommand(normalized));
 						attachJobToSegment(command.segmentId(), created.id());
 						imported++;
-						importedJobs.add(new ImportedJobSummary(
-								normalized.title(),
-								normalized.companyName(),
-								normalized.source(),
-								normalized.url()));
+						importedJobs.add(toSummary(created.id(), normalized, false));
 					} catch (RuntimeException ex) {
 						errors.add(platform.source() + " job skipped: " + ex.getMessage());
 					}
@@ -142,19 +144,21 @@ public class ScrapeJobsUseCase {
 				|| command.postedWithinDays() != null;
 	}
 
-	private void attachExistingJobToSegment(Long segmentId, NormalizedJob normalized) {
-		if (segmentId == null) {
-			return;
-		}
-		jobRepository.findBySourceAndUrl(normalized.source(), normalized.url())
-				.ifPresent(job -> attachJobToSegment(segmentId, job.id()));
-	}
-
 	private void attachJobToSegment(Long segmentId, Long jobId) {
 		if (segmentId == null || jobId == null) {
 			return;
 		}
 		marketSegmentRepository.attachJob(segmentId, jobId);
+	}
+
+	private static ImportedJobSummary toSummary(Long jobId, NormalizedJob job, boolean duplicate) {
+		return new ImportedJobSummary(
+				jobId,
+				job.title(),
+				job.companyName(),
+				job.source(),
+				job.url(),
+				duplicate);
 	}
 
 	private CreateJobUseCase.CreateJobCommand toCreateCommand(NormalizedJob job) {

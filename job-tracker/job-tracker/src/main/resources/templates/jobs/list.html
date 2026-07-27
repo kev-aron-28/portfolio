@@ -2,6 +2,15 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
 	  th:replace="~{layout :: layout(~{::section})}">
 <section>
+	<div th:replace="~{fragments/components :: alerts}"></div>
+
+	<div class="page-toolbar mb-3">
+		<a th:href="@{/jobs/new}" class="btn btn-primary">
+			<i data-lucide="plus" aria-hidden="true"></i>
+			Agregar vacante
+		</a>
+	</div>
+
 	<div class="metrics-row metrics-row-4 mb-3" th:if="${overview.total() > 0}">
 		<div class="metric-cell">
 			<div class="metric-label">Resultados</div>
@@ -310,7 +319,10 @@
 		<div class="empty-state">
 			<i data-lucide="filter-x" aria-hidden="true"></i>
 			<div>No hay vacantes que coincidan con los filtros.</div>
-			<a th:href="@{/jobs}" class="btn btn-sm btn-outline-secondary mt-2">Limpiar filtros</a>
+			<div class="d-flex gap-2 justify-content-center mt-2">
+				<a th:href="@{/jobs}" class="btn btn-sm btn-outline-secondary">Limpiar filtros</a>
+				<a th:href="@{/jobs/new}" class="btn btn-sm btn-primary">Agregar vacante</a>
+			</div>
 		</div>
 	</div>
 </section>

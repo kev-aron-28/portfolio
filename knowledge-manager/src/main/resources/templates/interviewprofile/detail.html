@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="page-header">
+    <div>
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <span class="topic-color-dot" th:style="'background-color:' + ${profile.color()}"></span>
+        <i th:class="${profile.icon()}"></i>
+        <h1 class="page-title mb-0" th:text="${profile.name()}">Profile</h1>
+        <span class="badge text-bg-secondary" th:if="${profile.archived()}">Archived</span>
+      </div>
+      <p class="page-subtitle mb-0" th:if="${profile.company() != null}" th:text="${profile.company()}">Company</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <form th:action="@{/mock-interviews/start}" method="post" th:if="${!profile.archived()}">
+        <input type="hidden" name="profileId" th:value="${profile.id()}">
+        <button type="submit" class="btn btn-primary">Start interview</button>
+      </form>
+      <a class="btn btn-outline-secondary" th:href="@{/interview-profiles/{id}/edit(id=${profile.id()})}">Edit</a>
+      <form th:action="@{/interview-profiles/{id}/duplicate(id=${profile.id()})}" method="post">
+        <button type="submit" class="btn btn-outline-secondary">Duplicate</button>
+      </form>
+      <form th:if="${!profile.archived()}"
+            th:action="@{/interview-profiles/{id}/archive(id=${profile.id()})}" method="post">
+        <button type="submit" class="btn btn-outline-secondary">Archive</button>
+      </form>
+      <form th:if="${profile.archived()}"
+            th:action="@{/interview-profiles/{id}/unarchive(id=${profile.id()})}" method="post">
+        <button type="submit" class="btn btn-outline-secondary">Unarchive</button>
+      </form>
+      <form th:action="@{/interview-profiles/{id}/delete(id=${profile.id()})}" method="post"
+            onsubmit="return confirm('Delete this profile? Study items are not deleted.');">
+        <button type="submit" class="btn btn-outline-secondary">Delete</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <section class="card-surface p-4 mb-4">
+        <div class="section-title">Configuration</div>
+        <p class="mb-3" th:text="${profile.description() != null} ? ${profile.description()} : 'No description.'">Desc</p>
+        <dl class="row mb-0 small">
+          <dt class="col-sm-5 text-muted">Behavioral</dt>
+          <dd class="col-sm-7" th:text="${profile.behavioralQuestionCount()}">2</dd>
+          <dt class="col-sm-5 text-muted">Algorithms</dt>
+          <dd class="col-sm-7" th:text="${profile.algorithmQuestionCount()}">3</dd>
+          <dt class="col-sm-5 text-muted">System Design</dt>
+          <dd class="col-sm-7" th:text="${profile.systemDesignQuestionCount()}">1</dd>
+          <dt class="col-sm-5 text-muted">Max duration</dt>
+          <dd class="col-sm-7"
+              th:text="${profile.maxDurationMinutes() != null} ? ${profile.maxDurationMinutes()} + ' min' : '—'">60</dd>
+          <dt class="col-sm-5 text-muted">Target difficulty</dt>
+          <dd class="col-sm-7">
+            <span th:if="${#lists.isEmpty(profile.targetDifficulties())}">All</span>
+            <span th:each="diff, iter : ${profile.targetDifficulties()}"
+                  th:text="${diff.name()} + (${iter.last} ? '' : ', ')">MEDIUM</span>
+          </dd>
+        </dl>
+      </section>
+
+      <section class="card-surface p-4">
+        <div class="section-title">Assigned items</div>
+        <div class="mb-3">
+          <div class="fw-medium small text-muted mb-1">Algorithms (<span th:text="${profile.assignedProblemCount()}">0</span>)</div>
+          <div class="text-muted small" th:if="${profile.assignedProblemCount() == 0}">None assigned.</div>
+          <div class="small" th:each="id : ${profile.problemIds()}">
+            <a th:href="@{/problems/{id}(id=${id})}" th:text="'Problem #' + ${id}">Problem</a>
+          </div>
+        </div>
+        <div class="mb-3">
+          <div class="fw-medium small text-muted mb-1">Behavioral (<span th:text="${profile.assignedBehavioralCount()}">0</span>)</div>
+          <div class="text-muted small" th:if="${profile.assignedBehavioralCount() == 0}">None assigned.</div>
+          <div class="small" th:each="id : ${profile.behavioralQuestionIds()}">
+            <a th:href="@{/behavioral/{id}(id=${id})}" th:text="'Question #' + ${id}">Question</a>
+          </div>
+        </div>
+        <div>
+          <div class="fw-medium small text-muted mb-1">System Design (<span th:text="${profile.assignedSystemDesignCount()}">0</span>)</div>
+          <div class="text-muted small" th:if="${profile.assignedSystemDesignCount() == 0}">None assigned.</div>
+          <div class="small" th:each="id : ${profile.systemDesignProblemIds()}">
+            <a th:href="@{/system-design/{id}(id=${id})}" th:text="'Design #' + ${id}">Design</a>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="col-lg-5">
+      <section class="card-surface p-4" th:if="${stats != null}">
+        <div class="section-title">Stats</div>
+        <dl class="mb-0 small">
+          <dt class="text-muted">Interviews completed</dt>
+          <dd th:text="${stats.interviewsCompleted()}">0</dd>
+          <dt class="text-muted mt-2">Questions reviewed</dt>
+          <dd th:text="${stats.questionsReviewed()}">0</dd>
+          <dt class="text-muted mt-2">Average duration</dt>
+          <dd th:text="${stats.averageDurationSeconds() == 0 ? '—' : #numbers.formatDecimal(stats.averageDurationSeconds() / 60.0, 1, 1) + 'm'}">—</dd>
+          <dt class="text-muted mt-2">Average rating</dt>
+          <dd th:text="${stats.averageRating() == 0 ? '—' : stats.averageRating()}">—</dd>
+          <dt class="text-muted mt-2">Mastery</dt>
+          <dd th:text="${stats.masteryScore()}">0</dd>
+          <dt class="text-muted mt-2">Due reviews</dt>
+          <dd th:text="${stats.dueReviews()}">0</dd>
+          <dt class="text-muted mt-2">Completion</dt>
+          <dd th:text="${stats.completionPercentage()} + '%'">0%</dd>
+          <dt class="text-muted mt-2">Last interview</dt>
+          <dd th:text="${stats.lastInterviewDate() != null} ? ${#temporals.format(stats.lastInterviewDate(), 'MMM d, yyyy')} : '—'">—</dd>
+        </dl>
+      </section>
+    </div>
+  </div>
+</div>
+</body>
+</html>

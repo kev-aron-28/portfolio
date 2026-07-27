@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="behavioral-practice-shell">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <div class="text-muted small text-uppercase tracking-wide">System Design Practice</div>
+        <h1 class="page-title mt-1 mb-0" style="font-size: 1.25rem;" th:text="${problem.title()}">Design</h1>
+      </div>
+      <a class="btn btn-outline-secondary btn-sm" th:href="@{/system-design}">Exit</a>
+    </div>
+
+    <section class="card-surface p-4 mb-4">
+      <p class="behavioral-prompt mb-0" th:text="${problem.description()}">
+        Design Instagram.
+      </p>
+      <div class="text-muted small mt-2" th:if="${problem.estimatedInterviewTime() != null}"
+           th:text="'Target: about ' + ${problem.estimatedInterviewTime()} + ' minutes'">Target</div>
+    </section>
+
+    <div id="activePhase">
+      <div class="text-center mb-3">
+        <div class="behavioral-timer" id="practiceTimerDisplay">00:00:00</div>
+        <p class="text-muted small mt-2 mb-3">Sketch the architecture from memory. Your notes stay hidden.</p>
+      </div>
+      <div id="practiceWhiteboardHost" class="sd-whiteboard mb-3"
+           data-readonly="false"
+           data-autosave="false"></div>
+      <div class="text-center">
+        <button type="button" class="btn btn-primary" id="finishAnswerBtn">Finish</button>
+      </div>
+    </div>
+
+    <div id="reviewPhase" hidden>
+      <div class="text-center mb-3">
+        <span class="text-muted small">Time: <span id="finalTimeLabel">00:00:00</span></span>
+      </div>
+
+      <section class="card-surface p-4 mb-4">
+        <div class="section-title">Your practice sketch</div>
+        <div id="practiceSketchMount" class="sd-whiteboard sd-whiteboard-readonly"></div>
+      </section>
+
+      <section class="card-surface p-4 mb-4">
+        <div class="section-title">Stored whiteboard</div>
+        <div id="storedWhiteboardHost"
+             class="sd-whiteboard"
+             th:attr="data-scene=${problem.whiteboardJson()}"
+             data-readonly="true"
+             data-autosave="false"></div>
+      </section>
+
+      <section class="card-surface p-4 mb-4">
+        <div class="section-title">Stored explanation</div>
+        <div class="sd-doc-block" th:if="${problem.overview() != null}">
+          <div class="fw-medium small text-muted mb-1">Overview</div>
+          <textarea class="markdown-preview" th:text="${problem.overview()}"></textarea>
+        </div>
+        <div class="sd-doc-block" th:if="${problem.highLevelArchitecture() != null}">
+          <div class="fw-medium small text-muted mb-1">High Level Architecture</div>
+          <textarea class="markdown-preview" th:text="${problem.highLevelArchitecture()}"></textarea>
+        </div>
+        <div class="sd-doc-block" th:if="${problem.components() != null}">
+          <div class="fw-medium small text-muted mb-1">Components</div>
+          <textarea class="markdown-preview" th:text="${problem.components()}"></textarea>
+        </div>
+        <div class="sd-doc-block" th:if="${problem.tradeoffs() != null}">
+          <div class="fw-medium small text-muted mb-1">Tradeoffs</div>
+          <textarea class="markdown-preview" th:text="${problem.tradeoffs()}"></textarea>
+        </div>
+        <div class="sd-doc-block" th:if="${problem.bottlenecks() != null}">
+          <div class="fw-medium small text-muted mb-1">Bottlenecks</div>
+          <textarea class="markdown-preview" th:text="${problem.bottlenecks()}"></textarea>
+        </div>
+        <div class="sd-doc-block" th:if="${problem.personalNotes() != null}">
+          <div class="fw-medium small text-muted mb-1">Personal Notes</div>
+          <textarea class="markdown-preview" th:text="${problem.personalNotes()}"></textarea>
+        </div>
+        <div class="sd-doc-block" th:if="${problem.functionalRequirements() != null}">
+          <div class="fw-medium small text-muted mb-1">Functional Requirements</div>
+          <textarea class="markdown-preview" th:text="${problem.functionalRequirements()}"></textarea>
+        </div>
+        <div class="sd-doc-block" th:if="${problem.nonFunctionalRequirements() != null}">
+          <div class="fw-medium small text-muted mb-1">Non Functional Requirements</div>
+          <textarea class="markdown-preview" th:text="${problem.nonFunctionalRequirements()}"></textarea>
+        </div>
+        <div class="sd-doc-block" th:if="${problem.databaseDesign() != null}">
+          <div class="fw-medium small text-muted mb-1">Database Design</div>
+          <textarea class="markdown-preview" th:text="${problem.databaseDesign()}"></textarea>
+        </div>
+        <div class="sd-doc-block" th:if="${problem.apiDesign() != null}">
+          <div class="fw-medium small text-muted mb-1">API Design</div>
+          <textarea class="markdown-preview" th:text="${problem.apiDesign()}"></textarea>
+        </div>
+        <div class="sd-doc-block" th:if="${problem.scalingStrategy() != null}">
+          <div class="fw-medium small text-muted mb-1">Scaling Strategy</div>
+          <textarea class="markdown-preview" th:text="${problem.scalingStrategy()}"></textarea>
+        </div>
+        <div class="sd-doc-block" th:if="${problem.cachingStrategy() != null}">
+          <div class="fw-medium small text-muted mb-1">Caching Strategy</div>
+          <textarea class="markdown-preview" th:text="${problem.cachingStrategy()}"></textarea>
+        </div>
+        <p class="text-muted small mb-0"
+           th:if="${problem.overview() == null and problem.highLevelArchitecture() == null
+                    and problem.tradeoffs() == null and problem.personalNotes() == null}">
+          No stored explanation yet.
+        </p>
+      </section>
+
+      <section class="card-surface p-4">
+        <div class="section-title">How well did you remember this design?</div>
+        <form th:action="@{/system-design/{id}/reviews(id=${problem.id()})}"
+              th:object="${reviewForm}"
+              method="post"
+              id="reviewForm"
+              novalidate>
+          <input type="hidden" th:field="*{reviewDate}">
+          <input type="hidden" th:field="*{durationSeconds}" id="durationSeconds">
+
+          <div class="behavioral-rating-grid mb-3">
+            <label class="behavioral-rating-option" th:each="option : ${ratings}">
+              <input type="radio" th:field="*{rating}" th:value="${option.quality}" required>
+              <span th:text="${option.label}">Good</span>
+            </label>
+          </div>
+          <div class="invalid-feedback d-block mb-3"
+               th:if="${#fields.hasErrors('rating')}"
+               th:errors="*{rating}"></div>
+
+          <button type="submit" class="btn btn-primary">Save review</button>
+        </form>
+      </section>
+    </div>
+  </div>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+  <link th:href="@{/css/whiteboard.css}" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fabric@5.3.0/dist/fabric.min.js"></script>
+  <script th:src="@{/js/whiteboard.js}"></script>
+  <script th:inline="javascript">
+    const timerDisplay = document.getElementById('practiceTimerDisplay');
+    const finalTimeLabel = document.getElementById('finalTimeLabel');
+    const durationInput = document.getElementById('durationSeconds');
+    const activePhase = document.getElementById('activePhase');
+    const reviewPhase = document.getElementById('reviewPhase');
+    const finishBtn = document.getElementById('finishAnswerBtn');
+    const problemId = /*[[${problem.id()}]]*/ 0;
+    const storageKey = 'system-design-timer-' + problemId;
+    const hadErrors = /*[[${answerRevealed}]]*/ false;
+
+    let startedAt = Number(sessionStorage.getItem(storageKey));
+    if (!Number.isFinite(startedAt) || startedAt <= 0) {
+      startedAt = Date.now();
+      sessionStorage.setItem(storageKey, String(startedAt));
+    }
+
+    let stoppedAt = null;
+    let tickId = null;
+    let practiceBoard = null;
+
+    practiceBoard = SystemDesignWhiteboard.mount(document.getElementById('practiceWhiteboardHost'));
+
+    function formatElapsed(ms) {
+      const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      return String(hours).padStart(2, '0') + ':'
+          + String(minutes).padStart(2, '0') + ':'
+          + String(seconds).padStart(2, '0');
+    }
+
+    function elapsedSeconds() {
+      const end = stoppedAt == null ? Date.now() : stoppedAt;
+      return Math.max(0, Math.floor((end - startedAt) / 1000));
+    }
+
+    function syncTimer() {
+      const label = formatElapsed((stoppedAt == null ? Date.now() : stoppedAt) - startedAt);
+      timerDisplay.textContent = label;
+      finalTimeLabel.textContent = label;
+      durationInput.value = String(elapsedSeconds());
+    }
+
+    function finishAnswer() {
+      stoppedAt = Date.now();
+      if (tickId) {
+        clearInterval(tickId);
+        tickId = null;
+      }
+      syncTimer();
+      activePhase.hidden = true;
+      reviewPhase.hidden = false;
+
+      const sketchMount = document.getElementById('practiceSketchMount');
+      if (practiceBoard && sketchMount) {
+        sketchMount.innerHTML = '';
+        sketchMount.dataset.scene = practiceBoard.toJSON();
+        sketchMount.dataset.readonly = 'true';
+        sketchMount.dataset.autosave = 'false';
+        SystemDesignWhiteboard.mount(sketchMount);
+      }
+      SystemDesignWhiteboard.mount(document.getElementById('storedWhiteboardHost'));
+
+      document.querySelectorAll('textarea.markdown-preview').forEach((element) => {
+        const editor = new EasyMDE({
+          element,
+          spellChecker: false,
+          status: false,
+          toolbar: false,
+          minHeight: '100px'
+        });
+        editor.codemirror.setOption('readOnly', true);
+        editor.togglePreview();
+      });
+    }
+
+    finishBtn.addEventListener('click', finishAnswer);
+
+    document.getElementById('reviewForm').addEventListener('submit', () => {
+      if (stoppedAt == null) {
+        stoppedAt = Date.now();
+      }
+      syncTimer();
+      sessionStorage.removeItem(storageKey);
+    });
+
+    if (hadErrors) {
+      finishAnswer();
+    } else {
+      syncTimer();
+      tickId = setInterval(syncTimer, 250);
+    }
+  </script>
+</div>
+</body>
+</html>

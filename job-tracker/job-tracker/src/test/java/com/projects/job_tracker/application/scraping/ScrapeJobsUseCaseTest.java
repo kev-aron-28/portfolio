@@ -110,12 +110,29 @@ class ScrapeJobsUseCaseTest {
 						"occ",
 						"https://www.occ.com.mx/empleos/oferta/java-1",
 						Instant.now()));
+		when(jobRepository.findBySourceAndUrl("occ", "https://www.occ.com.mx/empleos/oferta/spring-2"))
+				.thenReturn(Optional.of(job(
+						2L,
+						"Spring Dev",
+						2L,
+						null,
+						"GDL",
+						null,
+						null,
+						"occ",
+						"https://www.occ.com.mx/empleos/oferta/spring-2",
+						Instant.now())));
 
 		var result = scrapeJobsUseCase.execute(scrapeCommand(1L, null, null, List.of(JobPlatform.OCC), 10));
 
 		assertThat(result.scraped()).isEqualTo(2);
 		assertThat(result.imported()).isEqualTo(1);
 		assertThat(result.duplicates()).isEqualTo(1);
+		assertThat(result.importedJobs()).hasSize(2);
+		assertThat(result.importedJobs().get(0).jobId()).isEqualTo(1L);
+		assertThat(result.importedJobs().get(0).duplicate()).isFalse();
+		assertThat(result.importedJobs().get(1).jobId()).isEqualTo(2L);
+		assertThat(result.importedJobs().get(1).duplicate()).isTrue();
 		verify(createJobUseCase).execute(any());
 	}
 

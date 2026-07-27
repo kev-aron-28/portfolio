@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Marathon complete</h1>
+      <p class="page-subtitle d-flex align-items-center gap-2 mb-0">
+        <span class="topic-color-dot" th:style="'background-color:' + ${marathon.topicColor}"></span>
+        <span th:text="${marathon.topicName}">Topic</span>
+      </p>
+    </div>
+    <a class="btn btn-outline-secondary" th:href="@{/topics}">Back to topics</a>
+  </div>
+
+  <div class="row g-3 mb-4" style="max-width: 720px;">
+    <div class="col-md-4">
+      <div class="card-surface stat-card">
+        <div class="stat-value" th:text="${marathon.completedCount()}">0</div>
+        <div class="stat-label">Reviews this session</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card-surface stat-card">
+        <div class="stat-value" th:text="${marathon.sessionMinutes()} + 'm'">0m</div>
+        <div class="stat-label">Session time</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card-surface stat-card">
+        <div class="stat-value" th:text="${topicTotalMinutes} + 'm'">0m</div>
+        <div class="stat-label">Topic total time</div>
+      </div>
+    </div>
+  </div>
+
+  <section class="card-surface p-4" style="max-width: 720px;">
+    <div class="section-title">Completed in this marathon</div>
+    <div th:if="${#lists.isEmpty(marathon.completed)}" class="text-muted">
+      No reviews were saved in this session.
+    </div>
+    <div class="review-history-item" th:each="item : ${marathon.completed}">
+      <div class="d-flex justify-content-between gap-2">
+        <a class="problem-link" th:href="@{/problems/{id}(id=${item.problemId()})}" th:text="${item.title()}">Problem</a>
+        <span class="rating-badge" th:text="${item.rating()}">3</span>
+      </div>
+      <div class="text-muted small mt-1" th:text="${item.durationMinutes()} + ' min'">5 min</div>
+    </div>
+  </section>
+
+  <div class="d-flex gap-2 mt-4">
+    <a class="btn btn-primary" th:href="@{/topics/{id}/marathon(id=${marathon.topicId})}">
+      Start again
+    </a>
+    <a class="btn btn-outline-secondary" th:href="@{/dashboard}">Dashboard</a>
+  </div>
+</div>
+</body>
+</html>

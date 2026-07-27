@@ -59,7 +59,7 @@ class RunScheduledScrapingUseCaseTest {
 						2,
 						1,
 						List.of(),
-						List.of(new ImportedJobSummary("Java Dev", "Acme", "occ", "https://example.com/1"))));
+						List.of(new ImportedJobSummary(1L, "Java Dev", "Acme", "occ", "https://example.com/1", false))));
 
 		var summary = runScheduledScrapingUseCase.executeAllDue();
 

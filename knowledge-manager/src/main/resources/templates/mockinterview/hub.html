@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Mock Interviews</h1>
+      <p class="page-subtitle">Simulate a focused technical interview. No hints. No coaching.</p>
+    </div>
+    <a class="btn btn-outline-secondary" th:href="@{/interview-profiles}">
+      <i class="bi bi-person-badge me-1"></i>Manage profiles
+    </a>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="card-surface stat-card">
+        <div class="stat-value" th:text="${stats.totalInterviews()}">0</div>
+        <div class="stat-label">Total Interviews</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card-surface stat-card">
+        <div class="stat-value"
+             th:text="${#numbers.formatDecimal(stats.totalInterviewSeconds() / 3600.0, 1, 1) + 'h'}">0h</div>
+        <div class="stat-label">Interview Hours</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card-surface stat-card">
+        <div class="stat-value"
+             th:text="${stats.averageInterviewSeconds() == 0 ? '—' : #numbers.formatDecimal(stats.averageInterviewSeconds() / 60.0, 1, 1) + 'm'}">—</div>
+        <div class="stat-label">Avg Duration</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card-surface stat-card">
+        <div class="stat-value" th:text="${stats.totalQuestionsReviewed()}">0</div>
+        <div class="stat-label">Questions Reviewed</div>
+      </div>
+    </div>
+  </div>
+
+  <section class="card-surface p-4 mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <div class="section-title mb-0">Start from profile</div>
+      <a class="small" th:href="@{/interview-profiles}">Create or edit profiles</a>
+    </div>
+    <p class="text-muted small mb-3">
+      Profile interviews only draw from assigned study items and follow that profile’s composition settings.
+    </p>
+    <div th:if="${#lists.isEmpty(profiles)}" class="text-muted">
+      No active profiles yet.
+      <a th:href="@{/interview-profiles/new}">Create one</a>
+      to practice company-style loops.
+    </div>
+    <div class="row g-3" th:if="${!#lists.isEmpty(profiles)}">
+      <div class="col-md-4" th:each="profile : ${profiles}">
+        <form th:action="@{/mock-interviews/start}" method="post" class="h-100">
+          <input type="hidden" name="profileId" th:value="${profile.id()}">
+          <div class="card-surface p-3 h-100 d-flex flex-column">
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span class="topic-color-dot" th:style="'background-color:' + ${profile.color()}"></span>
+              <i th:class="${profile.icon()}"></i>
+              <div class="fw-medium" th:text="${profile.name()}">Google SWE</div>
+            </div>
+            <p class="text-muted small flex-grow-1 mb-3"
+               th:text="${profile.behavioralQuestionCount()} + ' behavioral · '
+                        + ${profile.algorithmQuestionCount()} + ' algorithms · '
+                        + ${profile.systemDesignQuestionCount()} + ' system design'">2 · 3 · 1</p>
+            <button type="submit" class="btn btn-primary btn-sm">Start</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section class="card-surface p-4 mb-4" th:if="${!#lists.isEmpty(profileStats)}">
+    <div class="section-title">By profile</div>
+    <div class="row g-3">
+      <div class="col-md-6" th:each="stat : ${profileStats}">
+        <div class="border rounded-3 p-3">
+          <div class="fw-medium mb-2" th:text="${stat.profileName()}">Google</div>
+          <div class="row g-2 small">
+            <div class="col-4">
+              <div class="stat-label">Done</div>
+              <div th:text="${stat.interviewsCompleted()}">0</div>
+            </div>
+            <div class="col-4">
+              <div class="stat-label">Due</div>
+              <div th:text="${stat.dueReviews()}">0</div>
+            </div>
+            <div class="col-4">
+              <div class="stat-label">Mastery</div>
+              <div th:text="${stat.masteryScore()}">0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card-surface p-4 mb-4">
+    <div class="section-title">General formats</div>
+    <p class="text-muted small mb-3">
+      These use your full study bank (not limited to a profile).
+    </p>
+    <div class="row g-3">
+      <div class="col-md-4" th:each="format : ${formats}">
+        <form th:action="@{/mock-interviews/start}" method="post" class="h-100">
+          <input type="hidden" name="format" th:value="${format.name()}">
+          <div class="card-surface p-3 h-100 d-flex flex-column">
+            <div class="fw-medium mb-1" th:text="${format.label}">Standard Mix</div>
+            <p class="text-muted small flex-grow-1 mb-3" th:text="${format.description}">Desc</p>
+            <button type="submit" class="btn btn-outline-primary btn-sm">Start</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section class="card-surface p-4">
+    <div class="section-title">Interview history</div>
+    <div th:if="${#lists.isEmpty(history)}" class="text-muted">No interviews yet.</div>
+    <div class="review-history-item" th:each="item : ${history}">
+      <div class="d-flex justify-content-between gap-3 flex-wrap">
+        <div>
+          <a class="problem-link" th:href="@{/mock-interviews/{id}/summary(id=${item.id()})}"
+             th:text="${item.profileName() != null} ? ${item.profileName()} : ${item.format().label}">Standard Mix</a>
+          <div class="text-muted small mt-1">
+            <span th:text="${#temporals.format(item.startedAt(), 'MMM d, yyyy HH:mm')}">Date</span>
+            ·
+            <span th:text="${item.totalQuestions()} + ' questions'">4 questions</span>
+            ·
+            <span th:text="${#numbers.formatDecimal(item.totalDurationSeconds() / 60.0, 1, 0) + ' min'}">40 min</span>
+            <span th:if="${item.finishedAt() == null}" class="badge text-bg-warning ms-1">In progress</span>
+          </div>
+        </div>
+        <a class="btn btn-sm btn-outline-primary"
+           th:if="${item.finishedAt() == null}"
+           th:href="@{/mock-interviews/{id}/session(id=${item.id()})}">Continue</a>
+      </div>
+    </div>
+  </section>
+</div>
+</body>
+</html>

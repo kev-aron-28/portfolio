@@ -1,0 +1,69 @@
+/* System Design whiteboard */
+.sd-whiteboard {
+  border: 1px solid var(--app-border, #e5e7eb);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fafafa;
+}
+
+.sd-whiteboard-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--app-border, #e5e7eb);
+  background: #fff;
+}
+
+.sd-whiteboard-toolbar .btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+}
+
+.sd-whiteboard-toolbar .btn.active {
+  background: #111827;
+  border-color: #111827;
+  color: #fff;
+}
+
+.sd-whiteboard-canvas-wrap {
+  position: relative;
+  height: 480px;
+  overflow: hidden;
+  cursor: default;
+  background-color: #f8fafc;
+  background-image:
+    linear-gradient(#e5e7eb 1px, transparent 1px),
+    linear-gradient(90deg, #e5e7eb 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.sd-whiteboard-canvas-wrap.panning {
+  cursor: grab;
+}
+
+.sd-whiteboard-canvas-wrap.drawing {
+  cursor: crosshair;
+}
+
+.sd-whiteboard-readonly .sd-whiteboard-toolbar {
+  display: none;
+}
+
+.sd-whiteboard-readonly .sd-whiteboard-canvas-wrap {
+  height: 360px;
+}
+
+.sd-doc-block {
+  margin-bottom: 1.25rem;
+}
+
+.sd-doc-block:last-child {
+  margin-bottom: 0;
+}
+
+.sd-doc-block .EasyMDEContainer .editor-toolbar,
+.sd-doc-block .EasyMDEContainer .editor-statusbar {
+  display: none;
+}

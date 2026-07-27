@@ -91,7 +91,26 @@ class ScrapingWebControllerTest {
 						.param("maxResults", "10")
 						.param("segmentId", "3"))
 				.andExpect(status().is3xxRedirection())
-				.andExpect(redirectedUrl("/scraping?tab=run"))
-				.andExpect(flash().attributeExists("successMessage"));
+				.andExpect(redirectedUrl("/scraping/results"))
+				.andExpect(flash().attributeExists("successMessage"))
+				.andExpect(flash().attributeExists("scrapeResult"));
+	}
+
+	@Test
+	void resultsPageRequiresFlashResult() throws Exception {
+		mockMvc.perform(get("/scraping/results"))
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("/scraping?tab=run"));
+	}
+
+	@Test
+	void rendersResultsPageFromFlash() throws Exception {
+		mockMvc.perform(get("/scraping/results")
+						.flashAttr("scrapeResult", new ScrapeJobsUseCase.ScrapeResult(
+								2, 1, 1, List.of(), List.of(
+								new com.projects.job_tracker.domain.model.ImportedJobSummary(
+										10L, "Java Dev", "Acme", "occ", "https://example.com/1", false)))))
+				.andExpect(status().isOk())
+				.andExpect(view().name("scraping/results"));
 	}
 }

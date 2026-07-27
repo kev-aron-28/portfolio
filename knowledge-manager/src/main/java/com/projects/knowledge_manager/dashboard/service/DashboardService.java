@@ -7,11 +7,13 @@ import com.projects.knowledge_manager.dashboard.dto.HeatmapCellView;
 import com.projects.knowledge_manager.dashboard.dto.HeatmapView;
 import com.projects.knowledge_manager.dashboard.dto.LearningStatsView;
 import com.projects.knowledge_manager.dashboard.dto.TopicProgressView;
+import com.projects.knowledge_manager.mockinterview.service.MockInterviewService;
 import com.projects.knowledge_manager.problem.entity.Problem;
 import com.projects.knowledge_manager.problem.repository.ProblemRepository;
 import com.projects.knowledge_manager.review.config.ReviewSchedulingProperties;
 import com.projects.knowledge_manager.review.repository.ReviewRepository;
 import com.projects.knowledge_manager.review.service.ReviewService;
+import com.projects.knowledge_manager.systemdesign.service.SystemDesignProblemService;
 import com.projects.knowledge_manager.topic.entity.Topic;
 import com.projects.knowledge_manager.topic.repository.TopicRepository;
 import java.time.DayOfWeek;
@@ -36,6 +38,8 @@ public class DashboardService {
   private final TopicRepository topicRepository;
   private final ReviewService reviewService;
   private final BehavioralQuestionService behavioralQuestionService;
+  private final SystemDesignProblemService systemDesignProblemService;
+  private final MockInterviewService mockInterviewService;
   private final ReviewSchedulingProperties schedulingProperties;
 
   public DashboardService(
@@ -44,12 +48,16 @@ public class DashboardService {
       TopicRepository topicRepository,
       ReviewService reviewService,
       BehavioralQuestionService behavioralQuestionService,
+      SystemDesignProblemService systemDesignProblemService,
+      MockInterviewService mockInterviewService,
       ReviewSchedulingProperties schedulingProperties) {
     this.problemRepository = problemRepository;
     this.reviewRepository = reviewRepository;
     this.topicRepository = topicRepository;
     this.reviewService = reviewService;
     this.behavioralQuestionService = behavioralQuestionService;
+    this.systemDesignProblemService = systemDesignProblemService;
+    this.mockInterviewService = mockInterviewService;
     this.schedulingProperties = schedulingProperties;
   }
 
@@ -115,6 +123,8 @@ public class DashboardService {
             upcomingAll.size(),
             neverReviewedCount),
         behavioralQuestionService.buildStats(),
+        systemDesignProblemService.buildStats(),
+        mockInterviewService.buildStats(),
         buildTopicProgress(activeProblems, today),
         buildHeatmap(today));
   }
@@ -162,6 +172,10 @@ public class DashboardService {
 
   private List<TopicProgressView> buildTopicProgress(List<Problem> activeProblems, LocalDate today) {
     Map<Long, TopicAccumulator> accumulators = new HashMap<>();
+    Map<Long, Long> reviewMinutes = new HashMap<>();
+    for (Object[] row : reviewRepository.sumDurationMinutesGroupedByTopic()) {
+      reviewMinutes.put((Long) row[0], ((Number) row[1]).longValue());
+    }
 
     for (Topic topic : topicRepository.findAll()) {
       accumulators.put(topic.getId(), new TopicAccumulator(topic));
@@ -179,6 +193,11 @@ public class DashboardService {
       if (!reviewService.resolveNextReviewDate(problem).isAfter(today)) {
         accumulator.dueProblems++;
       }
+    }
+
+    for (TopicAccumulator accumulator : accumulators.values()) {
+      accumulator.totalReviewMinutes =
+          reviewMinutes.getOrDefault(accumulator.topic.getId(), 0L);
     }
 
     return accumulators.values().stream()
@@ -225,6 +244,7 @@ public class DashboardService {
     private long totalProblems;
     private long reviewedProblems;
     private long dueProblems;
+    private long totalReviewMinutes;
 
     private TopicAccumulator(Topic topic) {
       this.topic = topic;
@@ -237,7 +257,8 @@ public class DashboardService {
           topic.getColor(),
           totalProblems,
           reviewedProblems,
-          dueProblems);
+          dueProblems,
+          totalReviewMinutes);
     }
   }
 }

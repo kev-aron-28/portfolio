@@ -36,6 +36,24 @@
         <span>Behavioral</span>
       </a>
       <a class="app-nav-link"
+         th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/system-design') ? ' active' : ''}"
+         th:href="@{/system-design}">
+        <i class="bi bi-diagram-3"></i>
+        <span>System Design</span>
+      </a>
+      <a class="app-nav-link"
+         th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/mock-interviews') ? ' active' : ''}"
+         th:href="@{/mock-interviews}">
+        <i class="bi bi-briefcase"></i>
+        <span>Mock Interview</span>
+      </a>
+      <a class="app-nav-link"
+         th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/interview-profiles') ? ' active' : ''}"
+         th:href="@{/interview-profiles}">
+        <i class="bi bi-person-badge"></i>
+        <span>Profiles</span>
+      </a>
+      <a class="app-nav-link"
          th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/statistics') ? ' active' : ''}"
          th:href="@{/statistics}">
         <i class="bi bi-bar-chart"></i>

@@ -17,6 +17,9 @@ public interface ProblemRepository extends JpaRepository<Problem, Long>, JpaSpec
   @EntityGraph(attributePaths = {"topic"})
   List<Problem> findAllByArchivedFalseOrderByTitleAsc();
 
+  @EntityGraph(attributePaths = {"topic"})
+  List<Problem> findAllByTopicIdAndArchivedFalseOrderByTitleAsc(Long topicId);
+
   long countByArchivedFalse();
 
   @EntityGraph(attributePaths = {"topic", "tags", "solution"})

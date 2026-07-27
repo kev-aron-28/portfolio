@@ -26,9 +26,41 @@
         <a class="btn btn-outline-secondary" th:href="@{/problems/{id}(id=${problem.id()})}">
           <i class="bi bi-file-text me-1"></i>Detail
         </a>
-        <a class="btn btn-outline-secondary" th:href="@{/dashboard}">
+        <a class="btn btn-outline-secondary"
+           th:if="${!marathonMode}"
+           th:href="@{/dashboard}">
           <i class="bi bi-arrow-left me-1"></i>Queue
         </a>
+        <a class="btn btn-outline-secondary"
+           th:if="${marathonMode}"
+           th:href="@{/topics/{id}/marathon/summary(id=${marathon.topicId})}">
+          End marathon
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-surface p-3 mb-3 marathon-banner" th:if="${marathonMode}">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+      <div>
+        <div class="section-title mb-1">Topic marathon</div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="topic-color-dot" th:style="'background-color:' + ${marathon.topicColor}"></span>
+          <strong th:text="${marathon.topicName}">Topic</strong>
+          <span class="text-muted small"
+                th:text="${marathon.completedCount()} + ' done this session'">0 done</span>
+        </div>
+      </div>
+      <div class="text-end">
+        <div class="text-muted small">Session timer</div>
+        <div class="marathon-timer" id="marathonTimerDisplay">0:00:00</div>
+      </div>
+    </div>
+    <div class="marathon-completed mt-3" th:if="${!#lists.isEmpty(marathon.completed)}">
+      <div class="text-muted small mb-2">Completed</div>
+      <div class="d-flex flex-wrap gap-2">
+        <span class="badge text-bg-light border" th:each="item : ${marathon.completed}"
+              th:text="${item.title()}">Problem</span>
       </div>
     </div>
   </div>
@@ -119,7 +151,15 @@
         </div>
 
         <div class="d-flex flex-wrap align-items-center gap-3">
-          <button type="submit" class="btn btn-primary">
+          <th:block th:if="${marathonMode}">
+            <button type="submit" class="btn btn-primary" name="marathonAction" value="next">
+              Save &amp; next
+            </button>
+            <button type="submit" class="btn btn-outline-primary" name="marathonAction" value="end">
+              Save &amp; end
+            </button>
+          </th:block>
+          <button type="submit" class="btn btn-primary" th:unless="${marathonMode}">
             <i class="bi bi-check2-square me-1"></i>Save review
           </button>
           <span class="text-muted small">
@@ -201,6 +241,28 @@
 
     syncDuration();
     setInterval(syncDuration, 1000);
+
+    const marathonMode = /*[[${marathonMode}]]*/ false;
+    const marathonStartedAt = /*[[${marathonMode ? marathon.startedAtEpochMs : 0}]]*/ 0;
+    const marathonTimerDisplay = document.getElementById('marathonTimerDisplay');
+
+    function formatMarathonElapsed(ms) {
+      const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      return String(hours).padStart(2, '0') + ':'
+          + String(minutes).padStart(2, '0') + ':'
+          + String(seconds).padStart(2, '0');
+    }
+
+    if (marathonMode && marathonTimerDisplay) {
+      const syncMarathonTimer = () => {
+        marathonTimerDisplay.textContent = formatMarathonElapsed(Date.now() - marathonStartedAt);
+      };
+      syncMarathonTimer();
+      setInterval(syncMarathonTimer, 1000);
+    }
 
     document.getElementById('reviewSessionForm').addEventListener('submit', () => {
       syncDuration();

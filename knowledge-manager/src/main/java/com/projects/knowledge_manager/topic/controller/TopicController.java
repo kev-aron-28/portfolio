@@ -3,8 +3,12 @@ package com.projects.knowledge_manager.topic.controller;
 import com.projects.knowledge_manager.topic.dto.TopicForm;
 import com.projects.knowledge_manager.problem.service.ProblemService;
 import com.projects.knowledge_manager.topic.service.DuplicateTopicNameException;
+import com.projects.knowledge_manager.topic.service.EmptyTopicMarathonException;
+import com.projects.knowledge_manager.topic.service.TopicMarathonService;
 import com.projects.knowledge_manager.topic.service.TopicService;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -21,15 +25,21 @@ public class TopicController {
 
   private final TopicService topicService;
   private final ProblemService problemService;
+  private final TopicMarathonService topicMarathonService;
 
-  public TopicController(TopicService topicService, ProblemService problemService) {
+  public TopicController(
+      TopicService topicService,
+      ProblemService problemService,
+      TopicMarathonService topicMarathonService) {
     this.topicService = topicService;
     this.problemService = problemService;
+    this.topicMarathonService = topicMarathonService;
   }
 
   @GetMapping
   public String list(Model model) {
     model.addAttribute("topicGroups", problemService.findGroupedByTopic(false));
+    model.addAttribute("topicReviewMinutes", topicMarathonService.totalReviewMinutesByTopic());
     model.addAttribute("pageTitle", "Topics");
     return "topics/list";
   }
@@ -102,5 +112,40 @@ public class TopicController {
     topicService.delete(id);
     redirectAttributes.addFlashAttribute("successMessage", "Topic deleted successfully.");
     return "redirect:/topics";
+  }
+
+  @GetMapping("/{id}/marathon")
+  public String startMarathon(
+      @PathVariable Long id, HttpSession session, RedirectAttributes redirectAttributes) {
+    try {
+      var state = topicMarathonService.start(id, session);
+      return topicMarathonService
+          .findNextProblemId(state.getTopicId(), List.of())
+          .map(problemId -> "redirect:/problems/" + problemId + "/reviews/session")
+          .orElseGet(
+              () -> {
+                topicMarathonService.clear(session);
+                redirectAttributes.addFlashAttribute(
+                    "successMessage", "No problems available in this topic.");
+                return "redirect:/topics";
+              });
+    } catch (EmptyTopicMarathonException exception) {
+      redirectAttributes.addFlashAttribute("successMessage", exception.getMessage());
+      return "redirect:/topics";
+    }
+  }
+
+  @GetMapping("/{id}/marathon/summary")
+  public String marathonSummary(@PathVariable Long id, HttpSession session, Model model) {
+    var active = topicMarathonService.findActiveForTopic(session, id);
+    if (active.isEmpty()) {
+      return "redirect:/topics";
+    }
+
+    var state = topicMarathonService.end(session);
+    model.addAttribute("marathon", state);
+    model.addAttribute("topicTotalMinutes", topicMarathonService.totalReviewMinutesForTopic(id));
+    model.addAttribute("pageTitle", "Marathon · " + state.getTopicName());
+    return "topics/marathon-summary";
   }
 }

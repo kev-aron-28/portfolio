@@ -6,4 +6,5 @@ public record TopicProgressView(
     String topicColor,
     long totalProblems,
     long reviewedProblems,
-    long dueProblems) {}
+    long dueProblems,
+    long totalReviewMinutes) {}

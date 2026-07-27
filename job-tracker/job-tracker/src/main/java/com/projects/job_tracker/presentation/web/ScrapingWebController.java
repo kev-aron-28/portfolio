@@ -82,6 +82,22 @@ public class ScrapingWebController {
 		return "scraping/index";
 	}
 
+	@GetMapping("/results")
+	public String scrapeResults(Model model) {
+		if (!model.containsAttribute("scrapeResult")) {
+			return "redirect:/scraping?tab=run";
+		}
+		if (!model.containsAttribute("resultsBackUrl")) {
+			model.addAttribute("resultsBackUrl", "/scraping?tab=run");
+			model.addAttribute("resultsBackLabel", "Volver a Scraping");
+		}
+		model.addAttribute("pageTitle", "Resultados del scrape");
+		model.addAttribute("activeNav", "scraping");
+		model.addAttribute("breadcrumbSection", "scraping");
+		model.addAttribute("pageDescription", "Vacantes encontradas en la última búsqueda");
+		return "scraping/results";
+	}
+
 	@PostMapping(value = "/run", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 	public String runScraping(
 			@RequestParam(required = false) Long profileId,
@@ -119,10 +135,13 @@ public class ScrapingWebController {
 					"Búsqueda completada: " + result.imported() + " nuevas, "
 							+ result.duplicates() + " duplicadas, "
 							+ result.scraped() + " encontradas.");
+			redirectAttributes.addFlashAttribute("resultsBackUrl", "/scraping?tab=run");
+			redirectAttributes.addFlashAttribute("resultsBackLabel", "Volver a Scraping");
+			return "redirect:/scraping/results";
 		} catch (RuntimeException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+			return "redirect:/scraping?tab=run";
 		}
-		return "redirect:/scraping?tab=run";
 	}
 
 	@PostMapping("/settings")

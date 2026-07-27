@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+	  th:replace="~{layout :: layout(~{::section})}">
+<section>
+	<div th:replace="~{fragments/components :: alerts}"></div>
+
+	<div class="panel">
+		<div class="panel-header">
+			<h2>Datos de la vacante</h2>
+		</div>
+		<div class="panel-body">
+			<form th:action="@{/jobs}" method="post" class="scraping-form">
+				<div class="form-section-title">Información principal</div>
+				<div class="filter-grid">
+					<div class="form-field form-field-wide">
+						<label class="form-label" for="title">Título</label>
+						<input class="form-control" id="title" name="title" type="text" required
+							   placeholder="Java Backend Developer">
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="companyName">Empresa</label>
+						<input class="form-control" id="companyName" name="companyName" type="text" required
+							   placeholder="Acme Corp">
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="companyWebsite">Sitio de la empresa</label>
+						<input class="form-control" id="companyWebsite" name="companyWebsite" type="url"
+							   placeholder="https://acme.com">
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="source">Fuente</label>
+						<select class="form-select" id="source" name="source" required>
+							<option value="manual" selected>manual</option>
+							<option th:each="platform : ${sources}"
+									th:value="${platform.source()}"
+									th:text="${platform.source()}">occ</option>
+						</select>
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="url">URL de la vacante</label>
+						<input class="form-control" id="url" name="url" type="url" required
+							   placeholder="https://...">
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="location">Ubicación</label>
+						<input class="form-control" id="location" name="location" type="text"
+							   placeholder="CDMX, Remoto">
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="externalId">ID externo</label>
+						<input class="form-control" id="externalId" name="externalId" type="text"
+							   placeholder="Opcional">
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="postedAt">Fecha de publicación</label>
+						<input class="form-control" id="postedAt" name="postedAt" type="datetime-local">
+					</div>
+				</div>
+
+				<div class="form-section-title">Segmentos</div>
+				<div class="form-field form-field-wide" th:if="${!segments.isEmpty()}">
+					<label class="form-label">Incluir en segmentos</label>
+					<div class="platform-checks">
+						<label th:each="segment : ${segments}" class="platform-check">
+							<input class="form-check-input" type="checkbox"
+								   name="segmentIds"
+								   th:id="'segment-' + ${segment.id()}"
+								   th:value="${segment.id()}"
+								   th:checked="${selectedSegmentId != null and selectedSegmentId == segment.id()}">
+							<span class="platform-check-label" th:text="${segment.name()}">Segmento</span>
+						</label>
+					</div>
+					<div class="form-field-hint">Opcional. Una vacante puede pertenecer a varios segmentos.</div>
+				</div>
+				<p class="form-field-hint" th:if="${segments.isEmpty()}">
+					Aún no hay segmentos.
+					<a th:href="@{/segments/new}">Crear uno</a>
+				</p>
+
+				<div class="form-section-title">Compensación y modalidad</div>
+				<div class="filter-grid">
+					<div class="form-field">
+						<label class="form-label" for="salaryMin">Salario mín.</label>
+						<input class="form-control" id="salaryMin" name="salaryMin" type="number" step="1000"
+							   placeholder="30000">
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="salaryMax">Salario máx.</label>
+						<input class="form-control" id="salaryMax" name="salaryMax" type="number" step="1000"
+							   placeholder="60000">
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="employmentType">Tipo de empleo</label>
+						<input class="form-control" id="employmentType" name="employmentType" type="text"
+							   placeholder="permanente, temporal...">
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="workMode">Modalidad</label>
+						<select class="form-select" id="workMode" name="workMode"
+								th:replace="~{fragments/scraping-forms :: workModeSelect('workMode', 'workMode', null)}"></select>
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="category">Categoría</label>
+						<input class="form-control" id="category" name="category" type="text"
+							   placeholder="Tecnología">
+					</div>
+					<div class="form-field">
+						<label class="form-label" for="subcategory">Subcategoría</label>
+						<input class="form-control" id="subcategory" name="subcategory" type="text"
+							   placeholder="Desarrollo">
+					</div>
+				</div>
+
+				<div class="form-section-title">Detalle</div>
+				<div class="filter-grid">
+					<div class="form-field form-field-wide">
+						<label class="form-label" for="description">Descripción</label>
+						<textarea class="form-control" id="description" name="description" rows="5"
+								  placeholder="Descripción de la vacante..."></textarea>
+					</div>
+					<div class="form-field form-field-wide">
+						<label class="form-label" for="requirements">Requisitos</label>
+						<textarea class="form-control" id="requirements" name="requirements" rows="4"
+								  placeholder="Java, Spring, SQL..."></textarea>
+					</div>
+					<div class="form-field form-field-wide">
+						<label class="form-label" for="benefits">Beneficios</label>
+						<textarea class="form-control" id="benefits" name="benefits" rows="3"
+								  placeholder="Seguro, home office..."></textarea>
+					</div>
+				</div>
+
+				<div class="form-footer">
+					<a th:href="@{/jobs}" class="btn btn-outline-secondary">Cancelar</a>
+					<button type="submit" class="btn btn-primary">Crear vacante</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</section>
+</html>

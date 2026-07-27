@@ -40,21 +40,36 @@
            th:attr="aria-labelledby=${accordionId + '-heading-' + stat.index},
                     data-bs-parent='#' + ${accordionId}">
         <div class="accordion-body grouped-tree-body">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <p class="text-muted small mb-0"
-               th:text="${group.problemCount()} + ' problem' + (${group.problemCount()} == 1 ? '' : 's')">
-              0 problems
-            </p>
-            <a class="btn btn-sm btn-outline-primary"
-               th:if="${groupType == 'topic'}"
-               th:href="@{/problems(topicId=${group.id()})}">
-              View in Problems
-            </a>
-            <a class="btn btn-sm btn-outline-primary"
-               th:if="${groupType == 'tag'}"
-               th:href="@{/problems(tagId=${group.id()})}">
-              View in Problems
-            </a>
+          <div class="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
+            <div>
+              <p class="text-muted small mb-0"
+                 th:text="${group.problemCount()} + ' problem' + (${group.problemCount()} == 1 ? '' : 's')">
+                0 problems
+              </p>
+              <p class="text-muted small mb-0 mt-1"
+                 th:if="${groupType == 'topic' and #ctx.containsVariable('topicReviewMinutes')}">
+                Total practice time:
+                <span th:with="mins=${topicReviewMinutes.get(group.id())}"
+                      th:text="${(mins != null ? mins : 0)} + ' min'">0 min</span>
+              </p>
+            </div>
+            <div class="d-flex gap-2">
+              <a class="btn btn-sm btn-primary"
+                 th:if="${groupType == 'topic' and group.problemCount() > 0}"
+                 th:href="@{/topics/{id}/marathon(id=${group.id()})}">
+                <i class="bi bi-lightning-charge me-1"></i>Marathon
+              </a>
+              <a class="btn btn-sm btn-outline-primary"
+                 th:if="${groupType == 'topic'}"
+                 th:href="@{/problems(topicId=${group.id()})}">
+                View in Problems
+              </a>
+              <a class="btn btn-sm btn-outline-primary"
+                 th:if="${groupType == 'tag'}"
+                 th:href="@{/problems(tagId=${group.id()})}">
+                View in Problems
+              </a>
+            </div>
           </div>
 
           <p class="text-muted small mb-0" th:if="${group.problemCount() == 0}">

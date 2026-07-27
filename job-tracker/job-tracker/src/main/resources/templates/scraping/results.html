@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+	  th:replace="~{layout :: layout(~{::section})}">
+<section>
+	<div th:replace="~{fragments/components :: alerts}"></div>
+
+	<div class="page-toolbar mb-3">
+		<a th:href="${resultsBackUrl}" class="btn btn-outline-secondary"
+		   th:text="${resultsBackLabel} ?: 'Volver'">Volver</a>
+		<a th:href="@{/jobs}" class="btn btn-primary">Ir a vacantes</a>
+	</div>
+
+	<div class="panel mb-3" th:if="${scrapeResult}">
+		<div class="panel-header">
+			<h2>Resumen</h2>
+		</div>
+		<div class="panel-body">
+			<div class="result-metrics">
+				<div class="result-metric">
+					<div class="metric-label">Encontradas</div>
+					<div class="metric-value metric-value-sm" th:text="${scrapeResult.scraped()}">0</div>
+				</div>
+				<div class="result-metric">
+					<div class="metric-label">Importadas</div>
+					<div class="metric-value metric-value-sm" th:text="${scrapeResult.imported()}">0</div>
+				</div>
+				<div class="result-metric">
+					<div class="metric-label">Duplicadas</div>
+					<div class="metric-value metric-value-sm" th:text="${scrapeResult.duplicates()}">0</div>
+				</div>
+				<div class="result-metric">
+					<div class="metric-label">En listado</div>
+					<div class="metric-value metric-value-sm" th:text="${scrapeResult.importedJobs().size()}">0</div>
+				</div>
+			</div>
+			<p th:if="${!scrapeResult.errors().isEmpty()}" class="form-error mb-0 mt-2">
+				<strong>Errores:</strong>
+				<span th:text="${#strings.listJoin(scrapeResult.errors(), '; ')}"></span>
+			</p>
+		</div>
+	</div>
+
+	<div class="panel" th:if="${scrapeResult != null && !scrapeResult.importedJobs().isEmpty()}">
+		<div class="panel-header">
+			<h2>Vacantes de esta búsqueda</h2>
+		</div>
+		<div class="panel-body-flush">
+			<div class="table-responsive">
+				<table class="table table-app mb-0">
+					<thead>
+					<tr>
+						<th>Título</th>
+						<th>Empresa</th>
+						<th>Fuente</th>
+						<th>Estado</th>
+						<th></th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr th:each="item : ${scrapeResult.importedJobs()}">
+						<td class="cell-truncate">
+							<a th:if="${item.jobId() != null}"
+							   th:href="@{/jobs/{id}(id=${item.jobId()})}"
+							   th:text="${item.title()}">Title</a>
+							<span th:if="${item.jobId() == null}" th:text="${item.title()}">Title</span>
+						</td>
+						<td th:text="${item.companyName()}">Company</td>
+						<td>
+							<span th:replace="~{fragments/components :: sourceBadge(source=${item.source()})}"></span>
+						</td>
+						<td>
+							<span th:if="${item.duplicate()}" class="badge status-badge status-paused">Duplicada</span>
+							<span th:if="${!item.duplicate()}" class="badge status-badge status-active">Nueva</span>
+						</td>
+						<td class="text-end">
+							<a th:if="${item.jobId() != null}"
+							   th:href="@{/jobs/{id}(id=${item.jobId()})}"
+							   class="btn btn-sm btn-outline-secondary">Ver</a>
+							<a th:if="${item.url() != null}"
+							   th:href="${item.url()}"
+							   target="_blank"
+							   rel="noopener noreferrer"
+							   class="btn btn-sm btn-outline-secondary">Origen</a>
+						</td>
+					</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<div class="panel" th:if="${scrapeResult != null && scrapeResult.importedJobs().isEmpty()}">
+		<div class="empty-state">
+			<i data-lucide="inbox" aria-hidden="true"></i>
+			<div>No se asociaron vacantes en esta búsqueda.</div>
+			<a th:href="${resultsBackUrl}" class="btn btn-sm btn-outline-secondary mt-2"
+			   th:text="${resultsBackLabel} ?: 'Volver'">Volver</a>
+		</div>
+	</div>
+</section>
+</html>

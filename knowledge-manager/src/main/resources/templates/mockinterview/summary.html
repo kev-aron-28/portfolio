@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Interview Summary</h1>
+      <p class="page-subtitle"
+         th:text="${summary.profileName() != null} ? ${summary.profileName()} : ${summary.format().label}">Standard Mix</p>
+    </div>
+    <a class="btn btn-outline-secondary" th:href="@{/mock-interviews}">All interviews</a>
+  </div>
+
+  <div class="row g-3 mb-4" style="max-width: 800px;">
+    <div class="col-6 col-md-3">
+      <div class="card-surface stat-card">
+        <div class="stat-value"
+             th:text="${#numbers.formatDecimal(summary.totalDurationSeconds() / 60.0, 1, 0) + 'm'}">58m</div>
+        <div class="stat-label">Duration</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card-surface stat-card">
+        <div class="stat-value" th:text="${summary.totalQuestions()}">6</div>
+        <div class="stat-label">Questions</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card-surface stat-card">
+        <div class="stat-value" th:text="${summary.behavioralCount()}">2</div>
+        <div class="stat-label">Behavioral</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card-surface stat-card">
+        <div class="stat-value" th:text="${summary.algorithmCount()}">4</div>
+        <div class="stat-label">Algorithms</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card-surface stat-card">
+        <div class="stat-value" th:text="${summary.systemDesignCount()}">0</div>
+        <div class="stat-label">System Design</div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card-surface stat-card">
+        <div class="stat-value"
+             th:text="${summary.averageQuestionSeconds() == 0 ? '—' : #numbers.formatDecimal(summary.averageQuestionSeconds() / 60.0, 1, 1) + 'm'}">—</div>
+        <div class="stat-label">Avg Time</div>
+      </div>
+    </div>
+  </div>
+
+  <section class="card-surface p-4 mb-4" style="max-width: 800px;">
+    <div class="section-title">Questions</div>
+    <div class="review-history-item" th:each="item : ${summary.items()}">
+      <div class="d-flex justify-content-between gap-3">
+        <div>
+          <div class="fw-medium" th:text="${item.title()}">Title</div>
+          <div class="text-muted small mt-1">
+            <span th:text="${item.questionType().name() == 'ALGORITHM' ? 'Algorithm' : (item.questionType().name() == 'BEHAVIORAL' ? 'Behavioral' : 'System Design')}">Algorithm</span>
+            · Q<span th:text="${item.itemOrder()}">1</span>
+            ·
+            <span th:if="${item.durationSeconds() != null}"
+                  th:text="${#numbers.formatDecimal(item.durationSeconds() / 60.0, 1, 1) + ' min'}">5 min</span>
+          </div>
+        </div>
+        <span class="rating-badge" th:if="${item.rating() != null}" th:text="${item.rating()}">4</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="card-surface p-4 mb-4" style="max-width: 800px;">
+    <div class="section-title">Review statistics</div>
+    <ul class="mb-0 small text-muted">
+      <li th:text="${summary.items().size()} + ' questions reviewed through spaced repetition'">reviewed</li>
+      <li>Next review dates updated for each completed question</li>
+      <li th:text="'Started ' + ${#temporals.format(summary.startedAt(), 'MMM d, yyyy HH:mm')}">Started</li>
+      <li th:if="${summary.finishedAt() != null}"
+          th:text="'Finished ' + ${#temporals.format(summary.finishedAt(), 'MMM d, yyyy HH:mm')}">Finished</li>
+    </ul>
+  </section>
+
+  <div class="d-flex gap-2">
+    <form th:action="@{/mock-interviews/start}" method="post">
+      <input type="hidden" name="format" th:value="${summary.format().name()}">
+      <button type="submit" class="btn btn-primary">Start another</button>
+    </form>
+    <a class="btn btn-outline-secondary" th:href="@{/dashboard}">Dashboard</a>
+  </div>
+</div>
+</body>
+</html>

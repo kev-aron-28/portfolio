@@ -50,4 +50,24 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
       ORDER BY r.reviewDate DESC, r.id DESC
       """)
   List<Review> findAllWithActiveProblemsOrderByReviewDateDesc();
+
+  @Query(
+      """
+      SELECT COALESCE(SUM(r.reviewDuration), 0)
+      FROM Review r
+      JOIN r.problem p
+      WHERE p.topic.id = :topicId
+        AND p.archived = false
+      """)
+  long sumDurationMinutesByTopicId(@Param("topicId") Long topicId);
+
+  @Query(
+      """
+      SELECT p.topic.id, COALESCE(SUM(r.reviewDuration), 0)
+      FROM Review r
+      JOIN r.problem p
+      WHERE p.archived = false
+      GROUP BY p.topic.id
+      """)
+  List<Object[]> sumDurationMinutesGroupedByTopic();
 }

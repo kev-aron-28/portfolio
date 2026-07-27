@@ -2,6 +2,7 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
 	  th:replace="~{layout :: layout(~{::section})}">
 <section class="job-detail" th:with="job=${detail.job()}, view=${jobView}, app=${detail.application().orElse(null)}">
+	<div th:replace="~{fragments/components :: alerts}"></div>
 	<div class="job-detail-wrap">
 		<nav class="job-detail-nav" aria-label="Navegación de vacante">
 			<a class="job-detail-back" th:href="@{/jobs}">

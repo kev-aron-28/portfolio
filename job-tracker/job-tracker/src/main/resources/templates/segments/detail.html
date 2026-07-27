@@ -4,38 +4,14 @@
 <section>
 	<div th:replace="~{fragments/components :: alerts}"></div>
 
-	<div th:if="${scrapeResult}" class="panel mb-3">
-		<div class="panel-header">
-			<h2>Resultado de la búsqueda</h2>
-			<a th:if="${scrapeResult.imported() > 0 || scrapeResult.duplicates() > 0}"
-			   th:href="@{/jobs(segmentId=${segment.id()})}" class="btn btn-sm btn-primary">Ver vacantes del segmento</a>
-		</div>
-		<div class="panel-body">
-			<div class="result-metrics">
-				<div class="result-metric">
-					<div class="metric-label">Encontradas</div>
-					<div class="metric-value metric-value-sm" th:text="${scrapeResult.scraped()}">0</div>
-				</div>
-				<div class="result-metric">
-					<div class="metric-label">Importadas</div>
-					<div class="metric-value metric-value-sm" th:text="${scrapeResult.imported()}">0</div>
-				</div>
-				<div class="result-metric">
-					<div class="metric-label">Duplicadas</div>
-					<div class="metric-value metric-value-sm" th:text="${scrapeResult.duplicates()}">0</div>
-				</div>
-			</div>
-			<p th:if="${!scrapeResult.errors().isEmpty()}" class="form-error mb-0 mt-2">
-				<strong>Errores:</strong>
-				<span th:text="${#strings.listJoin(scrapeResult.errors(), '; ')}"></span>
-			</p>
-		</div>
-	</div>
-
 	<div class="page-toolbar mb-3">
 		<a th:href="@{/jobs(segmentId=${segment.id()})}" class="btn btn-outline-secondary">
 			Vacantes del segmento
 			<span class="tab-count" th:text="${jobCount}">0</span>
+		</a>
+		<a th:href="@{/jobs/new(segmentId=${segment.id()})}" class="btn btn-primary">
+			<i data-lucide="plus" aria-hidden="true"></i>
+			Agregar vacante
 		</a>
 	</div>
 

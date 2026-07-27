@@ -234,10 +234,13 @@ public class MarketSegmentWebController {
 					"Búsqueda del segmento: " + result.imported() + " nuevas, "
 							+ result.duplicates() + " duplicadas (asociadas), "
 							+ result.scraped() + " encontradas.");
+			redirectAttributes.addFlashAttribute("resultsBackUrl", "/segments/" + id);
+			redirectAttributes.addFlashAttribute("resultsBackLabel", "Volver al segmento");
+			return "redirect:/scraping/results";
 		} catch (RuntimeException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+			return "redirect:/segments/" + id;
 		}
-		return "redirect:/segments/" + id;
 	}
 
 	private List<JobPlatform> resolvePlatforms(List<String> platforms) {

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="mock-interview-shell">
+    <div class="d-flex justify-content-between align-items-start gap-3 mb-4 flex-wrap">
+      <div>
+        <div class="text-muted small text-uppercase tracking-wide">Mock Interview</div>
+        <div class="fw-medium" th:text="${interviewSession.formatLabel()}">Standard Mix</div>
+        <div class="text-muted small mt-1"
+             th:text="'Question ' + ${interviewSession.questionNumber()} + ' of ' + ${interviewSession.totalQuestions()}">
+          Question 1 of 4
+        </div>
+      </div>
+      <div class="text-end">
+        <div class="text-muted small">Interview</div>
+        <div class="marathon-timer" id="interviewTimerDisplay">00:00:00</div>
+      </div>
+    </div>
+
+    <section class="card-surface p-4 mb-3">
+      <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+        <span class="badge text-bg-light border"
+              th:text="${interviewSession.questionType().name() == 'ALGORITHM' ? 'Algorithm' : (interviewSession.questionType().name() == 'BEHAVIORAL' ? 'Behavioral' : 'System Design')}">Algorithm</span>
+        <span class="difficulty-badge"
+              th:if="${interviewSession.problem() != null}"
+              th:classappend="' difficulty-' + ${#strings.toLowerCase(interviewSession.problem().difficulty().name())}"
+              th:text="${interviewSession.problem().difficulty()}">MEDIUM</span>
+        <span class="difficulty-badge"
+              th:if="${interviewSession.systemDesign() != null}"
+              th:classappend="' difficulty-' + ${#strings.toLowerCase(interviewSession.systemDesign().difficulty().name())}"
+              th:text="${interviewSession.systemDesign().difficulty()}">MEDIUM</span>
+      </div>
+      <h1 class="page-title mb-3" style="font-size:1.35rem;"
+          th:text="${interviewSession.currentItem().title()}">Title</h1>
+
+      <div th:if="${interviewSession.problem() != null}">
+        <a class="small" th:if="${interviewSession.problem().url() != null}"
+           th:href="${interviewSession.problem().url()}" target="_blank" rel="noopener noreferrer">
+          Open original problem
+        </a>
+        <div class="mt-3" th:if="${interviewSession.problem().description() != null and !#strings.isEmpty(interviewSession.problem().description())}">
+          <textarea id="description" th:text="${interviewSession.problem().description()}"></textarea>
+        </div>
+        <p class="text-muted small mt-3 mb-0"
+           th:if="${interviewSession.problem().description() == null or #strings.isEmpty(interviewSession.problem().description())}">
+          No description stored. Use the original link if available.
+        </p>
+      </div>
+
+      <div th:if="${interviewSession.behavioral() != null}">
+        <p class="behavioral-prompt mb-0" th:text="${interviewSession.behavioral().question()}">Question</p>
+      </div>
+
+      <div th:if="${interviewSession.systemDesign() != null}">
+        <p class="behavioral-prompt mb-0" th:text="${interviewSession.systemDesign().description()}">Design prompt</p>
+      </div>
+    </section>
+
+    <div id="activePhase" class="card-surface p-4 mb-3 text-center" th:classappend="${interviewSession.revealAnswer()} ? ' d-none'">
+      <div class="behavioral-timer mb-2" id="questionTimerDisplay">00:00:00</div>
+      <p class="text-muted small mb-3">Answer independently. No hints will be provided.</p>
+      <div th:if="${interviewSession.systemDesign() != null}"
+           id="mockSdWhiteboardHost"
+           class="sd-whiteboard mb-3 text-start"
+           data-readonly="false"
+           data-autosave="false"></div>
+      <button type="button" class="btn btn-primary" id="finishQuestionBtn">Finish</button>
+    </div>
+
+    <div id="reviewPhase" th:classappend="${!interviewSession.revealAnswer()} ? ' d-none'">
+      <section class="card-surface p-4 mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="section-title mb-0">Stored answer</div>
+          <span class="text-muted small">Question time: <span id="finalQuestionTime">00:00:00</span></span>
+        </div>
+
+        <div th:if="${interviewSession.problem() != null}">
+          <div class="mb-3">
+            <div class="section-title">Source code</div>
+            <div class="editor-container editor-container-compact">
+              <div id="sourceCodeViewer" class="monaco-container monaco-container-compact"></div>
+            </div>
+          </div>
+          <div class="mb-3"
+               th:if="${interviewSession.problem().solution().explanation() != null and !#strings.isEmpty(interviewSession.problem().solution().explanation())}">
+            <div class="section-title">Explanation</div>
+            <textarea id="explanation" th:text="${interviewSession.problem().solution().explanation()}"></textarea>
+          </div>
+          <div class="mb-3"
+               th:if="${interviewSession.problem().solution().complexity() != null and !#strings.isEmpty(interviewSession.problem().solution().complexity())}">
+            <div class="section-title">Complexity</div>
+            <textarea id="complexity" th:text="${interviewSession.problem().solution().complexity()}"></textarea>
+          </div>
+          <div
+               th:if="${interviewSession.problem().solution().mistakes() != null and !#strings.isEmpty(interviewSession.problem().solution().mistakes())}">
+            <div class="section-title">Common mistakes</div>
+            <textarea id="mistakes" th:text="${interviewSession.problem().solution().mistakes()}"></textarea>
+          </div>
+        </div>
+
+        <div th:if="${interviewSession.behavioral() != null}">
+          <div class="star-block mb-3">
+            <div class="section-title">Situation</div>
+            <p class="mb-0" th:text="${interviewSession.behavioral().answerSituation() != null} ? ${interviewSession.behavioral().answerSituation()} : '—'">—</p>
+          </div>
+          <div class="star-block mb-3">
+            <div class="section-title">Task</div>
+            <p class="mb-0" th:text="${interviewSession.behavioral().answerTask() != null} ? ${interviewSession.behavioral().answerTask()} : '—'">—</p>
+          </div>
+          <div class="star-block mb-3">
+            <div class="section-title">Action</div>
+            <p class="mb-0" th:text="${interviewSession.behavioral().answerAction() != null} ? ${interviewSession.behavioral().answerAction()} : '—'">—</p>
+          </div>
+          <div class="star-block mb-3">
+            <div class="section-title">Result</div>
+            <p class="mb-0" th:text="${interviewSession.behavioral().answerResult() != null} ? ${interviewSession.behavioral().answerResult()} : '—'">—</p>
+          </div>
+          <div class="star-block" th:if="${interviewSession.behavioral().notes() != null}">
+            <div class="section-title">Notes</div>
+            <p class="mb-0" th:text="${interviewSession.behavioral().notes()}">Notes</p>
+          </div>
+        </div>
+
+        <div th:if="${interviewSession.systemDesign() != null}">
+          <div class="mb-3" th:if="${interviewSession.systemDesign().overview() != null}">
+            <div class="section-title">Overview</div>
+            <textarea class="sd-mock-preview" th:text="${interviewSession.systemDesign().overview()}"></textarea>
+          </div>
+          <div class="mb-3" th:if="${interviewSession.systemDesign().highLevelArchitecture() != null}">
+            <div class="section-title">High Level Architecture</div>
+            <textarea class="sd-mock-preview" th:text="${interviewSession.systemDesign().highLevelArchitecture()}"></textarea>
+          </div>
+          <div class="mb-3" th:if="${interviewSession.systemDesign().tradeoffs() != null}">
+            <div class="section-title">Tradeoffs</div>
+            <textarea class="sd-mock-preview" th:text="${interviewSession.systemDesign().tradeoffs()}"></textarea>
+          </div>
+          <div class="mb-3" th:if="${interviewSession.systemDesign().personalNotes() != null}">
+            <div class="section-title">Personal Notes</div>
+            <textarea class="sd-mock-preview" th:text="${interviewSession.systemDesign().personalNotes()}"></textarea>
+          </div>
+          <div class="mb-0">
+            <div class="section-title">Stored whiteboard</div>
+            <div id="mockStoredWhiteboard"
+                 class="sd-whiteboard"
+                 th:attr="data-scene=${interviewSession.systemDesign().whiteboardJson()}"
+                 data-readonly="true"
+                 data-autosave="false"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card-surface p-4">
+        <div class="section-title">How well did you remember your answer?</div>
+        <form th:action="@{/mock-interviews/{id}/answer(id=${interviewSession.interviewId()})}"
+              th:object="${answerForm}"
+              method="post"
+              id="interviewAnswerForm"
+              novalidate>
+          <input type="hidden" th:field="*{durationSeconds}" id="durationSeconds">
+
+          <div class="behavioral-rating-grid mb-3">
+            <label class="behavioral-rating-option" th:each="option : ${ratings}">
+              <input type="radio" th:field="*{rating}" th:value="${option.quality}" required>
+              <span th:text="${option.label}">Good</span>
+            </label>
+          </div>
+          <div class="invalid-feedback d-block mb-3"
+               th:if="${#fields.hasErrors('rating')}"
+               th:errors="*{rating}"></div>
+
+          <button type="submit" class="btn btn-primary">
+            <span th:text="${interviewSession.questionNumber() < interviewSession.totalQuestions()} ? 'Next question' : 'Finish interview'">
+              Next question
+            </span>
+          </button>
+        </form>
+      </section>
+    </div>
+  </div>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+  <link th:href="@{/css/whiteboard.css}" rel="stylesheet" th:if="${interviewSession.systemDesign() != null}">
+  <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fabric@5.3.0/dist/fabric.min.js" th:if="${interviewSession.systemDesign() != null}"></script>
+  <script th:src="@{/js/whiteboard.js}" th:if="${interviewSession.systemDesign() != null}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js" th:if="${interviewSession.problem() != null}"></script>
+  <script th:inline="javascript">
+    const easyMdeOptions = { spellChecker: false, status: false, minHeight: '140px' };
+    function createReadOnlyEditor(elementId) {
+      const element = document.getElementById(elementId);
+      if (!element) return null;
+      const editor = new EasyMDE(Object.assign({ element }, easyMdeOptions));
+      editor.codemirror.setOption('readOnly', true);
+      editor.togglePreview();
+      return editor;
+    }
+    createReadOnlyEditor('description');
+
+    const interviewId = /*[[${interviewSession.interviewId()}]]*/ 0;
+    const interviewStartedElapsed = /*[[${interviewSession.interviewElapsedSeconds()}]]*/ 0;
+    const pageLoadedAt = Date.now();
+    const revealOnLoad = /*[[${interviewSession.revealAnswer()}]]*/ false;
+    const hasProblem = /*[[${interviewSession.problem() != null}]]*/ false;
+    const hasSystemDesign = /*[[${interviewSession.systemDesign() != null}]]*/ false;
+    const sourceCode = /*[[${interviewSession.problem() != null ? interviewSession.problem().solution().sourceCode() : ''}]]*/ '';
+    const language = /*[[${interviewSession.problem() != null ? interviewSession.problem().solution().language() : 'java'}]]*/ 'java';
+
+    const questionTimerDisplay = document.getElementById('questionTimerDisplay');
+    const interviewTimerDisplay = document.getElementById('interviewTimerDisplay');
+    const finalQuestionTime = document.getElementById('finalQuestionTime');
+    const durationInput = document.getElementById('durationSeconds');
+    const activePhase = document.getElementById('activePhase');
+    const reviewPhase = document.getElementById('reviewPhase');
+    const finishBtn = document.getElementById('finishQuestionBtn');
+
+    if (hasSystemDesign && typeof SystemDesignWhiteboard !== 'undefined') {
+      const host = document.getElementById('mockSdWhiteboardHost');
+      if (host) SystemDesignWhiteboard.mount(host);
+    }
+
+    const storageKey = 'mock-interview-q-' + interviewId + '-' + /*[[${interviewSession.currentItem().id()}]]*/ 0;
+    let questionStartedAt = Number(sessionStorage.getItem(storageKey));
+    if (!Number.isFinite(questionStartedAt) || questionStartedAt <= 0) {
+      questionStartedAt = Date.now();
+      sessionStorage.setItem(storageKey, String(questionStartedAt));
+    }
+    let questionStoppedAt = null;
+    let monacoReady = false;
+
+    function formatHms(ms) {
+      const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      return String(hours).padStart(2, '0') + ':'
+          + String(minutes).padStart(2, '0') + ':'
+          + String(seconds).padStart(2, '0');
+    }
+
+    function questionElapsedSeconds() {
+      const end = questionStoppedAt == null ? Date.now() : questionStoppedAt;
+      return Math.max(0, Math.floor((end - questionStartedAt) / 1000));
+    }
+
+    function syncTimers() {
+      const qLabel = formatHms((questionStoppedAt == null ? Date.now() : questionStoppedAt) - questionStartedAt);
+      if (questionTimerDisplay) questionTimerDisplay.textContent = qLabel;
+      if (finalQuestionTime) finalQuestionTime.textContent = qLabel;
+      durationInput.value = String(questionElapsedSeconds());
+      const interviewMs = (interviewStartedElapsed * 1000) + (Date.now() - pageLoadedAt);
+      interviewTimerDisplay.textContent = formatHms(interviewMs);
+    }
+
+    function ensureMonaco() {
+      if (!hasProblem || monacoReady) return;
+      monacoReady = true;
+      require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
+      require(['vs/editor/editor.main'], function () {
+        monaco.editor.create(document.getElementById('sourceCodeViewer'), {
+          value: sourceCode || '',
+          language: language,
+          readOnly: true,
+          minimap: { enabled: false },
+          fontSize: 13,
+          scrollBeyondLastLine: false,
+          automaticLayout: true,
+          wordWrap: 'on'
+        });
+      });
+      createReadOnlyEditor('explanation');
+      createReadOnlyEditor('complexity');
+      createReadOnlyEditor('mistakes');
+    }
+
+    function revealSystemDesign() {
+      if (!hasSystemDesign) return;
+      document.querySelectorAll('textarea.sd-mock-preview').forEach((element) => {
+        const editor = new EasyMDE(Object.assign({ element }, easyMdeOptions));
+        editor.codemirror.setOption('readOnly', true);
+        editor.togglePreview();
+      });
+      const stored = document.getElementById('mockStoredWhiteboard');
+      if (stored && typeof SystemDesignWhiteboard !== 'undefined') {
+        SystemDesignWhiteboard.mount(stored);
+      }
+    }
+
+    function finishQuestion() {
+      questionStoppedAt = Date.now();
+      syncTimers();
+      activePhase.classList.add('d-none');
+      reviewPhase.classList.remove('d-none');
+      ensureMonaco();
+      revealSystemDesign();
+    }
+
+    finishBtn.addEventListener('click', finishQuestion);
+    document.getElementById('interviewAnswerForm').addEventListener('submit', () => {
+      if (questionStoppedAt == null) questionStoppedAt = Date.now();
+      syncTimers();
+      sessionStorage.removeItem(storageKey);
+    });
+
+    syncTimers();
+    setInterval(syncTimers, 250);
+    if (revealOnLoad) {
+      finishQuestion();
+    }
+  </script>
+</div>
+</body>
+</html>

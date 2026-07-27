@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title" th:text="${pageTitle}">Profile Form</h1>
+      <p class="page-subtitle">Profiles filter and shape interviews. They never duplicate study content.</p>
+    </div>
+    <a class="btn btn-outline-secondary" th:href="@{/interview-profiles}">
+      <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+  </div>
+
+  <div class="card-surface p-4" style="max-width: 960px;">
+    <form th:action="${formAction}" th:object="${profileForm}" method="post" novalidate id="profileForm">
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label for="name" class="form-label">Name</label>
+          <input type="text" id="name" class="form-control"
+                 th:classappend="${#fields.hasErrors('name')} ? ' is-invalid'"
+                 th:field="*{name}" placeholder="Google Software Engineer" required>
+          <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+        </div>
+        <div class="col-md-6">
+          <label for="company" class="form-label">Company</label>
+          <input type="text" id="company" class="form-control" th:field="*{company}"
+                 placeholder="Optional — Google, Amazon, Custom…">
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <textarea id="description" class="form-control" rows="2" th:field="*{description}"
+                  placeholder="What this interview setup is for"></textarea>
+      </div>
+
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <label for="color" class="form-label">Color</label>
+          <input type="color" id="color" class="form-control form-control-color" th:field="*{color}">
+        </div>
+        <div class="col-md-4">
+          <label for="icon" class="form-label">Icon (Bootstrap Icons class)</label>
+          <input type="text" id="icon" class="form-control" th:field="*{icon}" placeholder="bi-briefcase">
+        </div>
+        <div class="col-md-4">
+          <label for="maxDurationMinutes" class="form-label">Max duration (minutes)</label>
+          <input type="number" id="maxDurationMinutes" class="form-control" min="1" max="480"
+                 th:field="*{maxDurationMinutes}">
+        </div>
+      </div>
+
+      <div class="section-title">Interview composition</div>
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <label for="behavioralQuestionCount" class="form-label">Behavioral questions</label>
+          <input type="number" id="behavioralQuestionCount" class="form-control" min="0" max="20"
+                 th:field="*{behavioralQuestionCount}">
+        </div>
+        <div class="col-md-4">
+          <label for="algorithmQuestionCount" class="form-label">Algorithm questions</label>
+          <input type="number" id="algorithmQuestionCount" class="form-control" min="0" max="20"
+                 th:field="*{algorithmQuestionCount}">
+        </div>
+        <div class="col-md-4">
+          <label for="systemDesignQuestionCount" class="form-label">System design questions</label>
+          <input type="number" id="systemDesignQuestionCount" class="form-control" min="0" max="20"
+                 th:field="*{systemDesignQuestionCount}">
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <div class="form-label">Target difficulty</div>
+        <div class="d-flex flex-wrap gap-3">
+          <div class="form-check" th:each="diff : ${difficulties}">
+            <input class="form-check-input" type="checkbox"
+                   th:field="*{targetDifficulties}" th:value="${diff.name()}"
+                   th:id="${'diff-' + diff.name()}">
+            <label class="form-check-label" th:for="${'diff-' + diff.name()}" th:text="${diff.name()}">MEDIUM</label>
+          </div>
+        </div>
+        <div class="form-text">Leave empty to allow all difficulties.</div>
+      </div>
+
+      <div class="section-title mb-2">Assigned study items</div>
+      <p class="text-muted small mb-3">Search and click to add. The same item can belong to many profiles.</p>
+
+      <div class="profile-picker" id="profilePicker">
+        <div class="profile-picker-tabs" role="tablist">
+          <button type="button" class="profile-picker-tab active" data-tab="algorithms" role="tab">
+            <i class="bi bi-puzzle me-1"></i>Algorithms
+            <span class="profile-picker-count" data-count-for="algorithms">0</span>
+          </button>
+          <button type="button" class="profile-picker-tab" data-tab="behavioral" role="tab">
+            <i class="bi bi-chat-quote me-1"></i>Behavioral
+            <span class="profile-picker-count" data-count-for="behavioral">0</span>
+          </button>
+          <button type="button" class="profile-picker-tab" data-tab="systemdesign" role="tab">
+            <i class="bi bi-diagram-3 me-1"></i>System Design
+            <span class="profile-picker-count" data-count-for="systemdesign">0</span>
+          </button>
+        </div>
+
+        <div class="profile-picker-panel active" data-panel="algorithms">
+          <div class="profile-picker-selected" data-selected-for="algorithms">
+            <div class="profile-picker-selected-empty text-muted small">No algorithms selected yet.</div>
+          </div>
+          <div class="profile-picker-toolbar">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input type="search" class="form-control profile-picker-search" data-filter-for="algorithms"
+                     placeholder="Search algorithms…">
+            </div>
+            <select class="form-select form-select-sm profile-picker-filter" data-meta-filter-for="algorithms"
+                    style="max-width: 160px;">
+              <option value="">All difficulties</option>
+              <option value="EASY">Easy</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HARD">Hard</option>
+            </select>
+          </div>
+          <div class="profile-picker-catalog">
+            <label class="profile-picker-card" th:each="problem : ${problems}"
+                   th:attr="data-title=${problem.title}, data-meta=${problem.difficulty.name()}, data-group=${problem.topic != null ? problem.topic.name : ''}">
+              <input class="visually-hidden" type="checkbox"
+                     th:field="*{problemIds}" th:value="${problem.id}">
+              <div class="profile-picker-card-body">
+                <div class="profile-picker-card-title" th:text="${problem.title}">Two Sum</div>
+                <div class="profile-picker-card-meta">
+                  <span class="difficulty-badge"
+                        th:classappend="' difficulty-' + ${#strings.toLowerCase(problem.difficulty.name())}"
+                        th:text="${problem.difficulty}">MEDIUM</span>
+                  <span class="text-muted small" th:if="${problem.topic != null}"
+                        th:text="${problem.topic.name}">Arrays</span>
+                </div>
+              </div>
+              <span class="profile-picker-check"><i class="bi bi-check-lg"></i></span>
+            </label>
+            <div class="profile-picker-empty text-muted small" hidden>No matches.</div>
+          </div>
+        </div>
+
+        <div class="profile-picker-panel" data-panel="behavioral">
+          <div class="profile-picker-selected" data-selected-for="behavioral">
+            <div class="profile-picker-selected-empty text-muted small">No behavioral questions selected yet.</div>
+          </div>
+          <div class="profile-picker-toolbar">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input type="search" class="form-control profile-picker-search" data-filter-for="behavioral"
+                     placeholder="Search behavioral…">
+            </div>
+            <select class="form-select form-select-sm profile-picker-filter" data-meta-filter-for="behavioral"
+                    style="max-width: 200px;">
+              <option value="">All categories</option>
+              <option th:each="cat : ${behavioralCategories}"
+                      th:value="${cat.name()}"
+                      th:text="${cat.label}">Leadership</option>
+            </select>
+          </div>
+          <div class="profile-picker-catalog">
+            <label class="profile-picker-card" th:each="question : ${behavioralQuestions}"
+                   th:attr="data-title=${question.title}, data-meta=${question.category.name()}, data-group=${question.category.label}">
+              <input class="visually-hidden" type="checkbox"
+                     th:field="*{behavioralQuestionIds}" th:value="${question.id}">
+              <div class="profile-picker-card-body">
+                <div class="profile-picker-card-title" th:text="${question.title}">Conflict</div>
+                <div class="profile-picker-card-meta">
+                  <span class="badge text-bg-light border" th:text="${question.category.label}">Leadership</span>
+                </div>
+              </div>
+              <span class="profile-picker-check"><i class="bi bi-check-lg"></i></span>
+            </label>
+            <div class="profile-picker-empty text-muted small" hidden>No matches.</div>
+          </div>
+        </div>
+
+        <div class="profile-picker-panel" data-panel="systemdesign">
+          <div class="profile-picker-selected" data-selected-for="systemdesign">
+            <div class="profile-picker-selected-empty text-muted small">No system design items selected yet.</div>
+          </div>
+          <div class="profile-picker-toolbar">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input type="search" class="form-control profile-picker-search" data-filter-for="systemdesign"
+                     placeholder="Search system design…">
+            </div>
+            <select class="form-select form-select-sm profile-picker-filter" data-meta-filter-for="systemdesign"
+                    style="max-width: 180px;">
+              <option value="">All difficulties</option>
+              <option value="EASY">Easy</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HARD">Hard</option>
+            </select>
+          </div>
+          <div class="profile-picker-catalog">
+            <label class="profile-picker-card" th:each="design : ${systemDesignProblems}"
+                   th:attr="data-title=${design.title}, data-meta=${design.difficulty.name()}, data-group=${design.category.label}">
+              <input class="visually-hidden" type="checkbox"
+                     th:field="*{systemDesignProblemIds}" th:value="${design.id}">
+              <div class="profile-picker-card-body">
+                <div class="profile-picker-card-title" th:text="${design.title}">Design Twitter</div>
+                <div class="profile-picker-card-meta">
+                  <span class="difficulty-badge"
+                        th:classappend="' difficulty-' + ${#strings.toLowerCase(design.difficulty.name())}"
+                        th:text="${design.difficulty}">HARD</span>
+                  <span class="badge text-bg-light border" th:text="${design.category.label}">Social</span>
+                </div>
+              </div>
+              <span class="profile-picker-check"><i class="bi bi-check-lg"></i></span>
+            </label>
+            <div class="profile-picker-empty text-muted small" hidden>No matches.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-4 mt-4">
+        <label for="extraSettingsJson" class="form-label">Extra settings (JSON, optional)</label>
+        <textarea id="extraSettingsJson" class="form-control font-monospace" rows="3"
+                  th:field="*{extraSettingsJson}"
+                  placeholder='{"interviewerPersonality":"neutral"}'></textarea>
+        <div class="form-text">Reserved for future options without changing the interview engine.</div>
+      </div>
+
+      <div class="form-check mb-4" th:if="${profileId != null}">
+        <input class="form-check-input" type="checkbox" id="archived" th:field="*{archived}">
+        <label class="form-check-label" for="archived">Archived</label>
+      </div>
+
+      <div class="d-flex gap-2 flex-wrap">
+        <button type="submit" class="btn btn-primary">Save profile</button>
+        <a class="btn btn-outline-secondary" th:href="@{/interview-profiles}">Cancel</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    (function () {
+      const picker = document.getElementById('profilePicker');
+      if (!picker) return;
+
+      function selectedChips(panelKey) {
+        return picker.querySelector('[data-selected-for="' + panelKey + '"]');
+      }
+
+      function panel(panelKey) {
+        return picker.querySelector('[data-panel="' + panelKey + '"]');
+      }
+
+      function syncCard(card) {
+        const input = card.querySelector('input[type="checkbox"]');
+        card.classList.toggle('is-selected', input && input.checked);
+      }
+
+      function refreshSelected(panelKey) {
+        const host = selectedChips(panelKey);
+        const cards = panel(panelKey).querySelectorAll('.profile-picker-card');
+        const selected = [];
+        cards.forEach((card) => {
+          syncCard(card);
+          const input = card.querySelector('input[type="checkbox"]');
+          if (input && input.checked) {
+            selected.push({
+              title: card.dataset.title || 'Item',
+              input
+            });
+          }
+        });
+
+        host.innerHTML = '';
+        if (selected.length === 0) {
+          const empty = document.createElement('div');
+          empty.className = 'profile-picker-selected-empty text-muted small';
+          empty.textContent =
+            panelKey === 'algorithms'
+              ? 'No algorithms selected yet.'
+              : panelKey === 'behavioral'
+                ? 'No behavioral questions selected yet.'
+                : 'No system design items selected yet.';
+          host.appendChild(empty);
+        } else {
+          selected.forEach((item) => {
+            const chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = 'profile-picker-chip';
+            chip.innerHTML = '<span></span><i class="bi bi-x-lg" aria-hidden="true"></i>';
+            chip.querySelector('span').textContent = item.title;
+            chip.title = 'Remove';
+            chip.addEventListener('click', () => {
+              item.input.checked = false;
+              item.input.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+            host.appendChild(chip);
+          });
+        }
+
+        const countBadge = picker.querySelector('[data-count-for="' + panelKey + '"]');
+        if (countBadge) {
+          countBadge.textContent = String(selected.length);
+          countBadge.classList.toggle('is-zero', selected.length === 0);
+        }
+      }
+
+      function applyFilters(panelKey) {
+        const currentPanel = panel(panelKey);
+        const query = (currentPanel.querySelector('.profile-picker-search')?.value || '')
+          .trim()
+          .toLowerCase();
+        const meta = currentPanel.querySelector('.profile-picker-filter')?.value || '';
+        let visible = 0;
+        currentPanel.querySelectorAll('.profile-picker-card').forEach((card) => {
+          const title = (card.dataset.title || '').toLowerCase();
+          const group = (card.dataset.group || '').toLowerCase();
+          const cardMeta = card.dataset.meta || '';
+          const matchesQuery = !query || title.includes(query) || group.includes(query);
+          const matchesMeta = !meta || cardMeta === meta;
+          const show = matchesQuery && matchesMeta;
+          card.hidden = !show;
+          if (show) visible++;
+        });
+        const empty = currentPanel.querySelector('.profile-picker-empty');
+        if (empty) empty.hidden = visible > 0;
+      }
+
+      picker.querySelectorAll('.profile-picker-tab').forEach((tab) => {
+        tab.addEventListener('click', () => {
+          const key = tab.dataset.tab;
+          picker.querySelectorAll('.profile-picker-tab').forEach((t) => t.classList.remove('active'));
+          picker.querySelectorAll('.profile-picker-panel').forEach((p) => p.classList.remove('active'));
+          tab.classList.add('active');
+          panel(key).classList.add('active');
+        });
+      });
+
+      ['algorithms', 'behavioral', 'systemdesign'].forEach((key) => {
+        const currentPanel = panel(key);
+        currentPanel.querySelectorAll('input[type="checkbox"]').forEach((input) => {
+          input.addEventListener('change', () => refreshSelected(key));
+        });
+        currentPanel.querySelector('.profile-picker-search')?.addEventListener('input', () => applyFilters(key));
+        currentPanel.querySelector('.profile-picker-filter')?.addEventListener('change', () => applyFilters(key));
+        refreshSelected(key);
+        applyFilters(key);
+      });
+    })();
+  </script>
+</div>
+</body>
+</html>

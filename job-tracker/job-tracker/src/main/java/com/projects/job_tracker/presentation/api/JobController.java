@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.projects.job_tracker.application.job.CreateJobUseCase;
 import com.projects.job_tracker.application.job.GetJobUseCase;
 import com.projects.job_tracker.application.job.ListJobsUseCase;
+import com.projects.job_tracker.domain.model.Job;
+import com.projects.job_tracker.domain.port.MarketSegmentRepository;
 import com.projects.job_tracker.presentation.api.dto.CreateJobRequest;
 import com.projects.job_tracker.presentation.api.dto.JobResponse;
 
@@ -25,14 +27,17 @@ public class JobController {
 	private final CreateJobUseCase createJobUseCase;
 	private final GetJobUseCase getJobUseCase;
 	private final ListJobsUseCase listJobsUseCase;
+	private final MarketSegmentRepository marketSegmentRepository;
 
 	public JobController(
 			CreateJobUseCase createJobUseCase,
 			GetJobUseCase getJobUseCase,
-			ListJobsUseCase listJobsUseCase) {
+			ListJobsUseCase listJobsUseCase,
+			MarketSegmentRepository marketSegmentRepository) {
 		this.createJobUseCase = createJobUseCase;
 		this.getJobUseCase = getJobUseCase;
 		this.listJobsUseCase = listJobsUseCase;
+		this.marketSegmentRepository = marketSegmentRepository;
 	}
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -47,26 +52,15 @@ public class JobController {
 
 	@PostMapping
 	public ResponseEntity<JobResponse> createJob(@RequestBody CreateJobRequest request) {
-		var command = new CreateJobUseCase.CreateJobCommand(
-				request.title(),
-				request.companyName(),
-				request.companyWebsite(),
-				request.description(),
-				request.location(),
-				request.salaryMin(),
-				request.salaryMax(),
-				request.source(),
-				request.url(),
-				null,
-				null,
-				null,
-				null,
-				null,
-				null,
-				null,
-				null);
-
-		JobResponse response = JobResponse.from(createJobUseCase.execute(command));
+		Job created = createJobUseCase.execute(request.toCommand());
+		if (request.segmentIds() != null) {
+			for (Long segmentId : request.segmentIds()) {
+				if (segmentId != null) {
+					marketSegmentRepository.attachJob(segmentId, created.id());
+				}
+			}
+		}
+		JobResponse response = JobResponse.from(created);
 		return ResponseEntity.created(URI.create("/api/jobs/" + response.id())).body(response);
 	}
 }

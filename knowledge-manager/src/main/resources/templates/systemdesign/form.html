@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title" th:text="${pageTitle}">Design Form</h1>
+      <p class="page-subtitle">Capture the interview prompt and your own architecture explanation.</p>
+    </div>
+    <a class="btn btn-outline-secondary" th:href="@{/system-design}">
+      <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+  </div>
+
+  <div class="card-surface p-4" style="max-width: 880px;">
+    <form th:action="${formAction}" th:object="${problemForm}" method="post" novalidate>
+      <div class="row g-3 mb-3">
+        <div class="col-md-8">
+          <label for="title" class="form-label">Title</label>
+          <input type="text" id="title" class="form-control"
+                 th:classappend="${#fields.hasErrors('title')} ? ' is-invalid'"
+                 th:field="*{title}" placeholder="Design Instagram" required>
+          <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+        </div>
+        <div class="col-md-4">
+          <label for="favorite" class="form-label d-block">Favorite</label>
+          <div class="form-check mt-2">
+            <input class="form-check-input" type="checkbox" id="favorite" th:field="*{favorite}">
+            <label class="form-check-label" for="favorite">Mark as favorite</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <label for="category" class="form-label">Category</label>
+          <select id="category" class="form-select" th:field="*{category}" required>
+            <option th:each="cat : ${categories}" th:value="${cat.name()}" th:text="${cat.label}">Category</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="difficulty" class="form-label">Difficulty</label>
+          <select id="difficulty" class="form-select" th:field="*{difficulty}" required>
+            <option th:each="diff : ${difficulties}" th:value="${diff.name()}" th:text="${diff.name()}">MEDIUM</option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label for="estimatedInterviewTime" class="form-label">Est. interview (min)</label>
+          <input type="number" id="estimatedInterviewTime" class="form-control" min="1" max="300"
+                 th:field="*{estimatedInterviewTime}">
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label for="originalSource" class="form-label">Original source</label>
+        <input type="text" id="originalSource" class="form-control"
+               th:field="*{originalSource}" placeholder="URL or book reference">
+      </div>
+
+      <div class="mb-3">
+        <label for="tags" class="form-label">Tags</label>
+        <input type="text" id="tags" class="form-control"
+               th:field="*{tags}" placeholder="cache, feed, fanout">
+        <div class="form-text">Comma-separated</div>
+      </div>
+
+      <div class="mb-4">
+        <label for="description" class="form-label">Interview prompt</label>
+        <textarea id="description" class="form-control" rows="4"
+                  th:field="*{description}"
+                  placeholder="Design Instagram. Focus on the news feed and photo upload path."
+                  required></textarea>
+      </div>
+
+      <div class="section-title mb-3">Design document</div>
+      <p class="text-muted small mb-3">Markdown supported. This is your own explanation — nothing is generated.</p>
+
+      <div class="mb-3">
+        <label for="overview" class="form-label">Overview</label>
+        <textarea id="overview" class="form-control markdown-field" rows="3" th:field="*{overview}"></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="functionalRequirements" class="form-label">Functional Requirements</label>
+        <textarea id="functionalRequirements" class="form-control markdown-field" rows="3" th:field="*{functionalRequirements}"></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="nonFunctionalRequirements" class="form-label">Non Functional Requirements</label>
+        <textarea id="nonFunctionalRequirements" class="form-control markdown-field" rows="3" th:field="*{nonFunctionalRequirements}"></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="assumptions" class="form-label">Assumptions</label>
+        <textarea id="assumptions" class="form-control markdown-field" rows="3" th:field="*{assumptions}"></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="highLevelArchitecture" class="form-label">High Level Architecture</label>
+        <textarea id="highLevelArchitecture" class="form-control markdown-field" rows="3" th:field="*{highLevelArchitecture}"></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="components" class="form-label">Components</label>
+        <textarea id="components" class="form-control markdown-field" rows="3" th:field="*{components}"></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="databaseDesign" class="form-label">Database Design</label>
+        <textarea id="databaseDesign" class="form-control markdown-field" rows="3" th:field="*{databaseDesign}"></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="apiDesign" class="form-label">API Design</label>
+        <textarea id="apiDesign" class="form-control markdown-field" rows="3" th:field="*{apiDesign}"></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="scalingStrategy" class="form-label">Scaling Strategy</label>
+        <textarea id="scalingStrategy" class="form-control markdown-field" rows="3" th:field="*{scalingStrategy}"></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="cachingStrategy" class="form-label">Caching Strategy</label>
+        <textarea id="cachingStrategy" class="form-control markdown-field" rows="3" th:field="*{cachingStrategy}"></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="loadBalancing" class="form-label">Load Balancing</label>
+        <textarea id="loadBalancing" class="form-control markdown-field" rows="3" th:field="*{loadBalancing}"></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="messaging" class="form-label">Messaging</label>
+        <textarea id="messaging" class="form-control markdown-field" rows="3" th:field="*{messaging}"></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="tradeoffs" class="form-label">Tradeoffs</label>
+        <textarea id="tradeoffs" class="form-control markdown-field" rows="3" th:field="*{tradeoffs}"></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="bottlenecks" class="form-label">Bottlenecks</label>
+        <textarea id="bottlenecks" class="form-control markdown-field" rows="3" th:field="*{bottlenecks}"></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="lessonsLearned" class="form-label">Lessons Learned</label>
+        <textarea id="lessonsLearned" class="form-control markdown-field" rows="3" th:field="*{lessonsLearned}"></textarea>
+      </div>
+      <div class="mb-4">
+        <label for="personalNotes" class="form-label">Personal Notes</label>
+        <textarea id="personalNotes" class="form-control markdown-field" rows="3" th:field="*{personalNotes}"></textarea>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Save design</button>
+        <a class="btn btn-outline-secondary" th:href="@{/system-design}">Cancel</a>
+      </div>
+    </form>
+  </div>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+  <script>
+    const easyMdeOptions = { spellChecker: false, status: false, minHeight: '120px' };
+    document.querySelectorAll('textarea.markdown-field').forEach((element) => {
+      new EasyMDE(Object.assign({ element }, easyMdeOptions));
+    });
+  </script>
+</div>
+</body>
+</html>

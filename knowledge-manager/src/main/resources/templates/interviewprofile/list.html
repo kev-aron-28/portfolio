@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Interview Profiles</h1>
+      <p class="page-subtitle">Configure company-style interviews without duplicating study items.</p>
+    </div>
+    <div class="d-flex gap-2">
+      <a class="btn btn-outline-secondary"
+         th:href="@{/interview-profiles(includeArchived=${!includeArchived})}"
+         th:text="${includeArchived} ? 'Hide archived' : 'Show archived'">Show archived</a>
+      <a class="btn btn-primary" th:href="@{/interview-profiles/new}">
+        <i class="bi bi-plus-lg me-1"></i>New profile
+      </a>
+    </div>
+  </div>
+
+  <section class="card-surface p-4 mb-4" th:if="${!#lists.isEmpty(profileStats)}">
+    <div class="section-title">Profile dashboard</div>
+    <div class="row g-3">
+      <div class="col-md-6 col-xl-4" th:each="stat : ${profileStats}">
+        <div class="card-surface p-3 h-100">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="topic-color-dot" th:style="'background-color:' + ${stat.color()}"></span>
+            <i th:class="${stat.icon()}"></i>
+            <a class="fw-medium problem-link" th:href="@{/interview-profiles/{id}(id=${stat.profileId()})}"
+               th:text="${stat.profileName()}">Google</a>
+          </div>
+          <div class="text-muted small mb-3" th:if="${stat.company() != null}" th:text="${stat.company()}">Company</div>
+          <div class="row g-2 small">
+            <div class="col-6">
+              <div class="stat-label">Interviews</div>
+              <div class="fw-medium" th:text="${stat.interviewsCompleted()}">0</div>
+            </div>
+            <div class="col-6">
+              <div class="stat-label">Questions</div>
+              <div class="fw-medium" th:text="${stat.questionsReviewed()}">0</div>
+            </div>
+            <div class="col-6">
+              <div class="stat-label">Avg duration</div>
+              <div class="fw-medium"
+                   th:text="${stat.averageDurationSeconds() == 0 ? '—' : #numbers.formatDecimal(stat.averageDurationSeconds() / 60.0, 1, 1) + 'm'}">—</div>
+            </div>
+            <div class="col-6">
+              <div class="stat-label">Avg rating</div>
+              <div class="fw-medium"
+                   th:text="${stat.averageRating() == 0 ? '—' : stat.averageRating()}">—</div>
+            </div>
+            <div class="col-6">
+              <div class="stat-label">Mastery</div>
+              <div class="fw-medium" th:text="${stat.masteryScore()}">0</div>
+            </div>
+            <div class="col-6">
+              <div class="stat-label">Due reviews</div>
+              <div class="fw-medium" th:text="${stat.dueReviews()}">0</div>
+            </div>
+            <div class="col-6">
+              <div class="stat-label">Completion</div>
+              <div class="fw-medium" th:text="${stat.completionPercentage()} + '%'">0%</div>
+            </div>
+            <div class="col-6">
+              <div class="stat-label">Last interview</div>
+              <div class="fw-medium"
+                   th:text="${stat.lastInterviewDate() != null} ? ${#temporals.format(stat.lastInterviewDate(), 'MMM d')} : '—'">—</div>
+            </div>
+          </div>
+          <form class="mt-3" th:action="@{/mock-interviews/start}" method="post">
+            <input type="hidden" name="profileId" th:value="${stat.profileId()}">
+            <button type="submit" class="btn btn-sm btn-primary">Start interview</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div th:if="${#lists.isEmpty(profiles)}" class="card-surface empty-state">
+    <i class="bi bi-person-badge fs-2 d-block mb-3"></i>
+    <h2 class="h5 mb-2">No profiles yet</h2>
+    <p class="mb-3">Create a profile like “Google SWE” or “Weekend Practice”, then assign study items.</p>
+    <a class="btn btn-primary btn-sm" th:href="@{/interview-profiles/new}">Create profile</a>
+  </div>
+
+  <section class="card-surface p-4" th:if="${!#lists.isEmpty(profiles)}">
+    <div class="problem-row" th:each="profile : ${profiles}">
+      <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
+        <div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="topic-color-dot" th:style="'background-color:' + ${profile.color()}"></span>
+            <i th:class="${profile.icon()}"></i>
+            <a class="problem-link" th:href="@{/interview-profiles/{id}(id=${profile.id()})}"
+               th:text="${profile.name()}">Name</a>
+            <span class="badge text-bg-secondary" th:if="${profile.archived()}">Archived</span>
+          </div>
+          <div class="text-muted small mt-1">
+            <span th:if="${profile.company() != null}" th:text="${profile.company()} + ' · '">Company · </span>
+            <span th:text="${profile.behavioralQuestionCount()} + 'B / ' + ${profile.algorithmQuestionCount()} + 'A / ' + ${profile.systemDesignQuestionCount()} + 'SD'">2B / 3A / 1SD</span>
+            ·
+            <span th:text="${profile.assignedProblemCount() + profile.assignedBehavioralCount() + profile.assignedSystemDesignCount()} + ' items'">0 items</span>
+            <span th:if="${profile.maxDurationMinutes() != null}"
+                  th:text="' · ' + ${profile.maxDurationMinutes()} + ' min'"> · 60 min</span>
+          </div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+          <form th:action="@{/mock-interviews/start}" method="post" th:if="${!profile.archived()}">
+            <input type="hidden" name="profileId" th:value="${profile.id()}">
+            <button type="submit" class="btn btn-sm btn-primary">Start</button>
+          </form>
+          <a class="btn btn-sm btn-outline-secondary"
+             th:href="@{/interview-profiles/{id}/edit(id=${profile.id()})}">Edit</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+</body>
+</html>
