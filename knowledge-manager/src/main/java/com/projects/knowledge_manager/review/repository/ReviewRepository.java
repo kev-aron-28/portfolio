@@ -14,7 +14,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
       """
       SELECT r FROM Review r
       JOIN FETCH r.problem p
-      JOIN FETCH p.topic
+      LEFT JOIN FETCH p.topics
       WHERE p.id = :problemId
       ORDER BY r.reviewDate DESC, r.id DESC
       """)
@@ -22,9 +22,9 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
   @Query(
       """
-      SELECT r FROM Review r
+      SELECT DISTINCT r FROM Review r
       JOIN FETCH r.problem p
-      JOIN FETCH p.topic
+      LEFT JOIN FETCH p.topics
       ORDER BY r.reviewDate DESC, r.id DESC
       """)
   List<Review> findRecentReviews(Pageable pageable);
@@ -43,9 +43,9 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
   @Query(
       """
-      SELECT r FROM Review r
+      SELECT DISTINCT r FROM Review r
       JOIN FETCH r.problem p
-      JOIN FETCH p.topic
+      LEFT JOIN FETCH p.topics
       WHERE p.archived = false
       ORDER BY r.reviewDate DESC, r.id DESC
       """)
@@ -56,18 +56,20 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
       SELECT COALESCE(SUM(r.reviewDuration), 0)
       FROM Review r
       JOIN r.problem p
-      WHERE p.topic.id = :topicId
+      JOIN p.topics t
+      WHERE t.id = :topicId
         AND p.archived = false
       """)
   long sumDurationMinutesByTopicId(@Param("topicId") Long topicId);
 
   @Query(
       """
-      SELECT p.topic.id, COALESCE(SUM(r.reviewDuration), 0)
+      SELECT t.id, COALESCE(SUM(r.reviewDuration), 0)
       FROM Review r
       JOIN r.problem p
+      JOIN p.topics t
       WHERE p.archived = false
-      GROUP BY p.topic.id
+      GROUP BY t.id
       """)
   List<Object[]> sumDurationMinutesGroupedByTopic();
 }

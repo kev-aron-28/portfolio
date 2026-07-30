@@ -14,7 +14,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
@@ -53,9 +52,12 @@ public class Problem {
   @Column(nullable = false)
   private boolean archived;
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(name = "topic_id", nullable = false)
-  private Topic topic;
+  @ManyToMany(fetch = FetchType.LAZY)
+  @JoinTable(
+      name = "problem_topics",
+      joinColumns = @JoinColumn(name = "problem_id"),
+      inverseJoinColumns = @JoinColumn(name = "topic_id"))
+  private Set<Topic> topics = new HashSet<>();
 
   @ManyToMany(fetch = FetchType.LAZY)
   @JoinTable(
@@ -78,10 +80,9 @@ public class Problem {
 
   protected Problem() {}
 
-  public Problem(String title, Difficulty difficulty, Topic topic) {
+  public Problem(String title, Difficulty difficulty) {
     this.title = title;
     this.difficulty = difficulty;
-    this.topic = topic;
   }
 
   @PrePersist
@@ -148,12 +149,12 @@ public class Problem {
     this.archived = archived;
   }
 
-  public Topic getTopic() {
-    return topic;
+  public Set<Topic> getTopics() {
+    return topics;
   }
 
-  public void setTopic(Topic topic) {
-    this.topic = topic;
+  public void setTopics(Set<Topic> topics) {
+    this.topics = topics;
   }
 
   public Set<Tag> getTags() {

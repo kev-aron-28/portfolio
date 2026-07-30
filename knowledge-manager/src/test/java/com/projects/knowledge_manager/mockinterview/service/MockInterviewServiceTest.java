@@ -39,7 +39,7 @@ class MockInterviewServiceTest {
               "",
               Difficulty.MEDIUM,
               "desc " + i,
-              topicId,
+              List.of(topicId),
               List.of(),
               "",
               false,

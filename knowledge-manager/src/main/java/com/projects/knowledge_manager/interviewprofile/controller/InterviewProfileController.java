@@ -1,14 +1,30 @@
 package com.projects.knowledge_manager.interviewprofile.controller;
 
+import com.projects.knowledge_manager.behavioral.dto.BehavioralQuestionForm;
 import com.projects.knowledge_manager.behavioral.model.BehavioralCategory;
 import com.projects.knowledge_manager.behavioral.repository.BehavioralQuestionRepository;
+import com.projects.knowledge_manager.behavioral.service.BehavioralQuestionService;
 import com.projects.knowledge_manager.interviewprofile.dto.InterviewProfileForm;
+import com.projects.knowledge_manager.interviewprofile.dto.QuickCreateBehavioralRequest;
+import com.projects.knowledge_manager.interviewprofile.dto.QuickCreateItemResponse;
+import com.projects.knowledge_manager.interviewprofile.dto.QuickCreateProblemRequest;
+import com.projects.knowledge_manager.interviewprofile.dto.QuickCreateSystemDesignRequest;
 import com.projects.knowledge_manager.interviewprofile.service.DuplicateInterviewProfileNameException;
 import com.projects.knowledge_manager.interviewprofile.service.InterviewProfileService;
+import com.projects.knowledge_manager.problem.dto.ProblemForm;
 import com.projects.knowledge_manager.problem.model.Difficulty;
 import com.projects.knowledge_manager.problem.repository.ProblemRepository;
+import com.projects.knowledge_manager.problem.service.ProblemService;
+import com.projects.knowledge_manager.systemdesign.dto.SystemDesignProblemForm;
+import com.projects.knowledge_manager.systemdesign.model.SystemDesignCategory;
 import com.projects.knowledge_manager.systemdesign.repository.SystemDesignProblemRepository;
+import com.projects.knowledge_manager.systemdesign.service.SystemDesignProblemService;
+import com.projects.knowledge_manager.topic.repository.TopicRepository;
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Map;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -16,8 +32,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -28,16 +46,28 @@ public class InterviewProfileController {
   private final ProblemRepository problemRepository;
   private final BehavioralQuestionRepository behavioralQuestionRepository;
   private final SystemDesignProblemRepository systemDesignProblemRepository;
+  private final TopicRepository topicRepository;
+  private final ProblemService problemService;
+  private final BehavioralQuestionService behavioralQuestionService;
+  private final SystemDesignProblemService systemDesignProblemService;
 
   public InterviewProfileController(
       InterviewProfileService profileService,
       ProblemRepository problemRepository,
       BehavioralQuestionRepository behavioralQuestionRepository,
-      SystemDesignProblemRepository systemDesignProblemRepository) {
+      SystemDesignProblemRepository systemDesignProblemRepository,
+      TopicRepository topicRepository,
+      ProblemService problemService,
+      BehavioralQuestionService behavioralQuestionService,
+      SystemDesignProblemService systemDesignProblemService) {
     this.profileService = profileService;
     this.problemRepository = problemRepository;
     this.behavioralQuestionRepository = behavioralQuestionRepository;
     this.systemDesignProblemRepository = systemDesignProblemRepository;
+    this.topicRepository = topicRepository;
+    this.problemService = problemService;
+    this.behavioralQuestionService = behavioralQuestionService;
+    this.systemDesignProblemService = systemDesignProblemService;
   }
 
   @GetMapping
@@ -151,6 +181,128 @@ public class InterviewProfileController {
     return "redirect:/interview-profiles";
   }
 
+  @PostMapping("/quick-create/problem")
+  @ResponseBody
+  public ResponseEntity<?> quickCreateProblem(
+      @Valid @RequestBody QuickCreateProblemRequest request, BindingResult bindingResult) {
+    if (bindingResult.hasErrors()) {
+      return validationError(bindingResult);
+    }
+    var created =
+        problemService.create(
+            new ProblemForm(
+                request.title().trim(),
+                blankToEmpty(request.url()),
+                request.difficulty(),
+                blankToEmpty(request.description()),
+                List.of(request.topicId()),
+                List.of(),
+                "",
+                false,
+                false,
+                "java",
+                "",
+                "",
+                "",
+                ""));
+    return ResponseEntity.ok(
+        new QuickCreateItemResponse(
+            created.id(),
+            created.title(),
+            created.difficulty().name(),
+            created.topicName(),
+            created.difficulty().name(),
+            "difficulty-" + created.difficulty().name().toLowerCase(),
+            "problemIds"));
+  }
+
+  @PostMapping("/quick-create/behavioral")
+  @ResponseBody
+  public ResponseEntity<?> quickCreateBehavioral(
+      @Valid @RequestBody QuickCreateBehavioralRequest request, BindingResult bindingResult) {
+    if (bindingResult.hasErrors()) {
+      return validationError(bindingResult);
+    }
+    var created =
+        behavioralQuestionService.create(
+            new BehavioralQuestionForm(
+                request.title().trim(),
+                request.category(),
+                request.question().trim(),
+                "",
+                "",
+                "",
+                "",
+                ""));
+    return ResponseEntity.ok(
+        new QuickCreateItemResponse(
+            created.id(),
+            created.title(),
+            created.category().name(),
+            created.category().getLabel(),
+            created.category().getLabel(),
+            "",
+            "behavioralQuestionIds"));
+  }
+
+  @PostMapping("/quick-create/system-design")
+  @ResponseBody
+  public ResponseEntity<?> quickCreateSystemDesign(
+      @Valid @RequestBody QuickCreateSystemDesignRequest request, BindingResult bindingResult) {
+    if (bindingResult.hasErrors()) {
+      return validationError(bindingResult);
+    }
+    var created =
+        systemDesignProblemService.create(
+            new SystemDesignProblemForm(
+                request.title().trim(),
+                request.category(),
+                request.difficulty(),
+                request.description().trim(),
+                "",
+                45,
+                false,
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""));
+    return ResponseEntity.ok(
+        new QuickCreateItemResponse(
+            created.id(),
+            created.title(),
+            created.difficulty().name(),
+            created.category().getLabel(),
+            created.difficulty().name(),
+            "difficulty-" + created.difficulty().name().toLowerCase(),
+            "systemDesignProblemIds"));
+  }
+
+  private ResponseEntity<Map<String, String>> validationError(BindingResult bindingResult) {
+    String message =
+        bindingResult.getFieldErrors().stream()
+            .findFirst()
+            .map(error -> error.getDefaultMessage())
+            .orElse("Invalid request");
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", message));
+  }
+
+  private static String blankToEmpty(String value) {
+    return value == null ? "" : value.trim();
+  }
+
   private void populateFormModel(
       Model model,
       InterviewProfileForm form,
@@ -163,6 +315,8 @@ public class InterviewProfileController {
     model.addAttribute("profileId", profileId);
     model.addAttribute("difficulties", Difficulty.values());
     model.addAttribute("behavioralCategories", BehavioralCategory.values());
+    model.addAttribute("systemDesignCategories", SystemDesignCategory.values());
+    model.addAttribute("topics", topicRepository.findAllByOrderByNameAsc());
     model.addAttribute("problems", problemRepository.findAllByArchivedFalseOrderByTitleAsc());
     model.addAttribute(
         "behavioralQuestions", behavioralQuestionRepository.findAllByOrderByTitleAsc());

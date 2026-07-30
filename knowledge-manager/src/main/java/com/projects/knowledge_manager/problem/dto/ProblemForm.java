@@ -2,6 +2,7 @@ package com.projects.knowledge_manager.problem.dto;
 
 import com.projects.knowledge_manager.problem.model.Difficulty;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ public record ProblemForm(
     @Size(max = 10000, message = "Description must be at most 10000 characters")
     String description,
 
-    @NotNull(message = "Topic is required") Long topicId,
+    @NotEmpty(message = "Select at least one topic") List<Long> topicIds,
 
     List<Long> tagIds,
 
@@ -46,13 +47,18 @@ public record ProblemForm(
     @Size(max = 5000, message = "Mistakes must be at most 5000 characters")
     String mistakes) {
 
+  public ProblemForm {
+    topicIds = topicIds == null ? List.of() : List.copyOf(topicIds);
+    tagIds = tagIds == null ? List.of() : List.copyOf(tagIds);
+  }
+
   public static ProblemForm empty() {
     return new ProblemForm(
         "",
         "",
         Difficulty.MEDIUM,
         "",
-        null,
+        new ArrayList<>(),
         new ArrayList<>(),
         "",
         false,

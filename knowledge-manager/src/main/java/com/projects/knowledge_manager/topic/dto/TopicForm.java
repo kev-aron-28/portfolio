@@ -3,20 +3,27 @@ package com.projects.knowledge_manager.topic.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import java.util.List;
 
 public record TopicForm(
     @NotBlank(message = "Name is required")
-    @Size(max = 100, message = "Name must be at most 100 characters")
-    String name,
-
-    @Size(max = 2000, message = "Description must be at most 2000 characters")
-    String description,
-
+        @Size(max = 100, message = "Name must be at most 100 characters")
+        String name,
+    @Size(max = 2000, message = "Description must be at most 2000 characters") String description,
     @NotBlank(message = "Color is required")
-    @Pattern(regexp = "^#[0-9A-Fa-f]{6}$", message = "Color must be a valid hex code")
-    String color) {
+        @Pattern(regexp = "^#[0-9A-Fa-f]{6}$", message = "Color must be a valid hex code")
+        String color,
+    List<Long> problemIds) {
+
+  public TopicForm {
+    problemIds = problemIds == null ? List.of() : List.copyOf(problemIds);
+  }
+
+  public TopicForm(String name, String description, String color) {
+    this(name, description, color, List.of());
+  }
 
   public static TopicForm empty() {
-    return new TopicForm("", "", "#6366f1");
+    return new TopicForm("", "", "#6366f1", List.of());
   }
 }

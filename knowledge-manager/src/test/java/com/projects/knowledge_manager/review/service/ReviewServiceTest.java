@@ -37,7 +37,7 @@ class ReviewServiceTest {
                     "",
                     Difficulty.MEDIUM,
                     "",
-                    topicId,
+                    List.of(topicId),
                     List.of(),
                     "",
                     false,

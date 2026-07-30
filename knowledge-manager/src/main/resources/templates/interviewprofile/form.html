@@ -120,22 +120,63 @@
               <option value="MEDIUM">Medium</option>
               <option value="HARD">Hard</option>
             </select>
+            <button type="button" class="btn btn-sm btn-outline-primary profile-quick-toggle"
+                    data-quick-for="algorithms">
+              <i class="bi bi-plus-lg me-1"></i>New
+            </button>
+          </div>
+          <div class="profile-quick-create" data-quick-panel="algorithms" hidden>
+            <div class="row g-2 align-items-end">
+              <div class="col-md-4">
+                <label class="form-label small mb-1">Title</label>
+                <input type="text" class="form-control form-control-sm" data-quick-field="title"
+                       placeholder="Two Sum" maxlength="200">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small mb-1">Topic</label>
+                <select class="form-select form-select-sm" data-quick-field="topicId">
+                  <option value="">Select topic</option>
+                  <option th:each="topic : ${topics}" th:value="${topic.id}" th:text="${topic.name}">Arrays</option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label small mb-1">Difficulty</label>
+                <select class="form-select form-select-sm" data-quick-field="difficulty">
+                  <option th:each="diff : ${difficulties}" th:value="${diff.name()}" th:text="${diff.name()}"
+                          th:selected="${diff.name() == 'MEDIUM'}">MEDIUM</option>
+                </select>
+              </div>
+              <div class="col-md-3 d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-primary flex-grow-1 profile-quick-submit"
+                        data-quick-submit="algorithms">Add &amp; select</button>
+              </div>
+            </div>
+            <div class="row g-2 mt-1">
+              <div class="col-md-8">
+                <input type="text" class="form-control form-control-sm" data-quick-field="url"
+                       placeholder="Optional URL">
+              </div>
+              <div class="col-md-4">
+                <div class="form-text profile-quick-error text-danger" data-quick-error="algorithms" hidden></div>
+              </div>
+            </div>
           </div>
           <div class="profile-picker-catalog">
             <label class="profile-picker-card" th:each="problem : ${problems}"
-                   th:attr="data-title=${problem.title}, data-meta=${problem.difficulty.name()}, data-group=${problem.topic != null ? problem.topic.name : ''}">
-              <input class="visually-hidden" type="checkbox"
-                     th:field="*{problemIds}" th:value="${problem.id}">
-              <div class="profile-picker-card-body">
-                <div class="profile-picker-card-title" th:text="${problem.title}">Two Sum</div>
-                <div class="profile-picker-card-meta">
-                  <span class="difficulty-badge"
-                        th:classappend="' difficulty-' + ${#strings.toLowerCase(problem.difficulty.name())}"
-                        th:text="${problem.difficulty}">MEDIUM</span>
-                  <span class="text-muted small" th:if="${problem.topic != null}"
-                        th:text="${problem.topic.name}">Arrays</span>
-                </div>
+                   th:attr="data-title=${problem.title}, data-meta=${problem.difficulty.name()}, data-group=${#strings.listJoin(problem.topics.![name], ', ')}">
+            <input class="visually-hidden" type="checkbox"
+                   th:field="*{problemIds}" th:value="${problem.id}">
+            <div class="profile-picker-card-body">
+              <div class="profile-picker-card-title" th:text="${problem.title}">Two Sum</div>
+              <div class="profile-picker-card-meta">
+                <span class="difficulty-badge"
+                      th:classappend="' difficulty-' + ${#strings.toLowerCase(problem.difficulty.name())}"
+                      th:text="${problem.difficulty}">MEDIUM</span>
+                <span class="text-muted small" th:each="topic, iter : ${problem.topics}">
+                  <span th:text="${topic.name}">Arrays</span><span th:if="${!iter.last}">, </span>
+                </span>
               </div>
+            </div>
               <span class="profile-picker-check"><i class="bi bi-check-lg"></i></span>
             </label>
             <div class="profile-picker-empty text-muted small" hidden>No matches.</div>
@@ -159,6 +200,35 @@
                       th:value="${cat.name()}"
                       th:text="${cat.label}">Leadership</option>
             </select>
+            <button type="button" class="btn btn-sm btn-outline-primary profile-quick-toggle"
+                    data-quick-for="behavioral">
+              <i class="bi bi-plus-lg me-1"></i>New
+            </button>
+          </div>
+          <div class="profile-quick-create" data-quick-panel="behavioral" hidden>
+            <div class="row g-2 align-items-end">
+              <div class="col-md-3">
+                <label class="form-label small mb-1">Title</label>
+                <input type="text" class="form-control form-control-sm" data-quick-field="title"
+                       placeholder="Difficult teammate" maxlength="200">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small mb-1">Category</label>
+                <select class="form-select form-select-sm" data-quick-field="category">
+                  <option th:each="cat : ${behavioralCategories}" th:value="${cat.name()}" th:text="${cat.label}">Teamwork</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small mb-1">Question prompt</label>
+                <input type="text" class="form-control form-control-sm" data-quick-field="question"
+                       placeholder="Tell me about a time…" maxlength="5000">
+              </div>
+              <div class="col-md-2">
+                <button type="button" class="btn btn-sm btn-primary w-100 profile-quick-submit"
+                        data-quick-submit="behavioral">Add &amp; select</button>
+              </div>
+            </div>
+            <div class="form-text profile-quick-error text-danger mt-1" data-quick-error="behavioral" hidden></div>
           </div>
           <div class="profile-picker-catalog">
             <label class="profile-picker-card" th:each="question : ${behavioralQuestions}"
@@ -194,6 +264,42 @@
               <option value="MEDIUM">Medium</option>
               <option value="HARD">Hard</option>
             </select>
+            <button type="button" class="btn btn-sm btn-outline-primary profile-quick-toggle"
+                    data-quick-for="systemdesign">
+              <i class="bi bi-plus-lg me-1"></i>New
+            </button>
+          </div>
+          <div class="profile-quick-create" data-quick-panel="systemdesign" hidden>
+            <div class="row g-2 align-items-end">
+              <div class="col-md-3">
+                <label class="form-label small mb-1">Title</label>
+                <input type="text" class="form-control form-control-sm" data-quick-field="title"
+                       placeholder="Design Twitter" maxlength="200">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label small mb-1">Category</label>
+                <select class="form-select form-select-sm" data-quick-field="category">
+                  <option th:each="cat : ${systemDesignCategories}" th:value="${cat.name()}" th:text="${cat.label}">Social</option>
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label small mb-1">Difficulty</label>
+                <select class="form-select form-select-sm" data-quick-field="difficulty">
+                  <option th:each="diff : ${difficulties}" th:value="${diff.name()}" th:text="${diff.name()}"
+                          th:selected="${diff.name() == 'MEDIUM'}">MEDIUM</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label small mb-1">Interview prompt</label>
+                <input type="text" class="form-control form-control-sm" data-quick-field="description"
+                       placeholder="Design a URL shortener…" maxlength="10000">
+              </div>
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-2 gap-2">
+              <div class="form-text profile-quick-error text-danger mb-0" data-quick-error="systemdesign" hidden></div>
+              <button type="button" class="btn btn-sm btn-primary profile-quick-submit"
+                      data-quick-submit="systemdesign">Add &amp; select</button>
+            </div>
           </div>
           <div class="profile-picker-catalog">
             <label class="profile-picker-card" th:each="design : ${systemDesignProblems}"
@@ -236,10 +342,16 @@
     </form>
   </div>
 
-  <script>
+  <script th:inline="javascript">
     (function () {
       const picker = document.getElementById('profilePicker');
       if (!picker) return;
+
+      const quickCreateUrls = {
+        algorithms: /*[[@{/interview-profiles/quick-create/problem}]]*/ '/interview-profiles/quick-create/problem',
+        behavioral: /*[[@{/interview-profiles/quick-create/behavioral}]]*/ '/interview-profiles/quick-create/behavioral',
+        systemdesign: /*[[@{/interview-profiles/quick-create/system-design}]]*/ '/interview-profiles/quick-create/system-design'
+      };
 
       function selectedChips(panelKey) {
         return picker.querySelector('[data-selected-for="' + panelKey + '"]');
@@ -324,6 +436,171 @@
         if (empty) empty.hidden = visible > 0;
       }
 
+      function wireCard(card, panelKey) {
+        const input = card.querySelector('input[type="checkbox"]');
+        if (!input) return;
+        input.addEventListener('change', () => refreshSelected(panelKey));
+      }
+
+      function insertCard(panelKey, item) {
+        const currentPanel = panel(panelKey);
+        const catalog = currentPanel.querySelector('.profile-picker-catalog');
+        const empty = catalog.querySelector('.profile-picker-empty');
+
+        const label = document.createElement('label');
+        label.className = 'profile-picker-card is-selected';
+        label.dataset.title = item.title;
+        label.dataset.meta = item.meta || '';
+        label.dataset.group = item.group || '';
+
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.className = 'visually-hidden';
+        input.name = item.fieldName;
+        input.value = String(item.id);
+        input.checked = true;
+
+        const body = document.createElement('div');
+        body.className = 'profile-picker-card-body';
+        const title = document.createElement('div');
+        title.className = 'profile-picker-card-title';
+        title.textContent = item.title;
+        const metaRow = document.createElement('div');
+        metaRow.className = 'profile-picker-card-meta';
+
+        if (panelKey === 'behavioral') {
+          const badge = document.createElement('span');
+          badge.className = 'badge text-bg-light border';
+          badge.textContent = item.badgeLabel || item.group || '';
+          metaRow.appendChild(badge);
+        } else {
+          const badge = document.createElement('span');
+          badge.className = 'difficulty-badge' + (item.badgeClass ? ' ' + item.badgeClass : '');
+          badge.textContent = item.badgeLabel || item.meta || '';
+          metaRow.appendChild(badge);
+          if (item.group) {
+            const group = document.createElement('span');
+            group.className = panelKey === 'systemdesign'
+                ? 'badge text-bg-light border'
+                : 'text-muted small';
+            group.textContent = item.group;
+            metaRow.appendChild(group);
+          }
+        }
+
+        body.appendChild(title);
+        body.appendChild(metaRow);
+
+        const check = document.createElement('span');
+        check.className = 'profile-picker-check';
+        check.innerHTML = '<i class="bi bi-check-lg"></i>';
+
+        label.appendChild(input);
+        label.appendChild(body);
+        label.appendChild(check);
+
+        catalog.insertBefore(label, empty || null);
+        wireCard(label, panelKey);
+        refreshSelected(panelKey);
+        applyFilters(panelKey);
+        label.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+
+      function fieldValue(quickPanel, name) {
+        const el = quickPanel.querySelector('[data-quick-field="' + name + '"]');
+        return el ? el.value.trim() : '';
+      }
+
+      function showError(panelKey, message) {
+        const error = picker.querySelector('[data-quick-error="' + panelKey + '"]');
+        if (!error) return;
+        if (!message) {
+          error.hidden = true;
+          error.textContent = '';
+          return;
+        }
+        error.hidden = false;
+        error.textContent = message;
+      }
+
+      function clearQuickForm(quickPanel) {
+        quickPanel.querySelectorAll('[data-quick-field]').forEach((el) => {
+          if (el.tagName === 'SELECT') {
+            if (el.dataset.quickField === 'difficulty') {
+              el.value = 'MEDIUM';
+            } else if (el.options.length) {
+              el.selectedIndex = el.dataset.quickField === 'topicId' ? 0 : 0;
+            }
+          } else {
+            el.value = '';
+          }
+        });
+      }
+
+      async function submitQuickCreate(panelKey) {
+        const quickPanel = picker.querySelector('[data-quick-panel="' + panelKey + '"]');
+        const submitBtn = picker.querySelector('[data-quick-submit="' + panelKey + '"]');
+        showError(panelKey, '');
+
+        let payload;
+        if (panelKey === 'algorithms') {
+          const topicId = fieldValue(quickPanel, 'topicId');
+          if (!fieldValue(quickPanel, 'title') || !topicId) {
+            showError(panelKey, 'Title and topic are required.');
+            return;
+          }
+          payload = {
+            title: fieldValue(quickPanel, 'title'),
+            difficulty: fieldValue(quickPanel, 'difficulty') || 'MEDIUM',
+            topicId: Number(topicId),
+            url: fieldValue(quickPanel, 'url'),
+            description: ''
+          };
+        } else if (panelKey === 'behavioral') {
+          if (!fieldValue(quickPanel, 'title') || !fieldValue(quickPanel, 'question')) {
+            showError(panelKey, 'Title and question prompt are required.');
+            return;
+          }
+          payload = {
+            title: fieldValue(quickPanel, 'title'),
+            category: fieldValue(quickPanel, 'category'),
+            question: fieldValue(quickPanel, 'question')
+          };
+        } else {
+          if (!fieldValue(quickPanel, 'title') || !fieldValue(quickPanel, 'description')) {
+            showError(panelKey, 'Title and interview prompt are required.');
+            return;
+          }
+          payload = {
+            title: fieldValue(quickPanel, 'title'),
+            category: fieldValue(quickPanel, 'category'),
+            difficulty: fieldValue(quickPanel, 'difficulty') || 'MEDIUM',
+            description: fieldValue(quickPanel, 'description')
+          };
+        }
+
+        submitBtn.disabled = true;
+        try {
+          const response = await fetch(quickCreateUrls[panelKey], {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            showError(panelKey, data.message || 'Could not create item.');
+            return;
+          }
+          insertCard(panelKey, data);
+          clearQuickForm(quickPanel);
+          quickPanel.hidden = true;
+        } catch (error) {
+          showError(panelKey, 'Network error. Try again.');
+        } finally {
+          submitBtn.disabled = false;
+        }
+      }
+
       picker.querySelectorAll('.profile-picker-tab').forEach((tab) => {
         tab.addEventListener('click', () => {
           const key = tab.dataset.tab;
@@ -334,11 +611,26 @@
         });
       });
 
+      picker.querySelectorAll('.profile-quick-toggle').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const key = btn.dataset.quickFor;
+          const quickPanel = picker.querySelector('[data-quick-panel="' + key + '"]');
+          quickPanel.hidden = !quickPanel.hidden;
+          if (!quickPanel.hidden) {
+            showError(key, '');
+            const firstInput = quickPanel.querySelector('[data-quick-field="title"]');
+            firstInput?.focus();
+          }
+        });
+      });
+
+      picker.querySelectorAll('.profile-quick-submit').forEach((btn) => {
+        btn.addEventListener('click', () => submitQuickCreate(btn.dataset.quickSubmit));
+      });
+
       ['algorithms', 'behavioral', 'systemdesign'].forEach((key) => {
         const currentPanel = panel(key);
-        currentPanel.querySelectorAll('input[type="checkbox"]').forEach((input) => {
-          input.addEventListener('change', () => refreshSelected(key));
-        });
+        currentPanel.querySelectorAll('.profile-picker-card').forEach((card) => wireCard(card, key));
         currentPanel.querySelector('.profile-picker-search')?.addEventListener('input', () => applyFilters(key));
         currentPanel.querySelector('.profile-picker-filter')?.addEventListener('change', () => applyFilters(key));
         refreshSelected(key);
@@ -349,3 +641,4 @@
 </div>
 </body>
 </html>
+

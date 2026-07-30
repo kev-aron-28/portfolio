@@ -138,11 +138,18 @@ public class DashboardService {
 
   private DueProblemView toDueProblemView(
       Problem problem, LocalDate nextReviewDate, LocalDate today, boolean neverReviewed) {
+    var topics =
+        problem.getTopics().stream()
+            .sorted(Comparator.comparing(topic -> topic.getName().toLowerCase()))
+            .toList();
+    String topicName =
+        topics.stream().map(Topic::getName).reduce((a, b) -> a + ", " + b).orElse("");
+    String topicColor = topics.isEmpty() ? "#94a3b8" : topics.getFirst().getColor();
     return new DueProblemView(
         problem.getId(),
         problem.getTitle(),
-        problem.getTopic().getName(),
-        problem.getTopic().getColor(),
+        topicName,
+        topicColor,
         nextReviewDate,
         reviewService.findLatestRating(problem.getId()).orElse(null),
         nextReviewDate.isBefore(today),
@@ -182,16 +189,18 @@ public class DashboardService {
     }
 
     for (Problem problem : activeProblems) {
-      TopicAccumulator accumulator = accumulators.get(problem.getTopic().getId());
-      if (accumulator == null) {
-        continue;
-      }
-      accumulator.totalProblems++;
-      if (!reviewService.isNeverReviewed(problem.getId())) {
-        accumulator.reviewedProblems++;
-      }
-      if (!reviewService.resolveNextReviewDate(problem).isAfter(today)) {
-        accumulator.dueProblems++;
+      for (Topic topic : problem.getTopics()) {
+        TopicAccumulator accumulator = accumulators.get(topic.getId());
+        if (accumulator == null) {
+          continue;
+        }
+        accumulator.totalProblems++;
+        if (!reviewService.isNeverReviewed(problem.getId())) {
+          accumulator.reviewedProblems++;
+        }
+        if (!reviewService.resolveNextReviewDate(problem).isAfter(today)) {
+          accumulator.dueProblems++;
+        }
       }
     }
 

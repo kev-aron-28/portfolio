@@ -40,7 +40,7 @@ class TopicMarathonServiceTest {
                     "",
                     Difficulty.EASY,
                     "desc",
-                    topicId,
+                    List.of(topicId),
                     List.of(),
                     "",
                     false,

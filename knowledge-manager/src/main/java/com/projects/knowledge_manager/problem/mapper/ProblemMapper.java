@@ -6,11 +6,13 @@ import com.projects.knowledge_manager.problem.dto.ProblemSummaryView;
 import com.projects.knowledge_manager.problem.dto.SolutionView;
 import com.projects.knowledge_manager.problem.entity.Problem;
 import com.projects.knowledge_manager.problem.entity.Solution;
+import com.projects.knowledge_manager.tag.entity.Tag;
 import com.projects.knowledge_manager.tag.mapper.TagMapper;
+import com.projects.knowledge_manager.topic.entity.Topic;
+import com.projects.knowledge_manager.topic.mapper.TopicMapper;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public final class ProblemMapper {
@@ -30,9 +32,7 @@ public final class ProblemMapper {
         problem.getDifficulty(),
         problem.isFavorite(),
         problem.isArchived(),
-        problem.getTopic().getId(),
-        problem.getTopic().getName(),
-        problem.getTopic().getColor(),
+        TopicMapper.toRefViews(problem.getTopics()),
         problem.getTags().stream()
             .map(TagMapper::toView)
             .sorted(Comparator.comparing(tagView -> tagView.name().toLowerCase()))
@@ -51,9 +51,7 @@ public final class ProblemMapper {
         problem.getDescription(),
         problem.isFavorite(),
         problem.isArchived(),
-        problem.getTopic().getId(),
-        problem.getTopic().getName(),
-        problem.getTopic().getColor(),
+        TopicMapper.toRefViews(problem.getTopics()),
         problem.getTags().stream()
             .map(TagMapper::toView)
             .sorted(Comparator.comparing(tagView -> tagView.name().toLowerCase()))
@@ -70,8 +68,8 @@ public final class ProblemMapper {
         problem.getUrl(),
         problem.getDifficulty(),
         problem.getDescription(),
-        problem.getTopic().getId(),
-        problem.getTags().stream().map(tag -> tag.getId()).sorted().toList(),
+        problem.getTopics().stream().map(Topic::getId).sorted().toList(),
+        problem.getTags().stream().map(Tag::getId).sorted().toList(),
         "",
         problem.isFavorite(),
         problem.isArchived(),
@@ -82,27 +80,27 @@ public final class ProblemMapper {
         solution != null ? nullToEmpty(solution.getMistakes()) : "");
   }
 
-  public static void updateEntity(Problem problem, ProblemForm form, Set<com.projects.knowledge_manager.tag.entity.Tag> tags) {
+  public static void updateEntity(Problem problem, ProblemForm form, Set<Tag> tags, Set<Topic> topics) {
     problem.setTitle(form.title().trim());
     problem.setUrl(normalizeOptional(form.url()));
     problem.setDifficulty(form.difficulty());
     problem.setDescription(normalizeOptional(form.description()));
     problem.setFavorite(form.favorite());
     problem.setArchived(form.archived());
+    problem.getTopics().clear();
+    problem.getTopics().addAll(topics);
     problem.getTags().clear();
     problem.getTags().addAll(tags);
     updateSolution(problem, form);
   }
 
-  public static Problem toEntity(
-      ProblemForm form,
-      com.projects.knowledge_manager.topic.entity.Topic topic,
-      Set<com.projects.knowledge_manager.tag.entity.Tag> tags) {
-    Problem problem = new Problem(form.title().trim(), form.difficulty(), topic);
+  public static Problem toEntity(ProblemForm form, Set<Topic> topics, Set<Tag> tags) {
+    Problem problem = new Problem(form.title().trim(), form.difficulty());
     problem.setUrl(normalizeOptional(form.url()));
     problem.setDescription(normalizeOptional(form.description()));
     problem.setFavorite(form.favorite());
     problem.setArchived(form.archived());
+    problem.setTopics(new HashSet<>(topics));
     problem.setTags(new HashSet<>(tags));
     Solution solution = new Solution(problem);
     updateSolutionFields(solution, form);

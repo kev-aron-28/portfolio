@@ -2,8 +2,8 @@ package com.projects.knowledge_manager.problem.repository;
 
 import com.projects.knowledge_manager.problem.entity.Problem;
 import com.projects.knowledge_manager.problem.model.Difficulty;
-import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ public final class ProblemSpecifications {
       Boolean favorite) {
 
     return (root, criteriaQuery, criteriaBuilder) -> {
-      root.fetch("topic", JoinType.LEFT);
+      root.fetch("topics", JoinType.LEFT);
       root.fetch("tags", JoinType.LEFT);
 
       List<Predicate> predicates = new ArrayList<>();
@@ -37,7 +37,8 @@ public final class ProblemSpecifications {
       }
 
       if (topicId != null) {
-        predicates.add(criteriaBuilder.equal(root.get("topic").get("id"), topicId));
+        Join<Object, Object> topics = root.join("topics");
+        predicates.add(criteriaBuilder.equal(topics.get("id"), topicId));
       }
 
       if (difficulty != null) {

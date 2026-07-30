@@ -58,13 +58,13 @@ public class ReviewController {
     var problem = problemService.findDetailById(problemId);
     reviewService.create(problemId, reviewForm);
 
-    boolean marathonMode =
+    var marathonState =
         topicMarathonService
             .findActive(session)
-            .filter(state -> state.getTopicId().equals(problem.topicId()))
-            .isPresent();
+            .filter(state -> problem.belongsToTopic(state.getTopicId()));
 
-    if (marathonMode) {
+    if (marathonState.isPresent()) {
+      var state = marathonState.get();
       topicMarathonService.recordCompletion(
           session,
           problemId,
@@ -73,7 +73,6 @@ public class ReviewController {
           reviewForm.reviewDuration());
 
       if ("next".equals(marathonAction)) {
-        var state = topicMarathonService.findActive(session).orElseThrow();
         return topicMarathonService
             .findNextProblemId(state.getTopicId(), state.completedProblemIds())
             .map(nextId -> "redirect:/problems/" + nextId + "/reviews/session")
@@ -86,7 +85,7 @@ public class ReviewController {
       }
 
       if ("end".equals(marathonAction)) {
-        return "redirect:/topics/" + problem.topicId() + "/marathon/summary";
+        return "redirect:/topics/" + state.getTopicId() + "/marathon/summary";
       }
     }
 
@@ -105,7 +104,7 @@ public class ReviewController {
     var marathon =
         topicMarathonService
             .findActive(session)
-            .filter(state -> state.getTopicId().equals(problem.topicId()));
+            .filter(state -> problem.belongsToTopic(state.getTopicId()));
     model.addAttribute("marathon", marathon.orElse(null));
     model.addAttribute("marathonMode", marathon.isPresent());
   }

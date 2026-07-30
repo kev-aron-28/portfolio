@@ -42,16 +42,19 @@
 
           <div class="row g-3 mb-3">
             <div class="col-md-6">
-              <label for="topicId" class="form-label">Topic</label>
-              <select id="topicId" class="form-select"
-                      th:classappend="${#fields.hasErrors('topicId')} ? ' is-invalid'"
-                      th:field="*{topicId}" required>
-                <option value="">Select a topic</option>
-                <option th:each="topic : ${topics}"
-                        th:value="${topic.id()}"
-                        th:text="${topic.name()}">Arrays</option>
-              </select>
-              <div class="invalid-feedback" th:if="${#fields.hasErrors('topicId')}" th:errors="*{topicId}"></div>
+              <label class="form-label">Topics</label>
+              <div class="tag-checkbox-grid"
+                   th:classappend="${#fields.hasErrors('topicIds')} ? ' is-invalid'">
+                <label class="tag-checkbox-item" th:each="topic : ${topics}">
+                  <input class="form-check-input me-2" type="checkbox"
+                         th:field="*{topicIds}" th:value="${topic.id()}">
+                  <span class="topic-color-dot me-1"
+                        th:style="'background-color:' + ${topic.color()}"></span>
+                  <span th:text="${topic.name()}">Arrays</span>
+                </label>
+              </div>
+              <div class="form-text">A problem can belong to multiple topics.</div>
+              <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('topicIds')}" th:errors="*{topicIds}"></div>
             </div>
             <div class="col-md-6">
               <label for="difficulty" class="form-label">Difficulty</label>

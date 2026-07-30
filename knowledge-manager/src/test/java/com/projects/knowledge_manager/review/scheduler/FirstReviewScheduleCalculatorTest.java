@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.projects.knowledge_manager.problem.entity.Problem;
 import com.projects.knowledge_manager.problem.model.Difficulty;
 import com.projects.knowledge_manager.review.config.ReviewSchedulingProperties;
-import com.projects.knowledge_manager.topic.entity.Topic;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -15,7 +14,6 @@ import org.junit.jupiter.api.Test;
 class FirstReviewScheduleCalculatorTest {
 
   private FirstReviewScheduleCalculator calculator;
-  private Topic topic;
 
   @BeforeEach
   void setUp() {
@@ -24,7 +22,6 @@ class FirstReviewScheduleCalculatorTest {
     properties.setNewProblemSpreadDays(30);
     properties.setTimeZone("UTC");
     calculator = new FirstReviewScheduleCalculator(properties);
-    topic = new Topic("Arrays", null, "#ef4444");
   }
 
   @Test
@@ -32,9 +29,9 @@ class FirstReviewScheduleCalculatorTest {
     LocalDate registeredOn = LocalDate.of(2026, 7, 8);
     Instant createdAt = registeredOn.atStartOfDay(ZoneId.of("UTC")).toInstant();
 
-    Problem problemA = new Problem("A", Difficulty.EASY, topic);
+    Problem problemA = new Problem("A", Difficulty.EASY);
     setProblemIdAndCreatedAt(problemA, 1L, createdAt);
-    Problem problemB = new Problem("B", Difficulty.EASY, topic);
+    Problem problemB = new Problem("B", Difficulty.EASY);
     setProblemIdAndCreatedAt(problemB, 16L, createdAt);
 
     assertThat(calculator.calculateFirstReviewDate(problemA)).isEqualTo(registeredOn.plusDays(2));

@@ -19,17 +19,18 @@ import com.projects.knowledge_manager.review.service.ReviewService;
 import com.projects.knowledge_manager.tag.dto.TagView;
 import com.projects.knowledge_manager.tag.entity.Tag;
 import com.projects.knowledge_manager.tag.service.TagService;
+import com.projects.knowledge_manager.topic.dto.TopicRefView;
 import com.projects.knowledge_manager.topic.entity.Topic;
 import com.projects.knowledge_manager.topic.repository.TopicRepository;
 import com.projects.knowledge_manager.topic.service.TopicNotFoundException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.time.LocalDate;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -104,9 +105,12 @@ public class ProblemService {
   }
 
   public List<ProblemGroupView> findGroupedByTopic(boolean includeArchived) {
-    Map<Long, List<ProblemSummaryView>> byTopic =
-        findAll(includeArchived).stream()
-            .collect(Collectors.groupingBy(ProblemSummaryView::topicId));
+    Map<Long, List<ProblemSummaryView>> byTopic = new HashMap<>();
+    for (ProblemSummaryView problem : findAll(includeArchived)) {
+      for (TopicRefView topic : problem.topics()) {
+        byTopic.computeIfAbsent(topic.id(), ignored -> new ArrayList<>()).add(problem);
+      }
+    }
 
     return topicRepository.findAllByOrderByNameAsc().stream()
         .map(
@@ -172,9 +176,9 @@ public class ProblemService {
 
   @Transactional
   public ProblemDetailView create(ProblemForm form) {
-    Topic topic = getTopicOrThrow(form.topicId());
+    Set<Topic> topics = resolveTopics(form.topicIds());
     Set<Tag> tags = tagService.resolveTagsForAssignment(form.tagIds(), form.newTagNames());
-    Problem saved = problemRepository.save(ProblemMapper.toEntity(form, topic, tags));
+    Problem saved = problemRepository.save(ProblemMapper.toEntity(form, topics, tags));
     return ProblemMapper.toDetailView(saved);
   }
 
@@ -193,11 +197,12 @@ public class ProblemService {
 
       validateBulkRow(row, index);
 
-      Topic topic = getTopicOrThrow(row.topicId());
+      Set<Topic> topics = resolveTopics(List.of(row.topicId()));
       Set<Tag> tags = tagService.resolveTagsForAssignment(row.tagIds(), row.newTagNames());
 
       Difficulty difficulty = row.difficulty() != null ? row.difficulty() : Difficulty.MEDIUM;
-      String language = row.language() != null && !row.language().isBlank() ? row.language().trim() : "java";
+      String language =
+          row.language() != null && !row.language().isBlank() ? row.language().trim() : "java";
 
       ProblemForm problemForm =
           new ProblemForm(
@@ -205,7 +210,7 @@ public class ProblemService {
               normalizeOptional(row.url()),
               difficulty,
               row.description().trim(),
-              row.topicId(),
+              List.of(row.topicId()),
               List.of(),
               "",
               false,
@@ -216,7 +221,7 @@ public class ProblemService {
               "",
               "");
 
-      problemRepository.save(ProblemMapper.toEntity(problemForm, topic, tags));
+      problemRepository.save(ProblemMapper.toEntity(problemForm, topics, tags));
       created++;
     }
 
@@ -246,10 +251,9 @@ public class ProblemService {
   @Transactional
   public ProblemDetailView update(Long id, ProblemForm form) {
     Problem problem = getProblemOrThrow(id);
-    Topic topic = getTopicOrThrow(form.topicId());
+    Set<Topic> topics = resolveTopics(form.topicIds());
     Set<Tag> tags = tagService.resolveTagsForAssignment(form.tagIds(), form.newTagNames());
-    problem.setTopic(topic);
-    ProblemMapper.updateEntity(problem, form, tags);
+    ProblemMapper.updateEntity(problem, form, tags, topics);
     return ProblemMapper.toDetailView(problem);
   }
 
@@ -276,10 +280,21 @@ public class ProblemService {
         .orElseThrow(() -> new ProblemNotFoundException(id));
   }
 
-  private Topic getTopicOrThrow(Long topicId) {
-    return topicRepository
-        .findById(topicId)
-        .orElseThrow(() -> new TopicNotFoundException(topicId));
+  private Set<Topic> resolveTopics(List<Long> topicIds) {
+    if (topicIds == null || topicIds.isEmpty()) {
+      throw new IllegalArgumentException("Select at least one topic.");
+    }
+    Set<Long> uniqueIds = new HashSet<>(topicIds);
+    List<Topic> topics = topicRepository.findAllById(uniqueIds);
+    if (topics.size() != uniqueIds.size()) {
+      Long missing =
+          uniqueIds.stream()
+              .filter(id -> topics.stream().noneMatch(topic -> topic.getId().equals(id)))
+              .findFirst()
+              .orElseThrow();
+      throw new TopicNotFoundException(missing);
+    }
+    return new HashSet<>(topics);
   }
 
   private String normalizeOptional(String value) {

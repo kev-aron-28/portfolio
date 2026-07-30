@@ -11,18 +11,25 @@ import org.springframework.data.repository.query.Param;
 
 public interface ProblemRepository extends JpaRepository<Problem, Long>, JpaSpecificationExecutor<Problem> {
 
-  @EntityGraph(attributePaths = {"topic", "tags"})
+  @EntityGraph(attributePaths = {"topics", "tags"})
   List<Problem> findAllByArchivedOrderByUpdatedAtDesc(boolean archived);
 
-  @EntityGraph(attributePaths = {"topic"})
+  @EntityGraph(attributePaths = {"topics"})
   List<Problem> findAllByArchivedFalseOrderByTitleAsc();
 
-  @EntityGraph(attributePaths = {"topic"})
-  List<Problem> findAllByTopicIdAndArchivedFalseOrderByTitleAsc(Long topicId);
+  @EntityGraph(attributePaths = {"topics"})
+  @Query(
+      """
+      SELECT DISTINCT p FROM Problem p
+      JOIN p.topics t
+      WHERE t.id = :topicId AND p.archived = false
+      ORDER BY p.title ASC
+      """)
+  List<Problem> findAllByTopicIdAndArchivedFalseOrderByTitleAsc(@Param("topicId") Long topicId);
 
   long countByArchivedFalse();
 
-  @EntityGraph(attributePaths = {"topic", "tags", "solution"})
+  @EntityGraph(attributePaths = {"topics", "tags", "solution"})
   @Query("SELECT p FROM Problem p WHERE p.id = :id")
   Optional<Problem> findDetailedById(@Param("id") Long id);
 }

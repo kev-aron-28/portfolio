@@ -39,7 +39,7 @@ class DashboardServiceTest {
                     "",
                     Difficulty.EASY,
                     "",
-                    topicId,
+                    List.of(topicId),
                     List.of(),
                     "",
                     false,
