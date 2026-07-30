@@ -25,3 +25,17 @@ MessageDigest.getInstance("SHA-512");
 MessageDigest.getInstance("SHA3-256");
 ```
 
+# Full example
+
+```
+ public static String sha256(String input) throws Exception {
+
+        MessageDigest md =
+                MessageDigest.getInstance("SHA-256");
+
+        byte[] hash =
+                md.digest(input.getBytes(StandardCharsets.UTF_8));
+
+        return HexFormat.of().formatHex(hash);
+    }
+```
