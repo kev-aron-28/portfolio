@@ -1,21 +1,22 @@
 package com.projects.node;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+
+import com.projects.storage.StorageEngine;
 
 public class PhysicalNode {
     private final UUID id = UUID.randomUUID();
     private final String host;
     private final int port;
     private final NodeStatus status;
-    private final Map<String, String> storage = new ConcurrentHashMap<>();
+    private final StorageEngine storage;
 
     public PhysicalNode(String host, int port, NodeStatus status) {
         this.host = host;
         this.port = port;
         this.status = status;
+        this.storage = new StorageEngine();
     }
 
     public void put(String key, String value) {
@@ -23,11 +24,11 @@ public class PhysicalNode {
     }
 
     public Optional<String> get(String key) {
-        return Optional.ofNullable(storage.get(key));
+        return storage.get(key);
     }
 
     public void delete(String key) {
-        storage.remove(key);
+        storage.delete(key);
     }
 
     public String getHost() {

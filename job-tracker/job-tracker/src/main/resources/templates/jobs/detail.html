@@ -9,10 +9,19 @@
 				<i data-lucide="arrow-left" aria-hidden="true"></i>
 				Vacantes
 			</a>
-			<a th:href="${job.url()}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary job-detail-cta">
-				<i data-lucide="external-link" aria-hidden="true"></i>
-				Ver publicación
-			</a>
+			<div class="job-detail-nav-actions">
+				<a th:href="${job.url()}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary job-detail-cta">
+					<i data-lucide="external-link" aria-hidden="true"></i>
+					Ver publicación
+				</a>
+				<form th:action="@{/jobs/{id}/delete(id=${job.id()})}" method="post"
+					  onsubmit="return confirm('¿Eliminar esta vacante? También se borrarán sus postulaciones.');">
+					<button type="submit" class="btn btn-sm btn-outline-danger">
+						<i data-lucide="trash-2" aria-hidden="true"></i>
+						Eliminar
+					</button>
+				</form>
+			</div>
 		</nav>
 
 		<header class="job-detail-head">

@@ -23,6 +23,11 @@
 <span th:fragment="sourceBadge(source)" class="badge source-badge" th:text="${source}">occ</span>
 
 <article th:fragment="jobCard(job)" class="job-card">
+	<label class="job-card-select">
+		<input class="form-check-input job-select" type="checkbox" name="jobIds"
+			   th:value="${job.id()}" th:attr="data-job-id=${job.id()}">
+		<span class="visually-hidden">Seleccionar vacante</span>
+	</label>
 	<div class="job-card-header">
 		<a class="job-card-title" th:href="@{/jobs/{id}(id=${job.id()})}" th:text="${job.title()}">Title</a>
 		<div class="job-card-badges">

@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
 
+import com.projects.exceptions.EmptyHashRingException;
 import com.projects.exceptions.InsufficientPhysicalNodes;
 import com.projects.hashing.HashFunction;
 import com.projects.node.PhysicalNode;
@@ -62,6 +63,10 @@ public class HashRing {
     }
 
     public PhysicalNode findOwner(String key) {
+        if(ring.isEmpty()) {
+            throw new EmptyHashRingException();
+        }
+
         BigInteger hash = hashFunction.hash(key);
 
         Map.Entry<BigInteger, VirtualNode> entry = ring.ceilingEntry(hash);
@@ -74,6 +79,10 @@ public class HashRing {
     }
 
     public List<PhysicalNode> findReplicas(String key, int replicaFactor) {
+        if(ring.isEmpty()) {
+            throw new EmptyHashRingException();
+        }
+
         int availableNodes = this.physicalNodeCount();
 
         if(replicaFactor > availableNodes) {
@@ -82,16 +91,27 @@ public class HashRing {
 
         BigInteger hash = hashFunction.hash(key);
 
-        List<PhysicalNode> result = new ArrayList<>();
+        List<PhysicalNode> replicas = new ArrayList<>();
 
         Set<UUID> visited = new HashSet<>();
 
         Map.Entry<BigInteger, VirtualNode> current = ring.ceilingEntry(hash);
 
-        while (result.size() < replicaFactor) { 
-            
+        int inspected = 0;
+        while (replicas.size() < replicaFactor && inspected < ring.size()) { 
+            PhysicalNode node = current.getValue().getOwner();
+
+            if(visited.add(node.getId())) {
+                replicas.add(node);
+            }
+
+            current = ring.higherEntry(current.getKey());
+
+            if(current == null) {
+                current = ring.firstEntry();
+            }
         }
 
-        return result;
+        return replicas;
     }
 }

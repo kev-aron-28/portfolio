@@ -23,6 +23,7 @@ import com.projects.job_tracker.application.analytics.JobListingPresenter;
 import com.projects.job_tracker.application.analytics.ListJobListingsUseCase;
 import com.projects.job_tracker.application.application.CreateApplicationUseCase;
 import com.projects.job_tracker.application.job.CreateJobUseCase;
+import com.projects.job_tracker.application.job.DeleteJobUseCase;
 import com.projects.job_tracker.application.segment.ListMarketSegmentsUseCase;
 import com.projects.job_tracker.domain.model.ApplicationStatus;
 import com.projects.job_tracker.domain.model.Job;
@@ -44,6 +45,7 @@ public class JobWebController {
 	private final GetJobDetailUseCase getJobDetailUseCase;
 	private final CreateApplicationUseCase createApplicationUseCase;
 	private final CreateJobUseCase createJobUseCase;
+	private final DeleteJobUseCase deleteJobUseCase;
 	private final ListMarketSegmentsUseCase listMarketSegmentsUseCase;
 	private final MarketSegmentRepository marketSegmentRepository;
 
@@ -52,12 +54,14 @@ public class JobWebController {
 			GetJobDetailUseCase getJobDetailUseCase,
 			CreateApplicationUseCase createApplicationUseCase,
 			CreateJobUseCase createJobUseCase,
+			DeleteJobUseCase deleteJobUseCase,
 			ListMarketSegmentsUseCase listMarketSegmentsUseCase,
 			MarketSegmentRepository marketSegmentRepository) {
 		this.listJobListingsUseCase = listJobListingsUseCase;
 		this.getJobDetailUseCase = getJobDetailUseCase;
 		this.createApplicationUseCase = createApplicationUseCase;
 		this.createJobUseCase = createJobUseCase;
+		this.deleteJobUseCase = deleteJobUseCase;
 		this.listMarketSegmentsUseCase = listMarketSegmentsUseCase;
 		this.marketSegmentRepository = marketSegmentRepository;
 	}
@@ -225,6 +229,33 @@ public class JobWebController {
 			@RequestParam(required = false) String notes) {
 		createApplicationUseCase.execute(new CreateApplicationUseCase.CreateApplicationCommand(id, status, null, notes));
 		return "redirect:/jobs/" + id;
+	}
+
+	@PostMapping("/{id}/delete")
+	public String deleteJob(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+		try {
+			deleteJobUseCase.execute(id);
+			redirectAttributes.addFlashAttribute("successMessage", "Vacante eliminada.");
+			return "redirect:/jobs";
+		} catch (RuntimeException ex) {
+			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+			return "redirect:/jobs/" + id;
+		}
+	}
+
+	@PostMapping(value = "/bulk-delete", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+	public String bulkDeleteJobs(
+			@RequestParam(required = false) List<Long> jobIds,
+			RedirectAttributes redirectAttributes) {
+		try {
+			int deleted = deleteJobUseCase.execute(jobIds);
+			redirectAttributes.addFlashAttribute(
+					"successMessage",
+					deleted == 1 ? "1 vacante eliminada." : deleted + " vacantes eliminadas.");
+		} catch (RuntimeException ex) {
+			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+		}
+		return "redirect:/jobs";
 	}
 
 	private static String blankToNull(String value) {

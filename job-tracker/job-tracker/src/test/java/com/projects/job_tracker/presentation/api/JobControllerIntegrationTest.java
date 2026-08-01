@@ -1,5 +1,6 @@
 package com.projects.job_tracker.presentation.api;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -96,6 +97,30 @@ class JobControllerIntegrationTest {
 						.content(updatePayload))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$.status").value("INTERVIEWING"));
+	}
+
+	@Test
+	void createsAndDeletesJob() throws Exception {
+		String jobPayload = """
+				{
+				  "title": "Temp Role",
+				  "companyName": "TempCo",
+				  "source": "manual",
+				  "url": "https://example.com/jobs/temp-delete"
+				}
+				""";
+
+		MvcResult created = mockMvc.perform(post("/api/jobs").contentType(MediaType.APPLICATION_JSON).content(jobPayload))
+				.andExpect(status().isCreated())
+				.andReturn();
+		long jobId = ((Number) com.jayway.jsonpath.JsonPath.read(created.getResponse().getContentAsString(), "$.id"))
+				.longValue();
+
+		mockMvc.perform(delete("/api/jobs/" + jobId))
+				.andExpect(status().isNoContent());
+
+		mockMvc.perform(get("/api/jobs/" + jobId))
+				.andExpect(status().isNotFound());
 	}
 
 	@Test

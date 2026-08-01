@@ -238,7 +238,27 @@
 		</div>
 	</div>
 
-	<div th:if="${viewMode.name() == 'GROUPED' && overview.total() > 0}" class="job-groups">
+	<form th:if="${overview.total() > 0}"
+		  id="bulk-delete-form"
+		  th:action="@{/jobs/bulk-delete}"
+		  method="post"
+		  class="bulk-delete-form"
+		  onsubmit="return confirmBulkDelete(this);">
+		<div class="bulk-actions panel mb-3">
+			<div class="bulk-actions-body">
+				<label class="bulk-select-all form-check">
+					<input class="form-check-input" type="checkbox" id="select-all-jobs">
+					<span class="form-check-label">Seleccionar visibles</span>
+				</label>
+				<span class="bulk-selected-count" id="selected-jobs-count" aria-live="polite">0 seleccionadas</span>
+				<button type="submit" class="btn btn-sm btn-outline-danger" id="bulk-delete-btn" disabled>
+					<i data-lucide="trash-2" class="icon-inline" aria-hidden="true"></i>
+					Eliminar seleccionadas
+				</button>
+			</div>
+		</div>
+
+	<div th:if="${viewMode.name() == 'GROUPED'}" class="job-groups">
 		<div class="job-group panel mb-3" th:each="group, iter : ${overview.groups()}">
 			<button class="job-group-header"
 					type="button"
@@ -275,6 +295,9 @@
 				<table class="table table-app mb-0">
 					<thead>
 					<tr>
+						<th class="job-select-col">
+							<span class="visually-hidden">Seleccionar</span>
+						</th>
 						<th>Título</th>
 						<th>Empresa</th>
 						<th>Ubicación</th>
@@ -287,6 +310,10 @@
 					</thead>
 					<tbody>
 					<tr th:each="job : ${jobs}">
+						<td class="job-select-col">
+							<input class="form-check-input job-select" type="checkbox" name="jobIds"
+								   th:value="${job.id()}" th:attr="data-job-id=${job.id()}">
+						</td>
 						<td class="cell-truncate">
 							<a th:href="@{/jobs/{id}(id=${job.id()})}" th:text="${job.title()}">Title</a>
 						</td>
@@ -314,6 +341,7 @@
 			</div>
 		</div>
 	</div>
+	</form>
 
 	<div class="panel" th:if="${overview.total() == 0}">
 		<div class="empty-state">
@@ -325,5 +353,63 @@
 			</div>
 		</div>
 	</div>
+
+	<script th:inline="javascript">
+		(function () {
+			const form = document.getElementById('bulk-delete-form');
+			if (!form) return;
+
+			const selectAll = document.getElementById('select-all-jobs');
+			const countEl = document.getElementById('selected-jobs-count');
+			const deleteBtn = document.getElementById('bulk-delete-btn');
+
+			function uniqueSelectedIds() {
+				const ids = new Set();
+				form.querySelectorAll('.job-select:checked').forEach((box) => {
+					ids.add(box.getAttribute('data-job-id') || box.value);
+				});
+				return ids;
+			}
+
+			function syncSelectionUi() {
+				const selected = uniqueSelectedIds();
+				const n = selected.size;
+				countEl.textContent = n === 1 ? '1 seleccionada' : n + ' seleccionadas';
+				deleteBtn.disabled = n === 0;
+
+				const boxes = form.querySelectorAll('.job-select');
+				const checked = form.querySelectorAll('.job-select:checked');
+				selectAll.checked = boxes.length > 0 && checked.length === boxes.length;
+				selectAll.indeterminate = checked.length > 0 && checked.length < boxes.length;
+			}
+
+			selectAll.addEventListener('change', () => {
+				form.querySelectorAll('.job-select').forEach((box) => {
+					box.checked = selectAll.checked;
+				});
+				syncSelectionUi();
+			});
+
+			form.addEventListener('change', (event) => {
+				if (event.target.classList.contains('job-select')) {
+					syncSelectionUi();
+				}
+			});
+
+			window.confirmBulkDelete = function () {
+				const n = uniqueSelectedIds().size;
+				if (n === 0) {
+					return false;
+				}
+				return confirm(
+					n === 1
+						? '¿Eliminar 1 vacante seleccionada? También se borrarán sus postulaciones.'
+						: '¿Eliminar ' + n + ' vacantes seleccionadas? También se borrarán sus postulaciones.'
+				);
+			};
+
+			syncSelectionUi();
+		})();
+	</script>
 </section>
 </html>

@@ -43,4 +43,6 @@ public interface JpaApplicationRepository extends JpaRepository<ApplicationEntit
 	long countByAppliedAtGreaterThanEqualForSegment(
 			@Param("appliedAt") Instant appliedAt,
 			@Param("segmentId") Long segmentId);
+
+	void deleteByJob_Id(Long jobId);
 }

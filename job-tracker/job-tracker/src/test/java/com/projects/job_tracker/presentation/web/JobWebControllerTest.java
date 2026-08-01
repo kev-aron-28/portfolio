@@ -28,6 +28,7 @@ import com.projects.job_tracker.application.analytics.GetJobDetailUseCase;
 import com.projects.job_tracker.application.analytics.ListJobListingsUseCase;
 import com.projects.job_tracker.application.application.CreateApplicationUseCase;
 import com.projects.job_tracker.application.job.CreateJobUseCase;
+import com.projects.job_tracker.application.job.DeleteJobUseCase;
 import com.projects.job_tracker.application.segment.ListMarketSegmentsUseCase;
 import com.projects.job_tracker.domain.model.JobDetail;
 import com.projects.job_tracker.domain.port.MarketSegmentRepository;
@@ -49,6 +50,9 @@ class JobWebControllerTest {
 
 	@MockitoBean
 	private CreateJobUseCase createJobUseCase;
+
+	@MockitoBean
+	private DeleteJobUseCase deleteJobUseCase;
 
 	@MockitoBean
 	private ListMarketSegmentsUseCase listMarketSegmentsUseCase;
@@ -126,6 +130,30 @@ class JobWebControllerTest {
 		verify(createJobUseCase).execute(any());
 		verify(marketSegmentRepository).attachJob(5L, 42L);
 		verify(marketSegmentRepository).attachJob(7L, 42L);
+	}
+
+	@Test
+	void deletesJobAndRedirectsToList() throws Exception {
+		mockMvc.perform(post("/jobs/42/delete")
+						.contentType(MediaType.APPLICATION_FORM_URLENCODED))
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("/jobs"))
+				.andExpect(flash().attributeExists("successMessage"));
+
+		verify(deleteJobUseCase).execute(42L);
+	}
+
+	@Test
+	void bulkDeletesSelectedJobs() throws Exception {
+		when(deleteJobUseCase.execute(org.mockito.ArgumentMatchers.<java.util.List<Long>>any()))
+				.thenReturn(2);
+
+		mockMvc.perform(post("/jobs/bulk-delete")
+						.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+						.param("jobIds", "1", "2"))
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("/jobs"))
+				.andExpect(flash().attributeExists("successMessage"));
 	}
 
 	@Test

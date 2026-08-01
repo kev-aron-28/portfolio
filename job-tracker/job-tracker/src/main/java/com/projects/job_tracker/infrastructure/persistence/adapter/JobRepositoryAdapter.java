@@ -44,4 +44,9 @@ public class JobRepositoryAdapter implements JobRepository {
 	public List<Job> findAll() {
 		return jpaJobRepository.findAll().stream().map(JobMapper::toDomain).toList();
 	}
+
+	@Override
+	public void deleteById(Long id) {
+		jpaJobRepository.deleteById(id);
+	}
 }

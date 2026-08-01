@@ -47,4 +47,9 @@ public class ApplicationRepositoryAdapter implements ApplicationRepository {
 	public List<Application> findAll() {
 		return jpaApplicationRepository.findAll().stream().map(ApplicationMapper::toDomain).toList();
 	}
+
+	@Override
+	public void deleteByJobId(Long jobId) {
+		jpaApplicationRepository.deleteByJob_Id(jobId);
+	}
 }

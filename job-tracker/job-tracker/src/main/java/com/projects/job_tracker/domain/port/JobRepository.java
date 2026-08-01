@@ -14,4 +14,6 @@ public interface JobRepository {
 	Optional<Job> findBySourceAndUrl(String source, String url);
 
 	List<Job> findAll();
+
+	void deleteById(Long id);
 }

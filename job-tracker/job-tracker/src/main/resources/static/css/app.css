@@ -905,6 +905,14 @@ a:hover {
 	box-shadow: 0 1px 2px rgba(37, 99, 235, 0.18);
 }
 
+.job-detail-nav-actions {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+}
+
 .job-detail-head {
 	margin-bottom: 2rem;
 }
@@ -1495,14 +1503,56 @@ a:hover {
 }
 
 .job-card {
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	gap: 0.625rem;
 	padding: 0.875rem;
+	padding-right: 2.25rem;
 	border: 1px solid var(--border);
 	border-radius: var(--radius);
 	background: var(--surface);
 	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.job-card-select {
+	position: absolute;
+	top: 0.75rem;
+	right: 0.75rem;
+	z-index: 1;
+	margin: 0;
+	cursor: pointer;
+}
+
+.job-card:has(.job-select:checked) {
+	border-color: var(--primary);
+	box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.18);
+}
+
+.bulk-actions-body {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.75rem 1rem;
+	padding: 0.75rem 1rem;
+}
+
+.bulk-select-all {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin: 0;
+}
+
+.bulk-selected-count {
+	font-size: 0.8125rem;
+	color: var(--text-muted);
+	margin-right: auto;
+}
+
+.job-select-col {
+	width: 2.25rem;
+	vertical-align: middle;
 }
 
 .job-card:hover {
