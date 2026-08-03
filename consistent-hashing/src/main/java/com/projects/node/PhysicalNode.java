@@ -46,4 +46,14 @@ public class PhysicalNode {
     public UUID getId() {
         return id;
     }
+
+    public int size() {
+        return storage.size();
+    }
+
+    public void showContent() {
+        System.out.println(host);
+        System.out.println("----------");
+        storage.print();
+    }
 }

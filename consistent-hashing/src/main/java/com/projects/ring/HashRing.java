@@ -17,6 +17,7 @@ import com.projects.node.VirtualNode;
 
 public class HashRing {
     private final TreeMap<BigInteger, VirtualNode> ring = new TreeMap<>();
+    private final List<PhysicalNode> physicalNodes = new ArrayList<>();
 
     private final HashFunction hashFunction;
 
@@ -32,6 +33,8 @@ public class HashRing {
 
             ring.put(hash, new VirtualNode(hash, key, node));
         }
+
+        physicalNodes.add(node);
     }
 
     public void removeNode(PhysicalNode node) {
@@ -42,13 +45,15 @@ public class HashRing {
             .getOwner()
             .equals(node)
         );
+
+        physicalNodes.remove(node);
     }
 
-    public void printRing() {
-        for(Map.Entry<BigInteger, VirtualNode> node : ring.entrySet()) {
-            System.out.println(node.getKey() + " " + node.getValue().getOwner().getHost());
-            System.out.println("|");
-        }
+    public void printRing() {        
+        physicalNodes.forEach(n -> {
+            n.showContent();
+            System.out.println("-------------------------------");
+        });
     }
 
     public int virtualNodeCount() {
@@ -56,10 +61,7 @@ public class HashRing {
     }
 
     public int physicalNodeCount() {
-        return (int) ring.values().stream()
-            .map(v -> v.getOwner())
-            .distinct()
-            .count();
+        return physicalNodes.size();
     }
 
     public PhysicalNode findOwner(String key) {

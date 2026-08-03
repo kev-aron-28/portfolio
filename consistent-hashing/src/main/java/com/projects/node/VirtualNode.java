@@ -24,4 +24,8 @@ public class VirtualNode {
     public PhysicalNode getOwner() {
         return owner;
     }   
+
+    public void printParentContent() {
+        owner.showContent();
+    }
 }

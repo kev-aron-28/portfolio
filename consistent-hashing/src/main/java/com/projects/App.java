@@ -2,11 +2,12 @@ package com.projects;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 import com.projects.hashing.SHA256;
 import com.projects.node.NodeStatus;
 import com.projects.node.PhysicalNode;
-import com.projects.ring.HashRing;
+import com.projects.ring.ClusterManager;
 
 /**
  * Hello world!
@@ -18,16 +19,31 @@ public class App
     {
         SHA256 hashing = new SHA256();
         
-        HashRing ring = new HashRing(hashing);
+        ClusterManager manager = new ClusterManager(hashing);
 
         List<PhysicalNode> nodes = new ArrayList<>();
-        
+
         for(int i = 0; i < 4; i++) {
-            nodes.add(new PhysicalNode("127.0.0." + i, 8080, NodeStatus.JOINING));
+            nodes.add(new PhysicalNode("localhost " + i, 8080, NodeStatus.JOINING));
         }
 
-        nodes.forEach(n -> ring.addNode(n, 1));
+        nodes.forEach(n -> manager.addNode(n));
 
-        ring.printRing();
+        boolean stop = false;
+        Scanner scanner = new Scanner(System.in);
+
+        do {
+            System.out.println("Enter key:value [STOP to end program]");
+            String entry = scanner.nextLine();
+
+            if(entry.equals("STOP")) {
+                break;
+            }
+
+            String parts[] = entry.split(":");
+            manager.put(parts[0], parts[1]);
+
+            manager.printRing();
+        } while (!stop);   
     }
 }

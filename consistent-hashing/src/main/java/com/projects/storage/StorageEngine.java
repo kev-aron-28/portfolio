@@ -18,4 +18,14 @@ public class StorageEngine {
     public void delete(String key) {
         storage.remove(key);
     }
+
+    public int size() {
+        return storage.size();
+    }
+
+    public void print() {
+        storage
+        .entrySet()
+        .forEach(e -> System.out.println(e.getKey() + "-" +e.getValue()));
+    } 
 }
