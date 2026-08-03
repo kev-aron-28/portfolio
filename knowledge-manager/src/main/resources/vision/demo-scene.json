@@ -1,0 +1,516 @@
+{
+  "version": 1,
+  "viewport": {
+    "x": 40,
+    "y": -20,
+    "zoom": 0.78
+  },
+  "timeline": {
+    "start": "2026-01-01",
+    "end": "2036-01-01",
+    "unit": "day",
+    "y": 180
+  },
+  "bookmarks": [
+    {
+      "id": "bm-vision",
+      "label": "Core vision",
+      "x": 120,
+      "y": 40,
+      "zoom": 0.85
+    },
+    {
+      "id": "bm-skills",
+      "label": "Skill tree",
+      "x": -40,
+      "y": 380,
+      "zoom": 0.95
+    }
+  ],
+  "skillPoints": 24,
+  "nodes": [
+    {
+      "id": "v-senior",
+      "type": "vision",
+      "title": "Become a Senior Java Engineer",
+      "note": "Own systems end-to-end. Lead design. Ship with conviction.",
+      "x": 980,
+      "y": 220,
+      "date": "2029-06-10",
+      "collapsed": false,
+      "progress": 0.35
+    },
+    {
+      "id": "v-abroad",
+      "type": "vision",
+      "title": "Move abroad",
+      "note": "Build a life in a place that expands who I am.",
+      "x": 1680,
+      "y": 200,
+      "date": "2030-09-25",
+      "collapsed": false,
+      "progress": 0.15
+    },
+    {
+      "id": "v-fi",
+      "type": "vision",
+      "title": "Financial independence",
+      "note": "Options over obligations.",
+      "x": 2200,
+      "y": 240,
+      "date": "2034-01-20",
+      "collapsed": false,
+      "progress": 0.08
+    },
+    {
+      "id": "v-saas",
+      "type": "vision",
+      "title": "Build a SaaS business",
+      "note": "A product people pay for \u2014 and return to.",
+      "x": 1480,
+      "y": 520,
+      "date": "2031-03-21",
+      "collapsed": false,
+      "progress": 0.12
+    },
+    {
+      "id": "m-jvm",
+      "type": "milestone",
+      "title": "Master JVM",
+      "note": "Memory, GC, tooling, performance intuition.",
+      "x": 420,
+      "y": 280,
+      "date": "2026-09-02",
+      "collapsed": false,
+      "progress": 0.55
+    },
+    {
+      "id": "m-spring",
+      "type": "milestone",
+      "title": "Master Spring",
+      "note": "Boot, Security, Data, production patterns.",
+      "x": 620,
+      "y": 280,
+      "date": "2027-03-04",
+      "collapsed": false,
+      "progress": 0.4
+    },
+    {
+      "id": "m-distributed",
+      "type": "milestone",
+      "title": "Master Distributed Systems",
+      "note": "Consistency, failure modes, observability.",
+      "x": 820,
+      "y": 280,
+      "date": "2028-01-19",
+      "collapsed": false,
+      "progress": 0.2
+    },
+    {
+      "id": "m-portfolio",
+      "type": "milestone",
+      "title": "Build Portfolio",
+      "note": "Three sharp projects. Clear write-ups.",
+      "x": 980,
+      "y": 380,
+      "date": "2028-08-11",
+      "collapsed": false,
+      "progress": 0.25
+    },
+    {
+      "id": "m-faang",
+      "type": "milestone",
+      "title": "Apply to FAANG",
+      "note": "Interview-ready. Story-ready. Calm under pressure.",
+      "x": 1140,
+      "y": 280,
+      "date": "2029-03-16",
+      "collapsed": false,
+      "progress": 0.1
+    },
+    {
+      "id": "lbl-skills",
+      "type": "label",
+      "title": "Skill tree",
+      "note": "",
+      "x": 40,
+      "y": 430,
+      "w": 220,
+      "h": 48,
+      "color": "slate",
+      "collapsed": false,
+      "progress": 0
+    },
+    {
+      "id": "sec-lang",
+      "type": "section",
+      "title": "Language & runtime",
+      "note": "Java depth track",
+      "x": 200,
+      "y": 330,
+      "w": 200,
+      "h": 44,
+      "color": "sky",
+      "collapsed": false,
+      "progress": 0
+    },
+    {
+      "id": "sec-systems",
+      "type": "section",
+      "title": "Systems",
+      "note": "OS, network, data",
+      "x": 200,
+      "y": 700,
+      "w": 200,
+      "h": 44,
+      "color": "amber",
+      "collapsed": false,
+      "progress": 0
+    },
+    {
+      "id": "z-java",
+      "type": "zone",
+      "title": "Java depth",
+      "note": "",
+      "x": 390,
+      "y": 230,
+      "w": 340,
+      "h": 460,
+      "color": "sky",
+      "collapsed": false,
+      "progress": 0
+    },
+    {
+      "id": "s-prog",
+      "type": "skill",
+      "title": "Introduccion",
+      "note": "Etiqueta de inicio — no se aprende.",
+      "x": 40,
+      "y": 480,
+      "date": "2026-01-07",
+      "collapsed": false,
+      "isRoot": true,
+      "skillState": "intro",
+      "progress": 0
+    },
+    {
+      "id": "s-java",
+      "type": "skill",
+      "title": "Java",
+      "note": "",
+      "x": 220,
+      "y": 380,
+      "date": "2026-02-12",
+      "collapsed": false,
+      "skillState": "learning",
+      "progress": 0.65
+    },
+    {
+      "id": "s-collections",
+      "type": "skill",
+      "title": "Collections",
+      "note": "",
+      "x": 420,
+      "y": 260,
+      "date": "2026-03-21",
+      "collapsed": false,
+      "skillState": "mastered",
+      "progress": 1
+    },
+    {
+      "id": "s-concurrency",
+      "type": "skill",
+      "title": "Concurrency",
+      "note": "",
+      "x": 420,
+      "y": 380,
+      "date": "2026-06-06",
+      "collapsed": false,
+      "skillState": "learning",
+      "progress": 0.45
+    },
+    {
+      "id": "s-jvm",
+      "type": "skill",
+      "title": "JVM Internals",
+      "note": "",
+      "x": 420,
+      "y": 500,
+      "date": "2026-08-08",
+      "collapsed": false,
+      "skillState": "available",
+      "progress": 0.15
+    },
+    {
+      "id": "s-spring",
+      "type": "skill",
+      "title": "Spring",
+      "note": "",
+      "x": 420,
+      "y": 620,
+      "date": "2027-01-10",
+      "collapsed": false,
+      "skillState": "available",
+      "progress": 0.3
+    },
+    {
+      "id": "s-dist",
+      "type": "skill",
+      "title": "Distributed Systems",
+      "note": "",
+      "x": 620,
+      "y": 620,
+      "date": "2027-09-03",
+      "collapsed": false,
+      "skillState": "locked",
+      "progress": 0
+    },
+    {
+      "id": "s-linux",
+      "type": "skill",
+      "title": "Linux",
+      "note": "",
+      "x": 220,
+      "y": 760,
+      "date": "2026-04-19",
+      "collapsed": false,
+      "skillState": "learning",
+      "progress": 0.5
+    },
+    {
+      "id": "s-net",
+      "type": "skill",
+      "title": "Networking",
+      "note": "",
+      "x": 380,
+      "y": 760,
+      "date": "2026-07-02",
+      "collapsed": false,
+      "skillState": "available",
+      "progress": 0.2
+    },
+    {
+      "id": "s-db",
+      "type": "skill",
+      "title": "Databases",
+      "note": "",
+      "x": 540,
+      "y": 760,
+      "date": "2026-05-08",
+      "collapsed": false,
+      "skillState": "learning",
+      "progress": 0.55
+    },
+    {
+      "id": "p-portfolio-api",
+      "type": "project",
+      "title": "Portfolio API",
+      "note": "Production-shaped Spring service.",
+      "x": 760,
+      "y": 420,
+      "date": "2027-11-22",
+      "collapsed": false,
+      "skillState": "available",
+      "progress": 0.35
+    },
+    {
+      "id": "h-daily-code",
+      "type": "habit",
+      "title": "Daily deliberate practice",
+      "note": "90 focused minutes.",
+      "x": 40,
+      "y": 380,
+      "date": "2026-01-03",
+      "collapsed": false,
+      "progress": 0.7
+    },
+    {
+      "id": "k-jvm-book",
+      "type": "knowledge",
+      "title": "Java Performance notes",
+      "note": "Captured insights from deep reading.",
+      "x": 620,
+      "y": 360,
+      "date": "2026-10-13",
+      "collapsed": false,
+      "progress": 0.6
+    }
+  ],
+  "edges": [
+    {
+      "id": "e1",
+      "from": "m-jvm",
+      "to": "m-spring",
+      "kind": "unlocks",
+      "strength": 3
+    },
+    {
+      "id": "e2",
+      "from": "m-spring",
+      "to": "m-distributed",
+      "kind": "unlocks",
+      "strength": 3
+    },
+    {
+      "id": "e3",
+      "from": "m-distributed",
+      "to": "m-portfolio",
+      "kind": "unlocks",
+      "strength": 2
+    },
+    {
+      "id": "e4",
+      "from": "m-portfolio",
+      "to": "m-faang",
+      "kind": "unlocks",
+      "strength": 3
+    },
+    {
+      "id": "e5",
+      "from": "m-faang",
+      "to": "v-senior",
+      "kind": "requires",
+      "strength": 3
+    },
+    {
+      "id": "e6",
+      "from": "s-prog",
+      "to": "sec-lang",
+      "kind": "unlocks",
+      "strength": 3
+    },
+    {
+      "id": "e6b",
+      "from": "s-prog",
+      "to": "sec-systems",
+      "kind": "unlocks",
+      "strength": 2
+    },
+    {
+      "id": "e6c",
+      "from": "sec-lang",
+      "to": "s-java",
+      "kind": "unlocks",
+      "strength": 3
+    },
+    {
+      "id": "e7",
+      "from": "sec-systems",
+      "to": "s-linux",
+      "kind": "unlocks",
+      "strength": 2
+    },
+    {
+      "id": "e8",
+      "from": "sec-systems",
+      "to": "s-net",
+      "kind": "unlocks",
+      "strength": 2
+    },
+    {
+      "id": "e9",
+      "from": "sec-systems",
+      "to": "s-db",
+      "kind": "unlocks",
+      "strength": 2
+    },
+    {
+      "id": "e10",
+      "from": "s-java",
+      "to": "s-collections",
+      "kind": "unlocks",
+      "strength": 3
+    },
+    {
+      "id": "e11",
+      "from": "s-java",
+      "to": "s-concurrency",
+      "kind": "unlocks",
+      "strength": 3
+    },
+    {
+      "id": "e12",
+      "from": "s-java",
+      "to": "s-jvm",
+      "kind": "unlocks",
+      "strength": 3
+    },
+    {
+      "id": "e13",
+      "from": "s-java",
+      "to": "s-spring",
+      "kind": "unlocks",
+      "strength": 3
+    },
+    {
+      "id": "e14",
+      "from": "s-spring",
+      "to": "s-dist",
+      "kind": "unlocks",
+      "strength": 2
+    },
+    {
+      "id": "e15",
+      "from": "s-jvm",
+      "to": "m-jvm",
+      "kind": "supports",
+      "strength": 3
+    },
+    {
+      "id": "e16",
+      "from": "s-spring",
+      "to": "m-spring",
+      "kind": "supports",
+      "strength": 3
+    },
+    {
+      "id": "e17",
+      "from": "s-dist",
+      "to": "m-distributed",
+      "kind": "supports",
+      "strength": 3
+    },
+    {
+      "id": "e18",
+      "from": "p-portfolio-api",
+      "to": "m-portfolio",
+      "kind": "unlocks",
+      "strength": 3
+    },
+    {
+      "id": "e19",
+      "from": "h-daily-code",
+      "to": "s-java",
+      "kind": "reinforces",
+      "strength": 2
+    },
+    {
+      "id": "e20",
+      "from": "k-jvm-book",
+      "to": "m-jvm",
+      "kind": "contributes",
+      "strength": 2
+    },
+    {
+      "id": "e21",
+      "from": "v-senior",
+      "to": "v-abroad",
+      "kind": "supports",
+      "strength": 2
+    },
+    {
+      "id": "e22",
+      "from": "v-saas",
+      "to": "v-fi",
+      "kind": "supports",
+      "strength": 2
+    },
+    {
+      "id": "e23",
+      "from": "p-portfolio-api",
+      "to": "v-saas",
+      "kind": "contributes",
+      "strength": 1
+    }
+  ]
+}

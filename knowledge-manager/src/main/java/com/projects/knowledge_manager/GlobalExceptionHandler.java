@@ -10,6 +10,7 @@ import com.projects.knowledge_manager.tag.service.DuplicateTagNameException;
 import com.projects.knowledge_manager.tag.service.TagNotFoundException;
 import com.projects.knowledge_manager.topic.service.DuplicateTopicNameException;
 import com.projects.knowledge_manager.topic.service.TopicNotFoundException;
+import com.projects.knowledge_manager.vision.service.VisionBoardNotFoundException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -24,7 +25,8 @@ public class GlobalExceptionHandler {
     BehavioralQuestionNotFoundException.class,
     SystemDesignProblemNotFoundException.class,
     InterviewProfileNotFoundException.class,
-    MockInterviewNotFoundException.class
+    MockInterviewNotFoundException.class,
+    VisionBoardNotFoundException.class
   })
   public String handleNotFound(RuntimeException exception, Model model) {
     model.addAttribute("errorMessage", exception.getMessage());

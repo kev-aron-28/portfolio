@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Vision</h1>
+      <p class="page-subtitle">Design the roadmap of the person you want to become.</p>
+    </div>
+    <a class="btn btn-primary" th:href="@{/vision/new}">
+      <i class="bi bi-plus-lg me-1"></i>New board
+    </a>
+  </div>
+
+  <div th:if="${#lists.isEmpty(boards)}" class="card-surface empty-state vision-empty">
+    <i class="bi bi-compass fs-1 d-block mb-3 vision-empty-icon"></i>
+    <h2 class="h4 mb-2">Your future starts as a blank canvas</h2>
+    <p class="mb-4 mx-auto" style="max-width: 28rem;">
+      Place visions, connect milestones, grow skill trees — not tasks.
+      Map years, not checklists.
+    </p>
+    <a class="btn btn-primary" th:href="@{/vision/new}">Create your first vision board</a>
+  </div>
+
+  <div class="row g-4" th:if="${!#lists.isEmpty(boards)}">
+    <div class="col-md-6 col-xl-4" th:each="board : ${boards}">
+      <a class="vision-board-card card-surface text-decoration-none d-block h-100"
+         th:href="@{/vision/{id}(id=${board.id()})}">
+        <div class="vision-board-card-glow"></div>
+        <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+          <h2 class="h5 mb-0 vision-board-title" th:text="${board.title()}">Board</h2>
+          <span class="vision-node-count" th:text="${board.nodeCount()} + ' nodes'">0 nodes</span>
+        </div>
+        <p class="vision-board-desc mb-3"
+           th:text="${board.description() != null ? board.description() : 'Open the canvas and shape your path.'}">
+          Description
+        </p>
+        <div class="d-flex justify-content-between align-items-center small text-muted">
+          <span>
+            <i class="bi bi-clock-history me-1"></i>
+            <span th:text="${#temporals.format(board.updatedAt(), 'MMM d, yyyy')}">Date</span>
+          </span>
+          <span class="vision-open-hint">Open canvas <i class="bi bi-arrow-right"></i></span>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/vision-canvas.css}">
+</div>
+</body>
+</html>

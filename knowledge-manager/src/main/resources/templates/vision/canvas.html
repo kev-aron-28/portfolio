@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="vision-immersive"
+       th:attr="data-board-id=${board.id()},
+                data-board-title=${board.title()}">
+
+    <header class="vc-topbar">
+      <div class="vc-topbar-left">
+        <a class="vc-back" th:href="@{/vision}" title="All boards">
+          <i class="bi bi-chevron-left"></i>
+        </a>
+        <form class="vc-title-form" th:action="@{/vision/{id}(id=${board.id()})}" method="post">
+          <input type="hidden" name="description" th:value="${board.description() != null ? board.description() : ''}">
+          <input type="hidden" name="useDemoTemplate" value="false">
+          <input class="vc-title-input" type="text" name="title"
+                 th:value="${board.title()}" maxlength="200" aria-label="Board title">
+        </form>
+        <span class="vc-save-status" id="visionSaveStatus">Ready</span>
+      </div>
+      <div class="vc-topbar-center">
+        <div class="vc-mode-group" role="group" aria-label="Canvas mode">
+          <button type="button" class="vc-mode-btn active" id="vcModeEdit" data-mode="edit">Edit</button>
+          <button type="button" class="vc-mode-btn" id="vcModeTrain" data-mode="train">Train</button>
+        </div>
+        <div class="vc-points" id="vcSkillPoints" hidden title="Skill points">
+          <i class="bi bi-lightning-charge-fill"></i>
+          <span id="vcSkillPointsLabel">0 / 0</span>
+        </div>
+        <div class="vc-range-group" role="group" aria-label="Timeline range">
+          <button type="button" class="vc-range-btn" data-range="1">1m</button>
+          <button type="button" class="vc-range-btn" data-range="6">6m</button>
+          <button type="button" class="vc-range-btn" data-range="12">1y</button>
+          <button type="button" class="vc-range-btn active" data-range="36">3y</button>
+          <button type="button" class="vc-range-btn" data-range="60">5y</button>
+          <button type="button" class="vc-range-btn" data-range="120">10y</button>
+        </div>
+      </div>
+      <div class="vc-topbar-right">
+        <button type="button" class="vc-icon-btn" id="vcSearchBtn" title="Search (Ctrl+K)">
+          <i class="bi bi-search"></i>
+        </button>
+        <button type="button" class="vc-icon-btn" id="vcFocusBtn" title="Focus mode">
+          <i class="bi bi-eye"></i>
+        </button>
+        <button type="button" class="vc-icon-btn" id="vcFitBtn" title="Fit to content">
+          <i class="bi bi-fullscreen"></i>
+        </button>
+        <span class="vc-zoom-label" id="vcZoomLabel">100%</span>
+        <a class="vc-icon-btn" th:href="@{/vision/{id}/edit(id=${board.id()})}" title="Board settings">
+          <i class="bi bi-gear"></i>
+        </a>
+        <form th:action="@{/vision/{id}/delete(id=${board.id()})}" method="post"
+              onsubmit="return confirm('Delete this vision board?');" class="d-inline">
+          <button class="vc-icon-btn vc-danger" type="submit" title="Delete board">
+            <i class="bi bi-trash"></i>
+          </button>
+        </form>
+      </div>
+    </header>
+
+    <div class="vc-workspace">
+      <aside class="vc-rail" aria-label="Add elements">
+        <div class="vc-rail-group" aria-label="Roadmap">
+          <span class="vc-rail-label">Roadmap</span>
+          <button type="button" class="vc-tool" data-add="vision" title="Vision">
+            <i class="bi bi-stars"></i><span>Vision</span>
+          </button>
+          <button type="button" class="vc-tool" data-add="milestone" title="Milestone">
+            <i class="bi bi-flag"></i><span>Milestone</span>
+          </button>
+        </div>
+        <div class="vc-rail-divider"></div>
+        <div class="vc-rail-group" aria-label="Skill tree">
+          <span class="vc-rail-label">Skill tree</span>
+          <button type="button" class="vc-tool" data-add="skill" data-tree-role="intro"
+                  title="Intro — inicio del árbol (como el start de PoE)">
+            <i class="bi bi-diamond"></i><span>Intro</span>
+          </button>
+          <button type="button" class="vc-tool" data-add="skill" data-tree-role="node"
+                  title="Node — la bola que aprendes / asignas">
+            <i class="bi bi-circle"></i><span>Node</span>
+          </button>
+          <button type="button" class="vc-tool" data-add="project" data-tree-role="project"
+                  title="Project — nodo del árbol (otra forma, misma lógica)">
+            <i class="bi bi-box"></i><span>Project</span>
+          </button>
+          <button type="button" class="vc-tool" data-add="section" data-tree-role="section"
+                  title="Section — puerta: al completar el nodo previo se abre y desbloquea solo el primer hijo">
+            <i class="bi bi-diagram-3"></i><span>Section</span>
+          </button>
+          <p class="vc-rail-legend" id="vcTreeLegend">
+            Node mastered → Section<br>→ primer Node
+          </p>
+          <button type="button" class="vc-tool" data-add="habit" title="Habit">
+            <i class="bi bi-arrow-repeat"></i><span>Habit</span>
+          </button>
+          <button type="button" class="vc-tool" data-add="knowledge" title="Knowledge">
+            <i class="bi bi-book"></i><span>Knowledge</span>
+          </button>
+        </div>
+        <div class="vc-rail-divider"></div>
+        <div class="vc-rail-group" aria-label="Annotations">
+          <span class="vc-rail-label">Annotate</span>
+          <button type="button" class="vc-tool" data-add="label" title="Label">
+            <i class="bi bi-type"></i><span>Label</span>
+          </button>
+          <button type="button" class="vc-tool" data-add="note" title="Note">
+            <i class="bi bi-sticky"></i><span>Note</span>
+          </button>
+          <button type="button" class="vc-tool" data-add="zone" title="Zone">
+            <i class="bi bi-bounding-box"></i><span>Zone</span>
+          </button>
+        </div>
+        <div class="vc-rail-divider"></div>
+        <button type="button" class="vc-tool" id="vcConnectBtn" title="Connect: click parent, then child">
+          <i class="bi bi-share"></i><span>Connect</span>
+        </button>
+        <button type="button" class="vc-tool" id="vcTreeHelpBtn" title="How to build a skill tree">
+          <i class="bi bi-question-circle"></i><span>Help</span>
+        </button>
+      </aside>
+
+      <textarea id="visionSceneData" class="visually-hidden" hidden th:text="${board.sceneJson()}"></textarea>
+      <div id="visionCanvasHost"
+           class="vc-host"
+           th:attr="data-save-url=@{/vision/{id}/scene(id=${board.id()})}"></div>
+
+      <aside class="vc-inspector" id="vcInspector" hidden>
+        <div class="vc-inspector-header">
+          <span id="vcInspectorType">Node</span>
+          <button type="button" class="vc-icon-btn" id="vcInspectorClose" title="Close">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+        <label class="vc-field-label">Title</label>
+        <input type="text" class="vc-field" id="vcInspectorTitle">
+        <label class="vc-field-label">Note</label>
+        <textarea class="vc-field vc-field-note" id="vcInspectorNote" rows="3"></textarea>
+        <div id="vcStrategyFields">
+          <label class="vc-field-label">Date</label>
+          <input type="date" class="vc-field" id="vcInspectorDate">
+          <div id="vcSkillStateWrap" hidden>
+            <label class="vc-field-label">Skill state</label>
+            <select class="vc-field" id="vcInspectorSkillState">
+              <option value="locked">Locked</option>
+              <option value="available">Available</option>
+              <option value="learning">Learning</option>
+              <option value="mastered">Mastered</option>
+            </select>
+            <label class="vc-check">
+              <input type="checkbox" id="vcInspectorIsRoot">
+              Esta es la Intro (inicio del árbol)
+            </label>
+          </div>
+          <label class="vc-field-label">Progress ring</label>
+          <input type="range" class="vc-field-range" id="vcInspectorProgress" min="0" max="100" step="5">
+        </div>
+        <div id="vcAnnotationFields" hidden>
+          <label class="vc-field-label">Color</label>
+          <select class="vc-field" id="vcInspectorColor">
+            <option value="teal">Teal</option>
+            <option value="amber">Amber</option>
+            <option value="sky">Sky</option>
+            <option value="slate">Slate</option>
+            <option value="rose">Rose</option>
+          </select>
+          <div id="vcZoneSizeWrap" hidden>
+            <label class="vc-field-label">Width</label>
+            <input type="number" class="vc-field" id="vcInspectorWidth" min="120" max="2000" step="10">
+            <label class="vc-field-label">Height</label>
+            <input type="number" class="vc-field" id="vcInspectorHeight" min="80" max="2000" step="10">
+          </div>
+        </div>
+        <div class="vc-inspector-actions">
+          <button type="button" class="vc-btn" id="vcCollapseBtn">Collapse branch</button>
+          <button type="button" class="vc-btn" id="vcBookmarkBtn">Bookmark view</button>
+          <button type="button" class="vc-btn vc-btn-danger" id="vcDeleteNodeBtn">Remove</button>
+        </div>
+      </aside>
+    </div>
+
+    <div class="vc-minimap" id="vcMinimap" aria-hidden="true">
+      <canvas id="vcMinimapCanvas" width="180" height="110"></canvas>
+      <div class="vc-minimap-viewport" id="vcMinimapViewport"></div>
+    </div>
+
+    <div class="vc-bookmarks" id="vcBookmarks"></div>
+
+    <div class="vc-hint-bar" id="vcHintBar" hidden>
+      <span id="vcHintText">Tip</span>
+      <button type="button" class="vc-hint-close" id="vcHintClose" title="Dismiss" aria-label="Dismiss">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+
+    <div class="vc-tree-help" id="vcTreeHelp" hidden>
+      <div class="vc-tree-help-card">
+        <div class="vc-tree-help-header">
+          <h3>Piezas del skill tree</h3>
+          <button type="button" class="vc-icon-btn" id="vcTreeHelpClose" title="Close">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+        <div class="vc-tree-legend-cards">
+          <div class="vc-tree-legend-card is-intro">
+            <strong>Intro</strong>
+            <span>Solo etiqueta de inicio. No se aprende; abre los Nodes conectados.</span>
+          </div>
+          <div class="vc-tree-legend-card is-node">
+            <strong>Node</strong>
+            <span>La bola que asignas en Train (aprender / mastered).</span>
+          </div>
+          <div class="vc-tree-legend-card is-project">
+            <strong>Project</strong>
+            <span>Mismo rol que Node (path + Train), con forma de caja.</span>
+          </div>
+          <div class="vc-tree-legend-card is-section">
+            <strong>Section</strong>
+            <span>Puerta: al masterizar el nodo previo se abre y desbloquea solo el primer Node/Project hijo.</span>
+          </div>
+        </div>
+        <pre class="vc-tree-ascii" aria-hidden="true">     Introduccion
+            |
+          Node (mastered)
+            |
+         Section  ← se abre
+            |
+       primer Node</pre>
+        <ol class="vc-tree-help-steps">
+          <li><strong>Edit</strong> — Connect: <em>nodo previo → Section → hijos</em> (el primer hijo = más arriba / izquierda).</li>
+          <li>Al <strong>masterizar</strong> el previo, la Section se abre y solo el primer hijo queda available.</li>
+          <li>El siguiente hijo de la Section se desbloquea al asignar el anterior (o con Connect directo).</li>
+          <li><strong>Train</strong> — clic = allocate → master. <strong>Doble clic</strong> = completado. <strong>Clic derecho</strong> = elegir estado. Shift+clic = refund.</li>
+        </ol>
+        <p class="vc-tree-help-note">Zone / Label / Note son decoración, no forman el path del árbol.</p>
+        <button type="button" class="vc-btn-primary" id="vcPlantRootBtn">Colocar Intro ahora</button>
+      </div>
+    </div>
+
+    <div class="vc-search" id="vcSearch" hidden>
+      <input type="search" id="vcSearchInput" placeholder="Jump to a vision, skill, milestone…" autocomplete="off">
+      <ul id="vcSearchResults"></ul>
+    </div>
+
+    <div class="vc-skill-menu" id="vcSkillMenu" hidden role="menu" aria-label="Skill state">
+      <div class="vc-skill-menu-title" id="vcSkillMenuTitle">Estado</div>
+      <button type="button" role="menuitem" data-skill-state="locked">Bloqueado</button>
+      <button type="button" role="menuitem" data-skill-state="available">Disponible</button>
+      <button type="button" role="menuitem" data-skill-state="learning">En progreso</button>
+      <button type="button" role="menuitem" data-skill-state="mastered">Completado</button>
+    </div>
+
+    <div class="vc-create-modal" id="vcCreateModal" hidden>
+      <div class="vc-create-dialog" role="dialog" aria-modal="true" aria-labelledby="vcCreateHeading">
+        <h3 id="vcCreateHeading">Add to roadmap</h3>
+        <p class="vc-create-date" id="vcCreateDateHint">Choose what belongs here</p>
+        <div class="vc-create-types">
+          <button type="button" data-create-type="vision" class="active">
+            <i class="bi bi-stars"></i>Vision
+          </button>
+          <button type="button" data-create-type="milestone">
+            <i class="bi bi-flag"></i>Milestone
+          </button>
+          <button type="button" data-create-type="skill" data-tree-role="intro">
+            <i class="bi bi-diamond"></i>Intro
+          </button>
+          <button type="button" data-create-type="skill" data-tree-role="node">
+            <i class="bi bi-circle"></i>Node
+          </button>
+          <button type="button" data-create-type="section">
+            <i class="bi bi-diagram-3"></i>Section
+          </button>
+          <button type="button" data-create-type="project">
+            <i class="bi bi-box"></i>Project
+          </button>
+          <button type="button" data-create-type="habit">
+            <i class="bi bi-arrow-repeat"></i>Habit
+          </button>
+          <button type="button" data-create-type="knowledge">
+            <i class="bi bi-book"></i>Knowledge
+          </button>
+          <button type="button" data-create-type="label">
+            <i class="bi bi-type"></i>Label
+          </button>
+          <button type="button" data-create-type="note">
+            <i class="bi bi-sticky"></i>Note
+          </button>
+          <button type="button" data-create-type="zone">
+            <i class="bi bi-bounding-box"></i>Zone
+          </button>
+        </div>
+        <label class="vc-field-label" for="vcCreateTitle">Title</label>
+        <input type="text" class="vc-field" id="vcCreateTitle" placeholder="Name this piece of the future" maxlength="120">
+        <div class="vc-create-actions">
+          <button type="button" class="vc-btn" id="vcCreateCancel">Cancel</button>
+          <button type="button" class="vc-btn-primary" id="vcCreateConfirm">Place here</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" th:href="@{/css/vision-canvas.css}">
+  <script th:src="@{/js/vision-canvas.js}"></script>
+  <script>
+    (function () {
+      var host = document.getElementById('visionCanvasHost');
+      if (host && window.VisionCanvas) {
+        window.VisionCanvas.mount(host);
+      }
+    })();
+  </script>
+</div>
+</body>
+</html>

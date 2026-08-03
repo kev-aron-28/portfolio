@@ -3,7 +3,7 @@
   border: 1px solid var(--app-border, #e5e7eb);
   border-radius: 12px;
   overflow: hidden;
-  background: #fafafa;
+  background: var(--app-subtle, #fafafa);
 }
 
 .sd-whiteboard-toolbar {
@@ -13,7 +13,7 @@
   align-items: center;
   padding: 0.5rem 0.75rem;
   border-bottom: 1px solid var(--app-border, #e5e7eb);
-  background: #fff;
+  background: var(--app-surface, #fff);
 }
 
 .sd-whiteboard-toolbar .btn {
@@ -22,9 +22,9 @@
 }
 
 .sd-whiteboard-toolbar .btn.active {
-  background: #111827;
-  border-color: #111827;
-  color: #fff;
+  background: var(--app-text, #111827);
+  border-color: var(--app-text, #111827);
+  color: var(--app-surface, #fff);
 }
 
 .sd-whiteboard-canvas-wrap {
@@ -32,10 +32,10 @@
   height: 480px;
   overflow: hidden;
   cursor: default;
-  background-color: #f8fafc;
+  background-color: var(--app-subtle, #f8fafc);
   background-image:
-    linear-gradient(#e5e7eb 1px, transparent 1px),
-    linear-gradient(90deg, #e5e7eb 1px, transparent 1px);
+    linear-gradient(var(--app-border, #e5e7eb) 1px, transparent 1px),
+    linear-gradient(90deg, var(--app-border, #e5e7eb) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
