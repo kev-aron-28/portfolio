@@ -1,6 +1,8 @@
 package com.projects.node;
 
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import com.projects.storage.StorageEngine;
@@ -55,5 +57,9 @@ public class PhysicalNode {
         System.out.println(host);
         System.out.println("----------");
         storage.print();
+    }
+
+    public Set<Map.Entry<String, String>> records() {
+        return storage.records();
     }
 }

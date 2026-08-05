@@ -2,6 +2,7 @@ package com.projects.storage;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class StorageEngine {
@@ -19,6 +20,10 @@ public class StorageEngine {
         storage.remove(key);
     }
 
+    public boolean contains(String key) {
+        return storage.keySet().contains(key);
+    }
+
     public int size() {
         return storage.size();
     }
@@ -28,4 +33,8 @@ public class StorageEngine {
         .entrySet()
         .forEach(e -> System.out.println(e.getKey() + "-" +e.getValue()));
     } 
+
+    public Set<Map.Entry<String, String>> records() {
+        return storage.entrySet();
+    }
 }

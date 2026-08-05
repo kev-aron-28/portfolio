@@ -10,14 +10,12 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 import com.projects.exceptions.EmptyHashRingException;
-import com.projects.exceptions.InsufficientPhysicalNodes;
 import com.projects.hashing.HashFunction;
 import com.projects.node.PhysicalNode;
 import com.projects.node.VirtualNode;
 
 public class HashRing {
     private final TreeMap<BigInteger, VirtualNode> ring = new TreeMap<>();
-    private final List<PhysicalNode> physicalNodes = new ArrayList<>();
 
     private final HashFunction hashFunction;
 
@@ -29,12 +27,10 @@ public class HashRing {
         for(int i = 0; i < virtualNodes; i++) {
             String key = node.getId() + "#" + i;
 
-            BigInteger hash = this.hashFunction.hash(key);
+            BigInteger token = hash(key);
 
-            ring.put(hash, new VirtualNode(hash, key, node));
+            ring.put(token, new VirtualNode(token, key, node));
         }
-
-        physicalNodes.add(node);
     }
 
     public void removeNode(PhysicalNode node) {
@@ -46,30 +42,17 @@ public class HashRing {
             .equals(node)
         );
 
-        physicalNodes.remove(node);
-    }
-
-    public void printRing() {        
-        physicalNodes.forEach(n -> {
-            n.showContent();
-            System.out.println("-------------------------------");
-        });
     }
 
     public int virtualNodeCount() {
         return ring.size();
     }
 
-    public int physicalNodeCount() {
-        return physicalNodes.size();
-    }
-
-    public PhysicalNode findOwner(String key) {
+    // First virtual node clockwise
+    public VirtualNode locate(BigInteger hash) {
         if(ring.isEmpty()) {
             throw new EmptyHashRingException();
         }
-
-        BigInteger hash = hashFunction.hash(key);
 
         Map.Entry<BigInteger, VirtualNode> entry = ring.ceilingEntry(hash);
 
@@ -77,43 +60,66 @@ public class HashRing {
             entry = ring.firstEntry();
         }
 
-        return entry.getValue().getOwner();
+        return entry.getValue();
     }
 
-    public List<PhysicalNode> findReplicas(String key, int replicaFactor) {
+    // Clockwise navigation
+    public VirtualNode successor(BigInteger token) {
         if(ring.isEmpty()) {
             throw new EmptyHashRingException();
         }
 
-        int availableNodes = this.physicalNodeCount();
+        Map.Entry<BigInteger, VirtualNode> entry = ring.higherEntry(token);
 
-        if(replicaFactor > availableNodes) {
-            throw new InsufficientPhysicalNodes(replicaFactor, availableNodes);
+        if(entry == null) {
+            entry = ring.firstEntry();
         }
 
-        BigInteger hash = hashFunction.hash(key);
+        return entry.getValue();
+    }
 
+    // Counter-clockwise navigation
+    public VirtualNode predecessor(BigInteger token) {
+        if(ring.isEmpty()) {
+            throw new EmptyHashRingException();
+        }
+
+        Map.Entry<BigInteger, VirtualNode> entry = ring.lowerEntry(token);
+
+        if(entry == null) {
+            entry = ring.lastEntry();
+        }
+
+        return entry.getValue();
+    }
+
+    public PhysicalNode findOwner(String key) {
+        return locate(
+            hash(key)
+        ).getOwner();
+    }
+
+    public List<PhysicalNode> findReplicas(String key, int replicaFactor) {
         List<PhysicalNode> replicas = new ArrayList<>();
 
         Set<UUID> visited = new HashSet<>();
 
-        Map.Entry<BigInteger, VirtualNode> current = ring.ceilingEntry(hash);
+        VirtualNode current = locate(hash(key));
 
-        int inspected = 0;
-        while (replicas.size() < replicaFactor && inspected < ring.size()) { 
-            PhysicalNode node = current.getValue().getOwner();
+        while(replicas.size() < replicaFactor) {
+            PhysicalNode owner = current.getOwner();
 
-            if(visited.add(node.getId())) {
-                replicas.add(node);
+            if(visited.add(owner.getId())) {
+                replicas.add(owner);
             }
 
-            current = ring.higherEntry(current.getKey());
-
-            if(current == null) {
-                current = ring.firstEntry();
-            }
+            current = successor(current.getId());
         }
 
         return replicas;
+    }
+
+    public BigInteger hash(String key) {
+        return this.hashFunction.hash(key);
     }
 }

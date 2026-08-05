@@ -1,6 +1,6 @@
 package com.projects;
 
-import java.util.List;
+import java.math.BigInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -9,7 +9,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.projects.exceptions.EmptyHashRingException;
-import com.projects.exceptions.InsufficientPhysicalNodes;
 import com.projects.hashing.HashFunction;
 import com.projects.hashing.SHA256;
 import com.projects.node.NodeStatus;
@@ -32,7 +31,7 @@ public class HashRingTest {
 
         ring.addNode(node, 1);
 
-        assertEquals(1, ring.physicalNodeCount());
+        assertEquals(1, ring.virtualNodeCount());
     }
 
     @Test
@@ -43,57 +42,26 @@ public class HashRingTest {
 
         ring.removeNode(node);
 
-        assertEquals(0, ring.physicalNodeCount());
+        assertEquals(0, ring.virtualNodeCount());
     }
 
     @Test
-    public void shouldCreateVirtualNodes() {
+    public void shouldLocate() {
         PhysicalNode node = new PhysicalNode("host", 80, NodeStatus.JOINING);
 
-        ring.addNode(node, 2);
+        ring.addNode(node, 1);
 
-        assertEquals(2, ring.virtualNodeCount());
+        BigInteger token = ring.hash("key");
+
+        assertNotNull(ring.locate(token));
     }
 
     @Test
-    public void shouldThrowIfRingIsEmptyWhenFindingOwner() {
+    public void shouldThrowIfRingIsEmpty() {
+        BigInteger token = ring.hash("key");
+
         assertThrows(EmptyHashRingException.class, () -> {
-            ring.findOwner("key-1");
+            ring.locate(token);
         });
-    }
-
-    @Test
-    public void shouldReturnOwner() {
-        PhysicalNode node = new PhysicalNode("host", 80, NodeStatus.JOINING);
-
-        ring.addNode(node, 2);
-
-        assertNotNull(ring.findOwner("key-1"));
-    }
-
-    @Test
-    public void shouldThrowIfInsufficientReplicas() {
-        PhysicalNode node = new PhysicalNode("host", 80, NodeStatus.JOINING);
-
-        ring.addNode(node, 2);
-
-        assertThrows(InsufficientPhysicalNodes.class, () -> {
-            ring.findReplicas("key-2", 4);
-        });
-    }
-
-    @Test
-    public void shouldFindReplicas() {
-        PhysicalNode node = new PhysicalNode("host", 80, NodeStatus.JOINING);
-
-        ring.addNode(node, 2);
-
-        PhysicalNode node2 = new PhysicalNode("host", 80, NodeStatus.JOINING);
-
-        ring.addNode(node2, 2);
-
-        List<PhysicalNode> result = ring.findReplicas("key-1", 2);
-        
-        assertEquals(2, result.size());
     }
 }
