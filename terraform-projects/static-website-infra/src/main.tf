@@ -84,7 +84,11 @@ resource "aws_cloudfront_distribution" "website" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
+    acm_certificate_arn = aws_acm_certificate_validation.website.certificate_arn
+
+    ssl_support_method = "sni-only"
+
+    minimum_protocol_version = "TLSv1.2_2021"
   }
 }
 
@@ -118,4 +122,51 @@ data "aws_iam_policy_document" "website" {
       ]
     }
   }
+}
+
+resource "aws_s3_bucket_policy" "website" {
+  bucket = aws_s3_bucket.website.id
+
+  policy = data.aws_iam_policy_document.website.json
+}
+
+resource "aws_acm_certificate" "website" {
+  provider = aws.virigina
+
+  domain_name = var.domain_name
+  validation_method = "DNS"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_route53_record" "certificate_validation" {
+  for_each = {
+    for dvo in aws_acm_certificate.website.domain_validation_options :
+    dv.domain_name => {
+      name = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type = dvo.resource_record_type
+    }
+  }
+
+  zone_id = var.hosted_zone_id
+  name = each.value.name
+  type = each.value.type
+  ttl=60
+
+  records = [
+    each.value.record
+  ]
+}
+
+resource "aws_acm_certificate_validation" "website" {
+  provider = aws.virigina
+
+  certificate_arn = aws_acm_certificate.website.arn
+
+  validation_record_fqdns = [
+    for record in aws_aws_route53_record.certificate_validation : record.fqdn
+  ]
 }

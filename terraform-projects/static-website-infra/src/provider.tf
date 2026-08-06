@@ -5,6 +5,15 @@ provider "aws" {
   }
 }
 
+provider "aws" {
+  alias = "virigina"
+  region = "us-east-1"
+
+  default_tags {
+    tags = local.default_tags
+  }
+}
+
 provider "random" {
   
 }
