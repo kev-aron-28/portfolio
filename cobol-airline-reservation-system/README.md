@@ -103,3 +103,24 @@ Main tables include:
 - RESERVATION
 - SEAT
 - CHECKIN
+
+---
+
+# Batch Processing
+
+Several batch jobs simulate daily airline operations.
+
+## Flight Closing
+
+- Close completed flights
+- Update flight status
+- Generate operational summary
+
+## Daily Statistics
+
+Generate reports including:
+
+- Flights processed
+- Passenger count
+- Seat occupancy
+- Flight cancellations
