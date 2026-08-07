@@ -100,6 +100,10 @@ public class HashRing {
     }
 
     public List<PhysicalNode> findReplicas(String key, int replicaFactor) {
+        if(ring.isEmpty()) {
+            throw new EmptyHashRingException();
+        }
+
         List<PhysicalNode> replicas = new ArrayList<>();
 
         Set<UUID> visited = new HashSet<>();

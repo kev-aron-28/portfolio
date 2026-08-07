@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import com.projects.exceptions.InsufficientPhysicalNodes;
 import com.projects.hashing.HashFunction;
 import com.projects.node.PhysicalNode;
 
@@ -26,9 +27,7 @@ public class ClusterManager {
     
     public Optional<String> get(String key) {
         List<PhysicalNode> replicas = ring.findReplicas(key, replicationFactor);
-
         // Read from the first available replica
-    
         for(var node : replicas) {
             Optional<String> value = node.get(key);
 
@@ -39,6 +38,10 @@ public class ClusterManager {
     }
 
     public void put(String key, String value) {
+        if (replicationFactor > nodes.size()) {
+            throw new InsufficientPhysicalNodes(replicationFactor, nodes.size());
+        }
+
         List<PhysicalNode> replicas = ring.findReplicas(key, replicationFactor);
         
         // ASYNC REPLICATION
@@ -72,12 +75,17 @@ public class ClusterManager {
         nodes.remove(leavingNode);
     }
 
+    public int physicalNodeCount() {
+        return nodes.size();
+    }
+
     public void printRing() {
         for(PhysicalNode node : nodes) {
-            System.out.println(node.getHost());
+            System.err.println("");
             System.out.println("-----------------------------");
             node.showContent();
             System.out.println("-----------------------------");
+            System.err.println("");
         }
     }
 }

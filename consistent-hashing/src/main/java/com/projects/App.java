@@ -27,5 +27,13 @@ public class App
         }
 
         nodes.forEach(n -> manager.addNode(n));
+
+        manager.put("kevin", "aron");
+        manager.put("aron","tapia");
+
+        manager.printRing();
+
+        System.out.println("GET VALUE: " + manager.get("kevin"));
+
     }
 }
