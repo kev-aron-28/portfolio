@@ -60,12 +60,16 @@ public class ClusterManager {
         nodes.add(node);
 
         ring.addNode(node, virtualNodes);
+
+        rebalancer.rebalanceAfterJoin(ring, nodes, replicationFactor);
     }
 
-    public void deleteNode(PhysicalNode node) {
-        nodes.remove(node);
+    public void deleteNode(PhysicalNode leavingNode) {
+        ring.removeNode(leavingNode);
 
-        ring.removeNode(node);
+        rebalancer.rebalanceBeforeLeave(leavingNode, ring, nodes, replicationFactor);
+
+        nodes.remove(leavingNode);
     }
 
     public void printRing() {

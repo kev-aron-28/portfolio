@@ -52,6 +52,10 @@ public class PhysicalNode {
     public int size() {
         return storage.size();
     }
+    
+    public boolean contains(String key) {
+        return storage.contains(key);
+    }
 
     public void showContent() {
         System.out.println(host);

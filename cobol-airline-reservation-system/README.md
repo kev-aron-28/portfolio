@@ -124,3 +124,63 @@ Generate reports including:
 - Passenger count
 - Seat occupancy
 - Flight cancellations
+
+
+# System views
+
+1. Passenger
+Stores customer information.
+Screens:
+- Create Passenger
+- Search Passenger
+- Update Passenger
+- View Passenger
+
+2. Aircraft
+Stores every aircraft available in the airline
+Screens:
+- Create Aircraft
+- Search Aircraft
+- Update Aircraft
+
+3. AirPort
+Stores airports that flights can use.
+Screens:
+- Create Airport
+- Search Airport
+- Update Airport
+
+4. Flight
+Creates a scheduled flight.
+A flight needs:
+    1. One aircraft
+    2. One origin airport
+    3.One destination airport
+Screens:
+- Create Flight
+- Search Flight
+- Update Flight
+- Cancel Flight
+
+5. Seat
+Defines the seats available for each aircraft.
+Normally this is created only once per aircraft.
+Screens: 
+- View Seats
+- Enable Seat
+- Disable Seat
+
+6. Reservation
+Books a seat for a passenger.
+
+Screens
+- Create Reservation
+- Search Reservation
+- Cancel Reservation
+
+7. Check-in
+Confirms the passenger arrived for the flight.
+
+Screens
+1. Check-in Passenger
+2. View Check-in
