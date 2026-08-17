@@ -216,6 +216,9 @@ ON IBMUSER.SEAT
     SEAT_ID
 );
 
+CREATE UNIQUE INDEX IBMUSER.IDX_PASSENGER_EMAIL
+ON IBMUSER.PASSENGER (EMAIL);
+
 
 -- ============================================================
 -- 9. RESERVATION
