@@ -278,193 +278,171 @@ ARCI  Check-in
 ARBD  Boarding
 
 
-## TODO — Development Roadmap
+## TODO — Application Development
 
 ### 1. Project Foundation
-- [✔️] Define dataset structure
-- [✔️] Define naming conventions
-- [✔️] Create COBOL copybook library
-- [✔️] Create BMS library
-- [✔️] Create DBRM library
-- [✔️] Create load library
-- [✔️] Create standard compile/link JCL
-- [✔️] Create standard BMS assembly JCL
+- [x] Define COBOL program naming standard
+- [x] Define BMS map naming standard
+- [x] Define CICS transaction naming standard
+- [x] Define copybook naming standard
+- [x] Create COBOL source library
+- [x] Create BMS source library
+- [x] Create copybook library
+- [x] Create DBRM library
+- [x] Create load library
 
-### 2. DB2 Database
-- [✔️] Create AIRLINE database
-- [✔️] Create ARSTS tablespace
-- [✔️] Create PASSENGER table
-- [✔️] Create AIRPORT table
-- [✔️] Create AIRCRAFT table
-- [✔️] Create FLIGHT table
-- [✔️] Create SEAT table
-- [✔️] Create RESERVATION table
-- [✔️] Create required primary/unique indexes
-- [✔️] Create foreign keys
-- [✔️] Insert initial test data
-- [✔️] Verify DB2 catalog definitions
+### 2. Common Copybooks
+- [x] Create ARCOMMA
+- [x] Create ARCONST
+- [x] Create ARERR
+- [x] Create common message definitions
+- [x] Create common CICS response definitions
+- [x] Create common DB2 error definitions
 
-### 3. Common COBOL/CICS Components
-- [✔️] Create ARCOMMA copybook
-- [✔️] Create ARCONST copybook
-- [✔️] Create ARERR copybook
-- [✔️] Define standard CICS response/error handling
-- [✔️] Define standard pseudo-conversational template
-- [✔️] Define standard ENTER/PF3/CLEAR handling
+### 3. Build Process
+- [x] Create BMS assembly JCL
+- [x] Create COBOL + DB2 precompile JCL
+- [x] Create compile JCL
+- [x] Create DB2 BIND JCL
+- [x] Create link-edit JCL
+- [x] Create complete build JCL
+- [x] Test complete build process
 
-### 4. Main Menu
-- [ ] Create main menu BMS
-- [ ] Create main menu COBOL program
-- [ ] Define main menu CICS transaction
-- [ ] Implement pseudo-conversational flow
-- [ ] Test ENTER/PF3/CLEAR
+### 4. CICS Application Template
+- [x] Create standard pseudo-conversational COBOL template
+- [x] Implement COMMAREA handling
+- [x] Implement SEND MAP
+- [x] Implement RECEIVE MAP
+- [x] Implement ENTER handling
+- [x] Implement PF3 handling
+- [x] Implement CLEAR handling
+- [x] Implement CICS RESP/RESP2 handling
+- [x] Implement DB2 SQLCODE handling
+- [x] Test template
 
-### 5. Passenger Management Menu
-- [✔️] Create MPPF00 BMS
-- [✔️] Create ARPF00 COBOL program
-- [✔️] Define PF00 transaction
-- [✔️] Implement Passenger menu
-- [✔️] Implement navigation to Inquiry
-- [✔️] Implement navigation to Create
-- [✔️] Implement navigation to Update
-- [✔️] Implement PF3 → Main Menu
+### 5. Main Menu
+- [ ] Create Main Menu BMS
+- [ ] Create Main Menu COBOL program
+- [ ] Create Main Menu transaction
+- [ ] Implement navigation
+- [ ] Test PF3 / ENTER / CLEAR
 
-### 6. Passenger Inquiry
-- [✔️] Create MPPF01 BMS
-- [✔️] Generate COBOL BMS copybook
-- [✔️] Create ARPF01 COBOL program
-- [✔️] Define PF01 transaction
-- [✔️] Implement pseudo-conversational flow
-- [✔️] Receive Passenger ID
-- [✔️] Validate Passenger ID
-- [✔️] SELECT passenger from DB2
-- [✔️] Handle SQLCODE = 0
-- [✔️] Handle SQLCODE = +100
-- [✔️] Handle DB2 errors
-- [✔️] Display passenger information
-- [✔️] Implement PF3 → Passenger Menu
+### 6. Passenger
+- [x] Create Passenger Menu BMS
+- [x] Create Passenger Menu COBOL program
+- [x] Create Passenger Menu transaction
 
-### 7. Passenger Create
-- [✔️] Create MPPF02 BMS
-- [✔️] Generate COBOL BMS copybook
-- [✔️] Create ARPF02 COBOL program
-- [✔️] Define PF02 transaction
-- [✔️] Receive passenger information
-- [✔️] Validate input
-- [✔️] INSERT passenger into DB2
-- [✔️] Handle duplicate email
-- [✔️] Handle DB2 errors
-- [✔️] COMMIT transaction
-- [✔️] Display created Passenger ID
-- [✔️] Implement PF3 → Passenger Menu
+- [x] Create Passenger Inquiry BMS
+- [x] Create Passenger Inquiry COBOL program
+- [x] Create Passenger Inquiry transaction
 
-### 8. Passenger Update
-- [✔️] Create MPPF03 BMS
-- [✔️] Generate COBOL BMS copybook
-- [✔️] Create ARPF03 COBOL program
-- [✔️] Define PF03 transaction
-- [✔️] Receive Passenger ID
-- [✔️] SELECT existing passenger
-- [✔️] Display passenger information
-- [✔️] Receive modified information
-- [✔️] Validate input
-- [✔️] UPDATE passenger
-- [✔️] Handle passenger not found
-- [✔️] Handle duplicate email
-- [✔️] Handle DB2 errors
-- [✔️] COMMIT transaction
-- [✔️] Implement PF3 → Passenger Menu
+- [x] Create Passenger Create BMS
+- [x] Create Passenger Create COBOL program
+- [x] Create Passenger Create transaction
 
-### 9. Flight Management
-- [ ] Create Flight menu
-- [ ] Implement Flight inquiry
-- [ ] Implement Flight create
-- [ ] Implement Flight update
-- [ ] Implement Flight search
-- [ ] Implement Flight/aircraft relationship
-- [ ] Implement Flight/airport relationships
+- [x] Create Passenger Update BMS
+- [x] Create Passenger Update COBOL program
+- [x] Create Passenger Update transaction
 
-### 10. Aircraft Management
-- [ ] Create Aircraft menu
-- [ ] Implement Aircraft inquiry
-- [ ] Implement Aircraft create
-- [ ] Implement Aircraft update
+- [x] Test complete Passenger flow
 
-### 11. Seat Management
-- [ ] Implement seat configuration
-- [ ] Implement seat availability inquiry
-- [ ] Implement seat assignment
+### 7. Airport
+- [ ] Create Airport Menu BMS
+- [ ] Create Airport Menu COBOL program
+- [ ] Create Airport Menu transaction
 
-### 12. Reservation Management
-- [ ] Create Reservation menu
-- [ ] Search available flights
-- [ ] Select flight
-- [ ] Select passenger
-- [ ] Display available seats
-- [ ] Assign seat
-- [ ] Create reservation
-- [ ] Handle duplicate/occupied seat
-- [ ] COMMIT reservation
-- [ ] Implement reservation inquiry
-- [ ] Implement reservation cancellation
+- [ ] Create Airport Inquiry
+- [ ] Create Airport Create
+- [ ] Create Airport Update
 
-### 13. Check-in
-- [ ] Create Check-in screen
+- [ ] Test complete Airport flow
+
+### 8. Aircraft
+- [ ] Create Aircraft Menu BMS
+- [ ] Create Aircraft Menu COBOL program
+- [ ] Create Aircraft Menu transaction
+
+- [ ] Create Aircraft Inquiry
+- [ ] Create Aircraft Create
+- [ ] Create Aircraft Update
+
+- [ ] Test complete Aircraft flow
+
+### 9. Flight
+- [ ] Create Flight Menu BMS
+- [ ] Create Flight Menu COBOL program
+- [ ] Create Flight Menu transaction
+
+- [ ] Create Flight Inquiry
+- [ ] Create Flight Create
+- [ ] Create Flight Update
+- [ ] Create Flight Search
+
+- [ ] Test complete Flight flow
+
+### 10. Seat
+- [ ] Create Seat Inquiry
+- [ ] Create Seat Availability
+- [ ] Create Seat Assignment
+- [ ] Test Seat flow
+
+### 11. Reservation
+- [ ] Create Reservation Menu
+- [ ] Create Reservation Search
+- [ ] Create Reservation Create
+- [ ] Create Reservation Inquiry
+- [ ] Create Reservation Cancellation
+- [ ] Test Reservation flow
+
+### 12. Check-in
+- [ ] Create Check-in BMS
+- [ ] Create Check-in COBOL program
+- [ ] Create Check-in transaction
 - [ ] Search reservation
-- [ ] Validate reservation status
-- [ ] Validate passenger
-- [ ] Validate flight
-- [ ] Assign/confirm seat
-- [ ] Update reservation status
-- [ ] COMMIT check-in
+- [ ] Validate reservation
+- [ ] Confirm passenger
+- [ ] Confirm seat
+- [ ] Update reservation
+- [ ] Test Check-in flow
 
-### 14. Boarding
-- [ ] Create Boarding screen
-- [ ] Search reservation
-- [ ] Validate check-in status
-- [ ] Validate passenger
+### 13. Boarding
+- [ ] Create Boarding BMS
+- [ ] Create Boarding COBOL program
+- [ ] Create Boarding transaction
+- [ ] Validate check-in
+- [ ] Confirm passenger
 - [ ] Update boarding status
-- [ ] COMMIT boarding
+- [ ] Test Boarding flow
 
-### 15. Error Handling
-- [ ] Standardize CICS RESP/RESP2 handling
-- [ ] Standardize SQLCODE handling
+### 14. Error Handling
+- [ ] Standardize CICS errors
+- [ ] Standardize DB2 errors
 - [ ] Handle SQLCODE +100
-- [ ] Handle DB2 negative SQLCODEs
+- [ ] Handle negative SQLCODE
 - [ ] Handle MAPFAIL
+- [ ] Handle invalid input
 - [ ] Handle invalid PF keys
-- [ ] Handle invalid user input
 - [ ] Display user-friendly messages
 
-### 16. Transaction Management
-- [ ] Verify COMMIT points
-- [ ] Implement ROLLBACK where required
-- [ ] Test failed transactions
-- [ ] Test partial failures
-- [ ] Verify database consistency
-
-### 17. Testing
-- [ ] Test every BMS screen
-- [ ] Test ENTER
-- [ ] Test PF3
-- [ ] Test CLEAR
-- [ ] Test invalid input
-- [ ] Test missing records
-- [ ] Test duplicate records
-- [ ] Test DB2 errors
-- [ ] Test transaction rollback
-- [ ] Test complete reservation flow
-
-### 18. Final Integration
+### 15. Integration
 - [ ] Main Menu → Passenger
-- [ ] Main Menu → Flight
+- [ ] Main Menu → Airport
 - [ ] Main Menu → Aircraft
+- [ ] Main Menu → Flight
 - [ ] Main Menu → Reservation
+
+- [ ] Passenger → Reservation
+- [ ] Flight → Reservation
 - [ ] Reservation → Check-in
 - [ ] Check-in → Boarding
-- [ ] Verify complete end-to-end flow
-- [ ] Clean up JCL
-- [ ] Document architecture
-- [ ] Document transactions
-- [ ] Document datasets
-- [ ] Document DB2 schema
+
+### 16. Final Testing
+- [ ] Test all transactions
+- [ ] Test all PF keys
+- [ ] Test CLEAR
+- [ ] Test invalid input
+- [ ] Test DB2 errors
+- [ ] Test CICS errors
+- [ ] Test pseudo-conversational flow
+- [ ] Test COMMAREA
+- [ ] Test complete end-to-end reservation flow
