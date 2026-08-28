@@ -347,34 +347,34 @@ ARBD  Boarding
 - [x] Test complete Passenger flow
 
 ### 7. Airport
-- [ ] Create Airport Menu BMS
-- [ ] Create Airport Menu COBOL program
-- [ ] Create Airport Menu transaction
+- [x] Create Airport Menu BMS
+- [x] Create Airport Menu COBOL program
+- [x] Create Airport Menu transaction
 
-- [ ] Create Airport Inquiry
-- [ ] Create Airport Create
-- [ ] Create Airport Update
+- [x] Create Airport Inquiry
+- [x] Create Airport Create
+- [x] Create Airport Update
 
-- [ ] Test complete Airport flow
+- [x] Test complete Airport flow
 
 ### 8. Aircraft
-- [ ] Create Aircraft Menu BMS
-- [ ] Create Aircraft Menu COBOL program
-- [ ] Create Aircraft Menu transaction
+- [x] Create Aircraft Menu BMS
+- [x] Create Aircraft Menu COBOL program
+- [x] Create Aircraft Menu transaction
 
-- [ ] Create Aircraft Inquiry
-- [ ] Create Aircraft Create
-- [ ] Create Aircraft Update
+- [x] Create Aircraft Inquiry
+- [x] Create Aircraft Create
+- [x] Create Aircraft Update
 
-- [ ] Test complete Aircraft flow
+- [x] Test complete Aircraft flow
 
 ### 9. Flight
-- [ ] Create Flight Menu BMS
+- [x] Create Flight Menu BMS
 - [ ] Create Flight Menu COBOL program
-- [ ] Create Flight Menu transaction
+- [x] Create Flight Menu transaction
 
 - [ ] Create Flight Inquiry
-- [ ] Create Flight Create
+- [x] Create Flight Create
 - [ ] Create Flight Update
 - [ ] Create Flight Search
 

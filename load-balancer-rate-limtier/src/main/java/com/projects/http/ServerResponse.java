@@ -45,9 +45,15 @@ public class ServerResponse {
     
     public static ServerResponse notFound(String body) {
         return builder()
-            .status(404, "Bad request")
+            .status(404, "Not found")
             .body(body)
             .build();
+    }
+
+    @Override
+    public String toString() {
+        return "ServerResponse [statusCode=" + statusCode + ", reasonPhrase=" + reasonPhrase + ", headers=" + headers
+                + ", body=" + body + "]";
     }
 
     public static class Builder {
@@ -76,4 +82,6 @@ public class ServerResponse {
             return new ServerResponse(statusCode, reasonPhrase, headers, body);
         }
     }   
+
+
 }

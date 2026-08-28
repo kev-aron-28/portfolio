@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class HttpServerRequestParser {
-    public ServerRequest parse(Socket socket) throws IOException {
+    public static ServerRequest parse(Socket socket) throws IOException {
         BufferedReader reader = new BufferedReader(
             new InputStreamReader(
                 socket.getInputStream(),

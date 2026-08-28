@@ -98,6 +98,9 @@ ON IBMUSER.AIRPORT
     AIRPORT_ID
 );
 
+CREATE UNIQUE INDEX IDX_AIRPORT_CODE
+ON IBMUSER.AIRPORT (CODE);
+
 -- ============================================================
 -- 5. AIRCRAFT
 --
@@ -187,6 +190,11 @@ ON IBMUSER.FLIGHT
 );
 
 
+CREATE SEQUENCE IBMUSER.FLIGHT_SEQ
+    AS INTEGER
+    START WITH 1
+    INCREMENT BY 1
+    NO CYCLE;
 
 -- ============================================================
 -- 8. SEAT

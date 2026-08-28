@@ -147,14 +147,14 @@ Goal: create a basic HTTP server directly on top of Java sockets.
 
 ### Networking
 
-* [ ] Create a `ServerSocket`.
-* [ ] Configure the server port.
-* [ ] Start listening for connections.
-* [ ] Accept a client using `Socket`.
-* [ ] Read bytes from the socket.
-* [ ] Write bytes to the socket.
-* [ ] Close the connection correctly.
-* [ ] Handle socket exceptions.
+* [x] Create a `ServerSocket`.
+* [x] Configure the server port.
+* [x] Start listening for connections.
+* [x] Accept a client using `Socket`.
+* [x] Read bytes from the socket.
+* [x] Write bytes to the socket.
+* [x] Close the connection correctly.
+* [x] Handle socket exceptions.
 
 ### HTTP
 
@@ -242,16 +242,16 @@ HttpResponse
 
 TODO:
 
-* [ ] Create `HttpParser`.
-* [ ] Handle unsupported methods.
-* [ ] Create `HttpRequest`.
-* [ ] Create `HttpResponse`.
-* [ ] Create HTTP serialization logic.
-* [ ] Separate parsing from socket handling.
-* [ ] Support multiple HTTP methods.
-* [ ] Support request bodies.
-* [ ] Correctly calculate `Content-Length`.
-* [ ] Handle empty bodies.
+* [x] Create `HttpParser`.
+* [x] Handle unsupported methods.
+* [x] Create `HttpRequest`.
+* [x] Create `HttpResponse`.
+* [x] Create HTTP serialization logic.
+* [x] Separate parsing from socket handling.
+* [x] Support multiple HTTP methods.
+* [x] Support request bodies.
+* [x] Correctly calculate `Content-Length`.
+* [x] Handle empty bodies.
 
 ---
 
@@ -276,15 +276,15 @@ ServerSocket
 
 TODO:
 
-* [ ] Create one worker per connection.
-* [ ] Test simultaneous clients.
-* [ ] Replace raw threads with `ExecutorService`.
-* [ ] Configure a fixed thread pool.
-* [ ] Understand thread pool saturation.
-* [ ] Handle client disconnects.
-* [ ] Handle socket timeouts.
-* [ ] Handle exceptions inside workers.
-* [ ] Implement graceful shutdown.
+* [x] Create one worker per connection.
+* [x] Test simultaneous clients.
+* [x] Replace raw threads with `ExecutorService`.
+* [x] Configure a fixed thread pool.
+* [x] Understand thread pool saturation.
+* [x] Handle client disconnects.
+* [x] Handle socket timeouts.
+* [x] Handle exceptions inside workers.
+* [x] Implement graceful shutdown.
 
 Target:
 

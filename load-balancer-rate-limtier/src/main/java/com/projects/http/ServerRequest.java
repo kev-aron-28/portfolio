@@ -37,11 +37,13 @@ public class ServerRequest {
         return headers.get(name);
     }
 
+    public String getBody() {
+        return body;
+    }
+
     @Override
     public String toString() {
         return "ServerRequest [method=" + method + ", path=" + path + ", httpVersion=" + httpVersion + ", headers="
                 + headers + ", body=" + body + "]";
-    } 
-
-    
+    }     
 }
