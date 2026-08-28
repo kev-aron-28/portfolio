@@ -1,0 +1,62 @@
+[
+  {
+    "repo": "cobol-transactional-payment-processing",
+    "featured": true,
+    "order": 1
+  },
+  {
+    "repo": "cobol-airline-reservation-system",
+    "featured": true,
+    "order": 2
+  },
+  {
+    "repo": "bms-cics-generator",
+    "title": "BMS CICS Generator",
+    "featured": true,
+    "order": 3
+  },
+  {
+    "repo": "consistent-hashing",
+    "featured": true,
+    "order": 4
+  },
+  {
+    "repo": "knowledge-manager",
+    "featured": true,
+    "order": 5
+  },
+  {
+    "repo": "job-tracker",
+    "featured": true,
+    "order": 6
+  },
+  {
+    "repo": "feature-flag-system"
+  },
+  {
+    "repo": "notification-system"
+  },
+  {
+    "repo": "load-balancer-rate-limtier",
+    "title": "Load Balancer & Rate Limiter"
+  },
+  {
+    "repo": "url-shortener"
+  },
+  {
+    "repo": "rulesengine",
+    "title": "Rules Engine"
+  },
+  {
+    "repo": "terraform-projects/static-website-infra",
+    "title": "Static Website Infrastructure"
+  },
+  {
+    "repo": "terraform-projects/iam-user-managment",
+    "title": "IAM User Management",
+    "description": "Terraform configuration that provisions AWS IAM users, login profiles, and role assignments from YAML."
+  },
+  {
+    "repo": "simulated-car-esp32-can-bus"
+  }
+]
