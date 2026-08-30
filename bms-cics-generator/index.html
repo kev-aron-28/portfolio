@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BMS Generator</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1>BMS Generator</h1>
+      <p class="header-sub">3270 map designer · 24 × 80</p>
+    </header>
+
+    <div class="toolbar">
+      <div class="tool-group" role="group" aria-label="Element tools">
+        <button type="button" class="tool-btn is-active" data-tool="select" title="Select and move elements">Select</button>
+        <button type="button" class="tool-btn" data-tool="text" title="Add protected static text">Text</button>
+        <button type="button" class="tool-btn" data-tool="input" title="Add an unprotected input field">Input</button>
+        <button type="button" class="tool-btn" data-tool="output" title="Add a protected output field">Output</button>
+      </div>
+
+      <div class="toolbar-sep" aria-hidden="true"></div>
+
+      <div class="toolbar-block">
+        <span class="toolbar-label">Components</span>
+        <div class="tool-group" role="group" aria-label="Screen components">
+          <button type="button" id="btn-comp-header" class="tool-btn" title="Add a full-width header with title and subtitle">Header</button>
+          <button type="button" id="btn-comp-footer" class="tool-btn" title="Add a footer rule and horizontal options">Footer</button>
+        </div>
+      </div>
+
+      <div class="toolbar-sep" aria-hidden="true"></div>
+
+      <form class="map-config" autocomplete="off">
+        <label>Mapset <input id="cfg-mapset" type="text" maxlength="8" spellcheck="false" value="MPFT00"></label>
+        <label>Map <input id="cfg-map-name" type="text" maxlength="8" spellcheck="false" value="MPFT00"></label>
+        <label>Screen <input id="cfg-screen-name" type="text" maxlength="8" spellcheck="false" value="SCRN1"></label>
+      </form>
+    </div>
+
+    <div class="workspace">
+      <section class="pane screen-pane" aria-label="3270 screen">
+        <div class="pane-bar">
+          <span class="pane-title">3270 Screen</span>
+          <span id="cursor-pos" class="pane-meta">Row — · Col —</span>
+        </div>
+        <p id="tool-hint" class="tool-hint">Select an element to move it, or choose Text / Input / Output to add one.</p>
+        <div class="screen-scroll">
+          <div class="screen-frame">
+            <div class="corner-cell" aria-hidden="true"></div>
+            <div id="col-ruler" class="col-ruler" aria-hidden="true"></div>
+            <div id="row-ruler" class="row-ruler" aria-hidden="true"></div>
+            <div id="screen-stage" class="screen-stage">
+              <div id="screen-grid" class="screen-grid"></div>
+              <div id="element-layer" class="element-layer"></div>
+              <div id="rubber-band" class="rubber-band is-hidden"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="pane bms-pane" aria-label="Generated BMS source">
+        <div class="pane-bar">
+          <span class="pane-title">BMS Source</span>
+          <div class="pane-actions">
+            <button type="button" id="btn-copy" class="ghost-btn">Copy map</button>
+            <button type="button" id="btn-copy-fields" class="ghost-btn" title="Copy only DFHMDF statements">Copy DFHMDF</button>
+            <button type="button" id="btn-download" class="ghost-btn">Download .bms</button>
+          </div>
+        </div>
+        <div class="bms-scroll">
+          <div class="bms-grid">
+            <div class="bms-gutter-pad" aria-hidden="true"></div>
+            <div class="bms-ruler" aria-hidden="true">
+              <div class="bms-ruler-nums">1        10        20        30        40        50        60        70 72</div>
+              <div class="bms-ruler-ticks">----+----|----+----|----+----|----+----|----+----|----+----|----+----|-|</div>
+            </div>
+            <pre id="bms-lines" class="bms-lines" aria-hidden="true"></pre>
+            <pre id="bms-source" class="bms-source"></pre>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="properties" aria-label="Element properties">
+      <div class="pane-bar">
+        <span class="pane-title">Properties</span>
+        <span id="validation-msg" class="validation-msg" role="status"></span>
+      </div>
+      <div id="properties-body" class="properties-body">
+        <p class="properties-empty">No element selected.</p>
+      </div>
+    </section>
+  </div>
+
+  <div id="modal" class="modal is-hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-backdrop" data-modal-cancel></div>
+    <div class="modal-card">
+      <h2 id="modal-title">New element</h2>
+      <p id="modal-error" class="modal-error" hidden></p>
+      <form id="modal-form" class="modal-form"></form>
+      <div class="modal-actions">
+        <button type="button" class="ghost-btn" data-modal-cancel>Cancel</button>
+        <button type="submit" form="modal-form" class="primary-btn">Place</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/validation.js"></script>
+  <script src="js/elements.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/bms-formatter.js"></script>
+  <script src="js/bms-generator.js"></script>
+  <script src="js/screen.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

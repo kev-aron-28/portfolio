@@ -1,0 +1,300 @@
+/**
+ * Screen model: create, update, and delete 3270 elements.
+ */
+(function (global) {
+  var BMS = global.BMS || {};
+  var nextId = 1;
+
+  function createScreen() {
+    return {
+      rows: 24,
+      columns: 80,
+      mapName: "MPFT00",
+      mapset: "MPFT00",
+      screenName: "SCRN1",
+      elements: []
+    };
+  }
+
+  function createId() {
+    var id = "element-" + nextId;
+    nextId += 1;
+    return id;
+  }
+
+  function clone(element) {
+    var copy = {
+      id: element.id,
+      type: element.type,
+      row: element.row,
+      column: element.column,
+      length: element.length,
+      color: element.color || "GREEN"
+    };
+
+    if (element.type === "text") {
+      copy.value = element.value;
+    } else {
+      copy.name = element.name;
+    }
+
+    if (element.align) {
+      copy.align = element.align;
+    }
+
+    if (element.groupId) {
+      copy.groupId = element.groupId;
+    }
+
+    return copy;
+  }
+
+  function normalizeText(value) {
+    return String(value || "").replace(/\r?\n/g, "");
+  }
+
+  function normalizeName(value) {
+    return String(value || "")
+      .toUpperCase()
+      .trim();
+  }
+
+  function normalizeColor(value) {
+    var color = String(value || "GREEN")
+      .toUpperCase()
+      .trim();
+    return color || "GREEN";
+  }
+
+  function centerColumn(length, columns) {
+    return Math.max(1, Math.floor((columns - length) / 2) + 1);
+  }
+
+  function buildText(row, column, value, extra) {
+    var text = normalizeText(value);
+    var element = {
+      id: createId(),
+      type: "text",
+      row: row,
+      column: column,
+      length: text.length,
+      value: text,
+      color: normalizeColor(extra && extra.color)
+    };
+
+    if (extra && extra.align) {
+      element.align = extra.align;
+      if (element.align === "center") {
+        element.column = centerColumn(element.length, extra.columns || 80);
+      }
+    }
+
+    if (extra && extra.groupId) {
+      element.groupId = extra.groupId;
+    }
+
+    return element;
+  }
+
+  function buildField(type, row, column, name, length, extra) {
+    var element = {
+      id: createId(),
+      type: type,
+      row: row,
+      column: column,
+      length: Number(length),
+      name: normalizeName(name),
+      color: normalizeColor(extra && extra.color)
+    };
+
+    if (extra && extra.groupId) {
+      element.groupId = extra.groupId;
+    }
+
+    return element;
+  }
+
+  function findGroup(screen, groupId) {
+    if (!groupId) {
+      return [];
+    }
+    return (screen.elements || []).filter(function (el) {
+      return el.groupId === groupId;
+    });
+  }
+
+  function findById(screen, id) {
+    for (var i = 0; i < screen.elements.length; i += 1) {
+      if (screen.elements[i].id === id) {
+        return screen.elements[i];
+      }
+    }
+    return null;
+  }
+
+  function findAt(screen, row, column) {
+    for (var i = screen.elements.length - 1; i >= 0; i -= 1) {
+      var el = screen.elements[i];
+      if (el.row === row && column >= el.column && column <= el.column + el.length - 1) {
+        return el;
+      }
+    }
+    return null;
+  }
+
+  function defaultFieldName(screen, type) {
+    var prefix = type === "input" ? "INP" : "OUT";
+    var used = {};
+
+    screen.elements.forEach(function (el) {
+      if (el.name) {
+        used[String(el.name).toUpperCase()] = true;
+      }
+    });
+
+    var n = 1;
+    var name = prefix + n;
+    while (used[name]) {
+      n += 1;
+      name = prefix + n;
+    }
+    return name;
+  }
+
+  function addElement(screen, element) {
+    var errors = BMS.Validation.validatePlacement(element, screen);
+    if (errors.length) {
+      return { ok: false, errors: errors };
+    }
+    screen.elements.push(element);
+    return { ok: true, element: element };
+  }
+
+  function addMany(screen, elements) {
+    var pending = [];
+    var i;
+
+    for (i = 0; i < elements.length; i += 1) {
+      var preview = {
+        rows: screen.rows,
+        columns: screen.columns,
+        mapName: screen.mapName,
+        mapset: screen.mapset,
+        screenName: screen.screenName,
+        elements: screen.elements.concat(pending)
+      };
+      var errors = BMS.Validation.validatePlacement(elements[i], preview);
+      if (errors.length) {
+        return { ok: false, errors: errors };
+      }
+      pending.push(elements[i]);
+    }
+
+    pending.forEach(function (element) {
+      screen.elements.push(element);
+    });
+
+    return { ok: true, elements: pending };
+  }
+
+  function applyPatch(element, patch, screen) {
+    var next = clone(element);
+
+    if (patch.row !== undefined) {
+      next.row = Number(patch.row);
+    }
+    if (patch.column !== undefined) {
+      next.column = Number(patch.column);
+      if (patch.value === undefined) {
+        delete next.align;
+      }
+    }
+    if (patch.length !== undefined) {
+      next.length = Number(patch.length);
+    }
+    if (patch.value !== undefined && next.type === "text") {
+      next.value = normalizeText(patch.value);
+      next.length = next.value.length;
+      if (next.align === "center" && screen) {
+        next.column = centerColumn(next.length, screen.columns);
+      }
+    }
+    if (patch.name !== undefined && next.type !== "text") {
+      next.name = normalizeName(patch.name);
+    }
+    if (patch.color !== undefined) {
+      next.color = normalizeColor(patch.color);
+    }
+
+    return next;
+  }
+
+  function updateElement(screen, id, patch) {
+    var current = findById(screen, id);
+    if (!current) {
+      return { ok: false, errors: ["Element not found."] };
+    }
+
+    var next = applyPatch(current, patch, screen);
+    var errors = BMS.Validation.validatePlacement(next, screen);
+    if (errors.length) {
+      return { ok: false, errors: errors, element: current };
+    }
+
+    current.row = next.row;
+    current.column = next.column;
+    current.length = next.length;
+    current.color = next.color;
+    if (current.type === "text") {
+      current.value = next.value;
+      if (next.align) {
+        current.align = next.align;
+      } else {
+        delete current.align;
+      }
+    } else {
+      current.name = next.name;
+    }
+
+    return { ok: true, element: current };
+  }
+
+  function deleteElement(screen, id) {
+    var index = -1;
+    for (var i = 0; i < screen.elements.length; i += 1) {
+      if (screen.elements[i].id === id) {
+        index = i;
+        break;
+      }
+    }
+
+    if (index === -1) {
+      return { ok: false, errors: ["Element not found."] };
+    }
+
+    screen.elements.splice(index, 1);
+    return { ok: true };
+  }
+
+  BMS.Elements = {
+    createScreen: createScreen,
+    createId: createId,
+    clone: clone,
+    normalizeText: normalizeText,
+    normalizeName: normalizeName,
+    normalizeColor: normalizeColor,
+    buildText: buildText,
+    buildField: buildField,
+    findById: findById,
+    findAt: findAt,
+    findGroup: findGroup,
+    defaultFieldName: defaultFieldName,
+    addElement: addElement,
+    addMany: addMany,
+    centerColumn: centerColumn,
+    updateElement: updateElement,
+    deleteElement: deleteElement
+  };
+
+  global.BMS = BMS;
+})(window);
