@@ -12,6 +12,16 @@
     return "PROT";
   }
 
+  function fieldLabel(element) {
+    if (!element || element.type === "text" || !element.name) {
+      return "";
+    }
+    return String(element.name)
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "")
+      .slice(0, 7);
+  }
+
   function fieldParams(element) {
     var params = [
       "POS=(" + element.row + "," + element.column + ")",
@@ -56,7 +66,7 @@
 
     (screen.elements || []).forEach(function (element) {
       definitions.push({
-        name: "",
+        name: fieldLabel(element),
         opcode: "DFHMDF",
         packed: false,
         params: fieldParams(element)
@@ -86,7 +96,7 @@
 
   function generateField(element) {
     return formatDefinition({
-      name: "",
+      name: fieldLabel(element),
       opcode: "DFHMDF",
       packed: false,
       params: fieldParams(element)
@@ -101,6 +111,7 @@
 
   BMS.Generator = {
     attrbFor: attrbFor,
+    fieldLabel: fieldLabel,
     generateDefinitions: generateDefinitions,
     generate: generate,
     generateField: generateField,

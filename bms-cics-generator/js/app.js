@@ -6,7 +6,8 @@
     screen: BMS.Elements.createScreen(),
     selectedId: null,
     tool: "select",
-    dragging: false
+    dragging: false,
+    previewElements: null
   };
 
   var interaction = null;
@@ -27,9 +28,9 @@
 
   var hints = {
     select: "Select an element to move it, choose Text / Input / Output, or add a Header / Footer component.",
-    text: "Click a start cell on the screen, then enter the protected text.",
-    input: "Click or drag on the screen to place an unprotected input field.",
-    output: "Click or drag on the screen to place a protected output field."
+    text: "Click a start cell, then type. The text appears on the 3270 screen as you type.",
+    input: "Click or drag to size the field. Length and color update live on the screen.",
+    output: "Click or drag to size the field. Length and color update live on the screen."
   };
 
   function showError(message) {
@@ -188,6 +189,41 @@
     return select;
   }
 
+  function alignButtons(current) {
+    var wrap = document.createElement("div");
+    wrap.className = "align-group";
+    [
+      { id: "left", label: "Left" },
+      { id: "center", label: "Center" },
+      { id: "right", label: "Right" }
+    ].forEach(function (item) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "tool-btn" + (current === item.id ? " is-active" : "");
+      btn.textContent = item.label;
+      btn.addEventListener("click", function () {
+        applyProperty("align", item.id);
+        renderProperties();
+      });
+      wrap.appendChild(btn);
+    });
+    return wrap;
+  }
+
+  function alignField(value) {
+    return {
+      name: "align",
+      label: "Align",
+      type: "select",
+      value: value || "left",
+      options: [
+        { value: "left", label: "Left" },
+        { value: "center", label: "Center" },
+        { value: "right", label: "Right" }
+      ]
+    };
+  }
+
   function colorField(value) {
     return {
       name: "color",
@@ -229,7 +265,12 @@
     grid.appendChild(type);
 
     if (el.type !== "text") {
-      grid.appendChild(labeled("Name", inputEl("name", el.name, "wide")));
+      var nameInput = inputEl("name", el.name, "wide");
+      nameInput.maxLength = 7;
+      nameInput.pattern = "[A-Za-z][A-Za-z0-9]{0,6}";
+      nameInput.title = "BMS label in source columns 1-7";
+      nameInput.classList.add("field-name-input");
+      grid.appendChild(labeled("Name (1–7)", nameInput));
     }
 
     var row = inputEl("row", String(el.row), "narrow");
@@ -241,13 +282,24 @@
     var col = inputEl("column", String(el.column), "narrow");
     col.type = "number";
     col.min = "1";
-    col.max = String(state.screen.columns);
-    grid.appendChild(labeled("Column", col));
+    col.max = String(state.screen.columns - 1);
+    grid.appendChild(labeled("POS", col));
+
+    var dataAt = document.createElement("div");
+    dataAt.className = "prop-field";
+    dataAt.id = "prop-data-at";
+    dataAt.innerHTML =
+      "Data at<span class=\"prop-type\">Col " +
+      (el.column + 1) +
+      "–" +
+      (el.column + el.length) +
+      "</span>";
+    grid.appendChild(dataAt);
 
     var length = inputEl("length", String(el.length), "narrow");
     length.type = "number";
     length.min = "1";
-    length.max = String(state.screen.columns);
+    length.max = String(BMS.Validation.maxDataLength(el.column, state.screen.columns));
     if (el.type === "text") {
       length.readOnly = true;
       length.title = "Length is taken from the text.";
@@ -259,6 +311,7 @@
     }
 
     grid.appendChild(labeled("Color", colorSelect(el.color)));
+    grid.appendChild(labeled("Align", alignButtons(el.align)));
 
     var copyField = document.createElement("button");
     copyField.type = "button";
@@ -342,14 +395,23 @@
     BMS.Screen.render(state);
     refreshBms();
 
-    if (name === "value") {
+    if (name === "value" || name === "column" || name === "length" || name === "align") {
       var lengthInput = propertiesBody.querySelector('input[name="length"]');
       var columnInput = propertiesBody.querySelector('input[name="column"]');
+      var dataAt = document.getElementById("prop-data-at");
       if (lengthInput) {
         lengthInput.value = String(result.element.length);
       }
       if (columnInput) {
         columnInput.value = String(result.element.column);
+      }
+      if (dataAt) {
+        dataAt.innerHTML =
+          "Data at<span class=\"prop-type\">Col " +
+          (result.element.column + 1) +
+          "–" +
+          (result.element.column + result.element.length) +
+          "</span>";
       }
     }
   }
@@ -374,11 +436,20 @@
 
   function regionFromDrag(start, end) {
     var finish = end || start;
-    var col = Math.min(start.col, finish.col);
+    var dataCol = Math.min(start.col, finish.col);
+    var lastCol = Math.max(start.col, finish.col);
+    var pos = BMS.Elements.posFromDataColumn(dataCol);
+    var firstData = pos + 1;
+    var length = lastCol - firstData + 1;
+
+    if (length < 1) {
+      length = 1;
+    }
+
     return {
       row: start.row,
-      column: col,
-      length: Math.abs(finish.col - start.col) + 1
+      column: pos,
+      length: length
     };
   }
 
@@ -387,14 +458,124 @@
     modalError.textContent = message || "";
   }
 
+  function fillDots(count) {
+    var out = "";
+    var i;
+    for (i = 0; i < count; i += 1) {
+      out += "·";
+    }
+    return out || "·";
+  }
+
+  function updatePlacementHint(region, label) {
+    if (!region) {
+      toolHint.textContent = hints[state.tool];
+      return;
+    }
+    toolHint.textContent =
+      "Placing " +
+      (label || state.tool) +
+      " · POS=(" +
+      region.row +
+      "," +
+      region.column +
+      ") · data columns " +
+      (region.column + 1) +
+      "–" +
+      (region.column + region.length);
+  }
+
+  function showScreenPreview(elements, hintRegion, hintLabel) {
+    state.previewElements = elements && elements.length ? elements : null;
+    updatePlacementHint(hintRegion, hintLabel);
+    BMS.Screen.render(state);
+  }
+
+  function clearPreview() {
+    state.previewElements = null;
+    toolHint.textContent = hints[state.tool];
+  }
+
+  function ghostField(type, row, column, length, extras) {
+    extras = extras || {};
+    var color = extras.color || (type === "input" ? "TURQUOISE" : type === "output" ? "YELLOW" : "GREEN");
+    var align = BMS.Elements.normalizeAlign(extras.align);
+    var value = extras.value;
+    var fieldLength;
+    var pos = column;
+
+    if (type === "text") {
+      if (!value) {
+        value = fillDots(Math.max(1, length || 1));
+      }
+      fieldLength = value.length;
+      if (align) {
+        pos = BMS.Elements.alignedColumn(align, fieldLength, state.screen.columns);
+      }
+      return {
+        id: "preview-text",
+        type: "text",
+        row: row,
+        column: pos,
+        length: fieldLength,
+        value: value,
+        color: color,
+        align: align || undefined
+      };
+    }
+
+    fieldLength = Math.max(1, Number(length) || 1);
+    if (align) {
+      pos = BMS.Elements.alignedColumn(align, fieldLength, state.screen.columns);
+    }
+    return {
+      id: "preview-" + type,
+      type: type,
+      row: row,
+      column: pos,
+      length: fieldLength,
+      name: BMS.Elements.normalizeFieldName(extras.name || ""),
+      color: color,
+      align: align || undefined
+    };
+  }
+
+  function previewCreateRegion(start, end) {
+    var region = regionFromDrag(start, end);
+    var extras = {};
+    if (state.tool === "input" || state.tool === "output") {
+      extras.name = BMS.Elements.defaultFieldName(state.screen, state.tool);
+    }
+    showScreenPreview(
+      [ghostField(state.tool, region.row, region.column, region.length, extras)],
+      region,
+      state.tool
+    );
+    return region;
+  }
+
+  function readDialogValues(fields) {
+    var values = {};
+    fields.forEach(function (field) {
+      if (modalForm.elements[field.name]) {
+        values[field.name] = modalForm.elements[field.name].value;
+      }
+    });
+    return values;
+  }
+
   function closeModal() {
     modal.classList.add("is-hidden");
     modalForm.innerHTML = "";
     showModalError("");
     modalForm.onsubmit = null;
+    modalForm.oninput = null;
+    modalForm.onchange = null;
+    clearPreview();
+    BMS.Screen.render(state);
   }
 
-  function openDialog(title, fields, onSubmit) {
+  function openDialog(title, fields, onSubmit, onChange) {
     modalTitle.textContent = title;
     modalForm.innerHTML = "";
     showModalError("");
@@ -427,6 +608,12 @@
         if (field.maxlength) {
           input.maxLength = field.maxlength;
         }
+        if (field.pattern) {
+          input.pattern = field.pattern;
+        }
+        if (field.name === "name") {
+          input.classList.add("field-name-input");
+        }
         input.spellcheck = false;
       }
 
@@ -434,21 +621,28 @@
       modalForm.appendChild(label);
     });
 
+    function emitChange() {
+      if (onChange) {
+        onChange(readDialogValues(fields));
+      }
+    }
+
+    modalForm.oninput = emitChange;
+    modalForm.onchange = emitChange;
+
     modalForm.onsubmit = function (event) {
       event.preventDefault();
-      var values = {};
-      fields.forEach(function (field) {
-        values[field.name] = modalForm.elements[field.name].value;
-      });
-      var error = onSubmit(values);
+      var error = onSubmit(readDialogValues(fields));
       if (error) {
         showModalError(error);
         return;
       }
       closeModal();
+      render();
     };
 
     modal.classList.remove("is-hidden");
+    emitChange();
     var first = modalForm.querySelector("input");
     if (first) {
       first.focus();
@@ -460,12 +654,15 @@
     openDialog(
       "Static text",
       [
-        { name: "value", label: "Text", value: "", required: true },
-        colorField("GREEN")
+        { name: "value", label: "Text", value: "", required: true, maxlength: 79 },
+        colorField("GREEN"),
+        alignField("left")
       ],
       function (values) {
         var element = BMS.Elements.buildText(row, column, values.value, {
-          color: values.color
+          color: values.color,
+          align: values.align,
+          columns: state.screen.columns
         });
         var result = BMS.Elements.addElement(state.screen, element);
         if (!result.ok) {
@@ -473,8 +670,19 @@
         }
         state.selectedId = element.id;
         showError("");
-        render();
         return null;
+      },
+      function (values) {
+        var ghost = ghostField("text", row, column, 1, {
+          value: values.value,
+          color: values.color,
+          align: values.align
+        });
+        showScreenPreview([ghost], {
+          row: ghost.row,
+          column: ghost.column,
+          length: ghost.length
+        }, "text");
       }
     );
   }
@@ -487,28 +695,38 @@
       [
         {
           name: "name",
-          label: "Name",
+          label: "Name (cols 1–7)",
           value: BMS.Elements.defaultFieldName(state.screen, type),
           required: true,
-          maxlength: 16
+          maxlength: 7,
+          pattern: "[A-Za-z][A-Za-z0-9]{0,6}"
         },
         {
-          name: "length",
+          name: "fieldLength",
           label: "Length",
           value: String(length),
           required: true,
           type: "number"
         },
-        colorField(type === "input" ? "TURQUOISE" : "YELLOW")
+        colorField(type === "input" ? "TURQUOISE" : "YELLOW"),
+        alignField("left")
       ],
       function (values) {
+        var fieldLength = parseInt(values.fieldLength, 10);
+        if (!Number.isInteger(fieldLength) || fieldLength < 1) {
+          return "Length must be at least 1.";
+        }
         var element = BMS.Elements.buildField(
           type,
           row,
           column,
           values.name,
-          Number(values.length),
-          { color: values.color }
+          fieldLength,
+          {
+            color: values.color,
+            align: values.align,
+            columns: state.screen.columns
+          }
         );
         var result = BMS.Elements.addElement(state.screen, element);
         if (!result.ok) {
@@ -516,8 +734,23 @@
         }
         state.selectedId = element.id;
         showError("");
-        render();
         return null;
+      },
+      function (values) {
+        var fieldLength = parseInt(values.fieldLength, 10);
+        if (!fieldLength || fieldLength < 1) {
+          fieldLength = 1;
+        }
+        var ghost = ghostField(type, row, column, fieldLength, {
+          name: values.name,
+          color: values.color,
+          align: values.align
+        });
+        showScreenPreview([ghost], {
+          row: ghost.row,
+          column: ghost.column,
+          length: ghost.length
+        }, type);
       }
     );
   }
@@ -533,8 +766,15 @@
     state.selectedId = built.elements.length > 1 ? built.elements[1].id : built.elements[0].id;
     setTool("select");
     showError("");
-    render();
     return null;
+  }
+
+  function previewBuilt(built, label, fallbackRegion) {
+    if (!built.ok) {
+      showScreenPreview(null, null, label);
+      return;
+    }
+    showScreenPreview(built.elements, fallbackRegion, label);
   }
 
   function ruleField() {
@@ -544,8 +784,11 @@
       type: "select",
       value: "=",
       options: [
-        { value: "=", label: "=======  equals, full width" },
-        { value: ".", label: ".......  dots, full width" }
+        { value: "=", label: "=======  equals" },
+        { value: ".", label: ".......  dots" },
+        { value: "-", label: "-------  dashes" },
+        { value: "*", label: "*******  asterisks" },
+        { value: "_", label: "_______  underscores" }
       ]
     };
   }
@@ -559,19 +802,59 @@
           label: "Title",
           value: "APPLICATION TITLE",
           required: true,
-          maxlength: 80
+          maxlength: 79
         },
         {
           name: "subtitle",
           label: "Subtitle",
           value: "MAIN MENU",
-          maxlength: 80
+          maxlength: 79
         },
         ruleField(),
         colorField("YELLOW")
       ],
       function (values) {
         return insertComponent(BMS.Components.buildHeader(state.screen, values));
+      },
+      function (values) {
+        previewBuilt(BMS.Components.buildHeader(state.screen, values), "header", {
+          row: 1,
+          column: 1,
+          length: 79
+        });
+      }
+    );
+  }
+
+  function openSeparatorDialog() {
+    openDialog(
+      "Separator",
+      [
+        {
+          name: "row",
+          label: "Row",
+          value: String(BMS.Components.firstFreeRow(state.screen, 5, 21)),
+          required: true,
+          type: "number"
+        },
+        ruleField(),
+        {
+          name: "custom",
+          label: "Other character (optional, 1 character)",
+          value: "",
+          maxlength: 1
+        },
+        colorField("NEUTRAL")
+      ],
+      function (values) {
+        return insertComponent(BMS.Components.buildSeparator(state.screen, values));
+      },
+      function (values) {
+        previewBuilt(BMS.Components.buildSeparator(state.screen, values), "separator", {
+          row: Number(values.row) || 1,
+          column: 1,
+          length: 79
+        });
       }
     );
   }
@@ -591,6 +874,13 @@
       ],
       function (values) {
         return insertComponent(BMS.Components.buildFooter(state.screen, values));
+      },
+      function (values) {
+        previewBuilt(BMS.Components.buildFooter(state.screen, values), "footer", {
+          row: state.screen.rows - 1,
+          column: 1,
+          length: 79
+        });
       }
     );
   }
@@ -601,7 +891,8 @@
       start: cell,
       end: cell
     };
-    render({ start: cell, end: cell });
+    previewCreateRegion(cell, cell);
+    BMS.Screen.render(state, { start: cell, end: cell });
   }
 
   function beginMove(element, event) {
@@ -646,7 +937,6 @@
     var tool = state.tool;
     interaction = null;
     BMS.Screen.hideRubber();
-    render();
 
     if (tool === "text") {
       placeText(region.row, region.column);
@@ -702,6 +992,7 @@
         }
         if (interaction.mode === "create") {
           interaction.end = { row: interaction.start.row, col: cell.col };
+          previewCreateRegion(interaction.start, interaction.end);
           BMS.Screen.render(state, { start: interaction.start, end: interaction.end });
           return;
         }
@@ -740,6 +1031,11 @@
     openFooterDialog();
   });
 
+  document.getElementById("btn-comp-separator").addEventListener("click", function () {
+    setTool("select");
+    openSeparatorDialog();
+  });
+
   function bindHeaderField(id, key) {
     document.getElementById(id).addEventListener("input", function (event) {
       state.screen[key] = BMS.Elements.normalizeName(event.target.value);
@@ -766,6 +1062,7 @@
       if (interaction) {
         interaction = null;
         state.dragging = false;
+        clearPreview();
         render();
       }
       return;

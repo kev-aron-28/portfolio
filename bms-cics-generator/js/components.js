@@ -15,7 +15,11 @@
   }
 
   function ruleChar(value) {
-    return value === "." ? "." : "=";
+    var ch = String(value || "=").charAt(0);
+    if (!ch || /\s/.test(ch)) {
+      return "=";
+    }
+    return ch;
   }
 
   function rowBusy(screen, row) {
@@ -53,16 +57,16 @@
     }
 
     for (i = 0; i < n; i += 1) {
-      if (items[i].length > columns) {
+      if (items[i].length > columns - 1) {
         return {
           ok: false,
-          errors: ["Option \"" + items[i] + "\" exceeds " + columns + " columns."]
+          errors: ["Option \"" + items[i] + "\" exceeds " + (columns - 1) + " data columns."]
         };
       }
       total += items[i].length;
     }
 
-    if (total + Math.max(0, n - 1) > columns) {
+    if (total + Math.max(0, n - 1) > columns - 1) {
       return {
         ok: false,
         errors: ["Footer options do not fit on one " + columns + "-column row."]
@@ -70,18 +74,26 @@
     }
 
     var placements = [];
-    var between = n > 1 ? Math.max(1, Math.floor((columns - total) / (n + 1))) : 0;
+    var between = n > 1 ? Math.max(1, Math.floor((columns - 1 - total) / (n + 1))) : 0;
     var used = total + between * Math.max(0, n - 1);
-    var col = n > 1 ? Math.max(1, Math.floor((columns - used) / 2) + 1) : BMS.Elements.centerColumn(items[0].length, columns);
+    var dataCol = n > 1 ? Math.max(2, Math.floor((columns - used) / 2) + 1) : 0;
 
     if (n === 1) {
-      placements.push({ row: row, column: col, value: items[0] });
+      placements.push({
+        row: row,
+        column: BMS.Elements.centerColumn(items[0].length, columns),
+        value: items[0]
+      });
       return { ok: true, placements: placements };
     }
 
     for (i = 0; i < n; i += 1) {
-      placements.push({ row: row, column: col, value: items[i] });
-      col += items[i].length + between;
+      placements.push({
+        row: row,
+        column: BMS.Elements.posFromDataColumn(dataCol),
+        value: items[i]
+      });
+      dataCol += items[i].length + between;
     }
 
     return { ok: true, placements: placements };
@@ -97,15 +109,16 @@
     nextGroup += 1;
     var extra = { color: color, columns: columns, groupId: groupId };
     var lastRow = subtitle ? 4 : 3;
+    var rule = repeat(ch, columns - 1);
 
     if (!title) {
       return { ok: false, errors: ["Title is required."] };
     }
-    if (title.length > columns) {
-      return { ok: false, errors: ["Title exceeds " + columns + " columns."] };
+    if (title.length > columns - 1) {
+      return { ok: false, errors: ["Title exceeds " + (columns - 1) + " data columns."] };
     }
-    if (subtitle.length > columns) {
-      return { ok: false, errors: ["Subtitle exceeds " + columns + " columns."] };
+    if (subtitle.length > columns - 1) {
+      return { ok: false, errors: ["Subtitle exceeds " + (columns - 1) + " data columns."] };
     }
     if (rangeBusy(screen, 1, lastRow)) {
       return {
@@ -117,7 +130,7 @@
     }
 
     var elements = [
-      BMS.Elements.buildText(1, 1, repeat(ch, columns), extra),
+      BMS.Elements.buildText(1, 1, rule, extra),
       BMS.Elements.buildText(2, 1, title, {
         align: "center",
         columns: columns,
@@ -135,9 +148,9 @@
           groupId: groupId
         })
       );
-      elements.push(BMS.Elements.buildText(4, 1, repeat(ch, columns), extra));
+      elements.push(BMS.Elements.buildText(4, 1, rule, extra));
     } else {
-      elements.push(BMS.Elements.buildText(3, 1, repeat(ch, columns), extra));
+      elements.push(BMS.Elements.buildText(3, 1, rule, extra));
     }
 
     return { ok: true, elements: elements };
@@ -173,20 +186,64 @@
       return laid;
     }
 
-    var elements = [BMS.Elements.buildText(top, 1, repeat(ch, columns), extra)];
+    var rule = repeat(ch, columns - 1);
+    var elements = [BMS.Elements.buildText(top, 1, rule, extra)];
     laid.placements.forEach(function (place) {
       elements.push(BMS.Elements.buildText(place.row, place.column, place.value, extra));
     });
-    elements.push(BMS.Elements.buildText(bot, 1, repeat(ch, columns), extra));
+    elements.push(BMS.Elements.buildText(bot, 1, rule, extra));
 
     return { ok: true, elements: elements };
+  }
+
+  function firstFreeRow(screen, fromRow, toRow) {
+    var start = fromRow || 1;
+    var end = toRow || screen.rows;
+    var row;
+    for (row = start; row <= end; row += 1) {
+      if (!rowBusy(screen, row)) {
+        return row;
+      }
+    }
+    return start;
+  }
+
+  function buildSeparator(screen, options) {
+    var columns = screen.columns;
+    var custom = String(options.custom || "").charAt(0);
+    var ch = custom && !/\s/.test(custom) ? custom : ruleChar(options.rule);
+    var row = Number(options.row);
+    var groupId = "separator-" + nextGroup;
+    nextGroup += 1;
+
+    if (!Number.isInteger(row) || row < 1 || row > screen.rows) {
+      return { ok: false, errors: ["Row must be between 1 and " + screen.rows + "."] };
+    }
+    if (rowBusy(screen, row)) {
+      return {
+        ok: false,
+        errors: ["Row " + row + " already has elements. Choose an empty row."]
+      };
+    }
+
+    return {
+      ok: true,
+      elements: [
+        BMS.Elements.buildText(row, 1, repeat(ch, columns - 1), {
+          color: options.color,
+          groupId: groupId
+        })
+      ]
+    };
   }
 
   BMS.Components = {
     parseOptions: parseOptions,
     layoutHorizontal: layoutHorizontal,
+    firstFreeRow: firstFreeRow,
     buildHeader: buildHeader,
-    buildFooter: buildFooter
+    buildFooter: buildFooter,
+    buildSeparator: buildSeparator
   };
 
   global.BMS = BMS;

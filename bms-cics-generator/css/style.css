@@ -98,9 +98,16 @@ button {
   flex-wrap: wrap;
 }
 
-.tool-group {
+.tool-group,
+.align-group {
   display: flex;
   gap: 6px;
+}
+
+.align-group .tool-btn {
+  padding: 4px 9px;
+  font-size: 12px;
+  text-transform: none;
 }
 
 .toolbar-block {
@@ -351,10 +358,17 @@ button {
 }
 
 .field-ch {
+  position: relative;
+  z-index: 1;
   display: block;
   flex: 0 0 var(--cell-w);
   width: var(--cell-w);
   text-align: center;
+}
+
+.field-attr {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
 .field.is-dragging {
@@ -376,6 +390,33 @@ button {
   color: var(--cics-yellow);
   background: rgba(255, 255, 255, 0.04);
   box-shadow: inset 0 0 0 1px currentColor;
+  overflow: visible;
+}
+
+.field-coverage {
+  position: absolute;
+  z-index: 0;
+  left: var(--cell-w);
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: currentColor;
+  opacity: 0.14;
+  pointer-events: none;
+}
+
+.field-extent {
+  position: absolute;
+  right: 0;
+  top: -12px;
+  padding: 0 3px;
+  border-radius: 2px;
+  background: rgba(18, 20, 26, 0.86);
+  color: inherit;
+  font-size: 9px;
+  line-height: 12px;
+  pointer-events: none;
+  white-space: nowrap;
 }
 
 .field-color-blue {
@@ -411,6 +452,19 @@ button {
   outline-offset: -1px;
   z-index: 2;
   background: rgba(255, 255, 255, 0.06);
+}
+
+.field.is-preview {
+  outline: 1px dashed currentColor;
+  outline-offset: -1px;
+  opacity: 0.92;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.field.is-preview-invalid {
+  outline-color: var(--danger);
+  background: rgba(240, 113, 120, 0.16);
 }
 
 .rubber-band {
@@ -549,8 +603,9 @@ button {
   inset: 0;
   z-index: 20;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding: 16px 16px 20px;
 }
 
 .modal.is-hidden {
@@ -560,7 +615,7 @@ button {
 .modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.18);
 }
 
 .modal-card {
@@ -611,6 +666,10 @@ button {
 
 .modal-form select {
   font-family: var(--sans);
+}
+
+.field-name-input {
+  text-transform: uppercase;
 }
 
 .modal-actions {

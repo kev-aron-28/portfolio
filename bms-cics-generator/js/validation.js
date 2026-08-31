@@ -9,14 +9,26 @@
   var SCREEN_COLS = 80;
   var SOURCE_CONT_COL = 72;
   var SOURCE_MAX_CONTENT = 71;
-  var SOURCE_MAX_CONTINUED = 70;
+  var SOURCE_MAX_CONTINUED = 71;
 
   var LABEL_RE = /^[A-Z][A-Z0-9]{0,7}$/;
-  var FIELD_NAME_RE = /^[A-Z][A-Z0-9-]{0,15}$/;
+  var FIELD_NAME_RE = /^[A-Z][A-Z0-9]{0,6}$/;
   var COLORS = ["BLUE", "GREEN", "NEUTRAL", "PINK", "RED", "TURQUOISE", "YELLOW"];
 
+  /**
+   * 3270 attribute byte sits at POS. Data starts at POS+1 and ends at POS+LENGTH.
+   * A field at POS=(1,1) with LENGTH=79 occupies columns 2-80.
+   */
+  function lastDataColumn(element) {
+    return element.column + element.length;
+  }
+
+  function maxDataLength(column, columns) {
+    return (columns || SCREEN_COLS) - column;
+  }
+
   function elementExtent(element) {
-    return element.column + element.length - 1;
+    return lastDataColumn(element);
   }
 
   function validateElement(element, screen) {
@@ -29,7 +41,7 @@
     }
 
     if (!Number.isInteger(element.column) || element.column < 1 || element.column > cols) {
-      errors.push("Column must be between 1 and " + cols + ".");
+      errors.push("POS column must be between 1 and " + cols + ".");
     }
 
     if (!Number.isInteger(element.length) || element.length < 1) {
@@ -39,18 +51,20 @@
     if (
       Number.isInteger(element.column) &&
       Number.isInteger(element.length) &&
-      elementExtent(element) > cols
+      lastDataColumn(element) > cols
     ) {
       errors.push(
-        "Element does not fit on the screen. Column " +
+        "Field overflows the screen. POS=(" +
+          element.row +
+          "," +
           element.column +
-          " + length " +
-          element.length +
-          " - 1 = " +
-          elementExtent(element) +
-          ", which exceeds " +
-          cols +
-          " columns."
+          ") uses an attribute byte, so data starts at column " +
+          (element.column + 1) +
+          " and ends at column " +
+          lastDataColumn(element) +
+          ". Maximum length here is " +
+          maxDataLength(element.column, cols) +
+          "."
       );
     }
 
@@ -69,7 +83,7 @@
         errors.push("Name is required.");
       } else if (!FIELD_NAME_RE.test(String(element.name).toUpperCase())) {
         errors.push(
-          "Name must start with a letter, use A-Z, 0-9 or hyphen, and be 1-16 characters."
+          "Name must start with a letter, use A-Z and 0-9 only, and be 1-7 characters (BMS label columns 1-7)."
         );
       }
     }
@@ -164,9 +178,8 @@
       }
 
       if (line.length === SOURCE_CONT_COL && line.charAt(SOURCE_CONT_COL - 1) === "X") {
-        var content = line.slice(0, SOURCE_MAX_CONTINUED);
-        if (content.length > SOURCE_MAX_CONTINUED) {
-          errors.push("Source line " + n + " content extends into column 71 before X.");
+        if (line.length > SOURCE_CONT_COL) {
+          errors.push("Source line " + n + " continues past column 72.");
         }
       } else if (line.length > SOURCE_MAX_CONTENT) {
         errors.push(
@@ -187,6 +200,8 @@
     LABEL_RE: LABEL_RE,
     FIELD_NAME_RE: FIELD_NAME_RE,
     COLORS: COLORS,
+    lastDataColumn: lastDataColumn,
+    maxDataLength: maxDataLength,
     elementExtent: elementExtent,
     validateElement: validateElement,
     validateHeader: validateHeader,

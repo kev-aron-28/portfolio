@@ -59,6 +59,13 @@
       .trim();
   }
 
+  function normalizeFieldName(value) {
+    return String(value || "")
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "")
+      .slice(0, 7);
+  }
+
   function normalizeColor(value) {
     var color = String(value || "GREEN")
       .toUpperCase()
@@ -66,8 +73,35 @@
     return color || "GREEN";
   }
 
+  function posFromDataColumn(dataColumn) {
+    return Math.max(1, Number(dataColumn) - 1);
+  }
+
   function centerColumn(length, columns) {
-    return Math.max(1, Math.floor((columns - length) / 2) + 1);
+    var width = columns || 80;
+    var visibleStart = Math.max(2, Math.floor((width - length) / 2) + 1);
+    return posFromDataColumn(visibleStart);
+  }
+
+  function normalizeAlign(value) {
+    var align = String(value || "").toLowerCase();
+    if (align === "left" || align === "center" || align === "right") {
+      return align;
+    }
+    return "";
+  }
+
+  function alignedColumn(align, length, columns) {
+    var width = columns || 80;
+    var len = Number(length) || 1;
+
+    if (align === "right") {
+      return Math.max(1, width - len);
+    }
+    if (align === "center") {
+      return centerColumn(len, width);
+    }
+    return 1;
   }
 
   function buildText(row, column, value, extra) {
@@ -83,9 +117,13 @@
     };
 
     if (extra && extra.align) {
-      element.align = extra.align;
-      if (element.align === "center") {
-        element.column = centerColumn(element.length, extra.columns || 80);
+      element.align = normalizeAlign(extra.align);
+      if (element.align) {
+        element.column = alignedColumn(
+          element.align,
+          element.length,
+          extra.columns || 80
+        );
       }
     }
 
@@ -103,12 +141,23 @@
       row: row,
       column: column,
       length: Number(length),
-      name: normalizeName(name),
+      name: normalizeFieldName(name),
       color: normalizeColor(extra && extra.color)
     };
 
     if (extra && extra.groupId) {
       element.groupId = extra.groupId;
+    }
+
+    if (extra && extra.align) {
+      element.align = normalizeAlign(extra.align);
+      if (element.align) {
+        element.column = alignedColumn(
+          element.align,
+          element.length,
+          extra.columns || 80
+        );
+      }
     }
 
     return element;
@@ -135,7 +184,7 @@
   function findAt(screen, row, column) {
     for (var i = screen.elements.length - 1; i >= 0; i -= 1) {
       var el = screen.elements[i];
-      if (el.row === row && column >= el.column && column <= el.column + el.length - 1) {
+      if (el.row === row && column >= el.column && column <= el.column + el.length) {
         return el;
       }
     }
@@ -205,7 +254,7 @@
     }
     if (patch.column !== undefined) {
       next.column = Number(patch.column);
-      if (patch.value === undefined) {
+      if (patch.align === undefined) {
         delete next.align;
       }
     }
@@ -215,15 +264,22 @@
     if (patch.value !== undefined && next.type === "text") {
       next.value = normalizeText(patch.value);
       next.length = next.value.length;
-      if (next.align === "center" && screen) {
-        next.column = centerColumn(next.length, screen.columns);
-      }
     }
     if (patch.name !== undefined && next.type !== "text") {
-      next.name = normalizeName(patch.name);
+      next.name = normalizeFieldName(patch.name);
     }
     if (patch.color !== undefined) {
       next.color = normalizeColor(patch.color);
+    }
+    if (patch.align !== undefined) {
+      next.align = normalizeAlign(patch.align);
+      if (!next.align) {
+        delete next.align;
+      }
+    }
+
+    if (next.align && screen) {
+      next.column = alignedColumn(next.align, next.length, screen.columns);
     }
 
     return next;
@@ -245,13 +301,13 @@
     current.column = next.column;
     current.length = next.length;
     current.color = next.color;
+    if (next.align) {
+      current.align = next.align;
+    } else {
+      delete current.align;
+    }
     if (current.type === "text") {
       current.value = next.value;
-      if (next.align) {
-        current.align = next.align;
-      } else {
-        delete current.align;
-      }
     } else {
       current.name = next.name;
     }
@@ -282,6 +338,7 @@
     clone: clone,
     normalizeText: normalizeText,
     normalizeName: normalizeName,
+    normalizeFieldName: normalizeFieldName,
     normalizeColor: normalizeColor,
     buildText: buildText,
     buildField: buildField,
@@ -291,7 +348,10 @@
     defaultFieldName: defaultFieldName,
     addElement: addElement,
     addMany: addMany,
+    posFromDataColumn: posFromDataColumn,
     centerColumn: centerColumn,
+    alignedColumn: alignedColumn,
+    normalizeAlign: normalizeAlign,
     updateElement: updateElement,
     deleteElement: deleteElement
   };

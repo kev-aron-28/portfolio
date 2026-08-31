@@ -373,7 +373,7 @@ ARBD  Boarding
 - [ ] Create Flight Menu COBOL program
 - [x] Create Flight Menu transaction
 
-- [ ] Create Flight Inquiry
+- [x] Create Flight Inquiry
 - [x] Create Flight Create
 - [ ] Create Flight Update
 - [ ] Create Flight Search

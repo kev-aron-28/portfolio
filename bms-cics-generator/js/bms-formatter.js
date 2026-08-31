@@ -6,10 +6,9 @@
  *   1-8   name / label
  *   9     opcode (DFHMSD / DFHMDI / DFHMDF)
  *   16    continued parameter / first operand
- *   1-70  content on a continued line
- *   71    padding space before continuation
- *   72    continuation character X
- *   1-71  content on a final (non-continued) line
+ *   1-71  statement content
+ *   72    continuation character X, immediately after column 71
+ *         (no extra space; a pad space inside INITIAL would be another character)
  */
 (function (global) {
   var BMS = global.BMS || {};
@@ -18,7 +17,7 @@
   var OPCODE_COLUMN = 9;
   var PARAM_COLUMN = 16;
   var CONTINUATION_COLUMN = 72;
-  var MAX_CONTINUED_CONTENT = 70;
+  var MAX_CONTINUED_CONTENT = 71;
   var MAX_LAST_CONTENT = 71;
 
   function repeat(ch, count) {
@@ -63,6 +62,7 @@
   function formatName(name) {
     var label = String(name || "")
       .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "")
       .slice(0, NAME_WIDTH);
     return label + spaces(NAME_WIDTH - label.length);
   }

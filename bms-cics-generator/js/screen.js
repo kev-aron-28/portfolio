@@ -139,49 +139,111 @@
       return element.value;
     }
 
-    var fill = element.type === "input" ? "_" : " ";
-    var body = "";
+    if (element.type === "output") {
+      var name = String(element.name || "").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 7);
+      if (!name) {
+        name = "OUT";
+      }
+      var body = name;
+      while (body.length < element.length) {
+        body += " ";
+      }
+      return body.slice(0, element.length);
+    }
+
+    var fill = "_";
+    var out = "";
     var i;
     for (i = 0; i < element.length; i += 1) {
-      body += fill;
+      out += fill;
     }
-    return body;
+    return out;
+  }
+
+  function fieldNode(element, options) {
+    options = options || {};
+    var node = document.createElement("div");
+    var color = String(element.color || "GREEN").toLowerCase();
+    node.className = "field field-" + element.type + " field-color-" + color;
+    node.dataset.id = element.id;
+    node.style.left = (element.column - 1) * cellWidth + "px";
+    node.style.top = (element.row - 1) * cellHeight + "px";
+    node.style.width = (element.length + 1) * cellWidth + "px";
+
+    var attr = document.createElement("span");
+    attr.className = "field-ch field-attr";
+    attr.title = "3270 attribute byte at POS=(" + element.row + "," + element.column + ")";
+    attr.textContent = " ";
+    node.appendChild(attr);
+
+    var text = displayValue(element);
+    var i;
+    for (i = 0; i < element.length; i += 1) {
+      var ch = document.createElement("span");
+      ch.className = "field-ch";
+      ch.textContent = text.charAt(i) || " ";
+      node.appendChild(ch);
+    }
+
+    if (element.type === "output") {
+      var cover = document.createElement("span");
+      cover.className = "field-coverage";
+      cover.setAttribute("aria-hidden", "true");
+      node.appendChild(cover);
+
+      var extent = document.createElement("span");
+      extent.className = "field-extent";
+      extent.textContent =
+        (element.name ? String(element.name).toUpperCase() + " " : "") +
+        "→" +
+        (element.column + element.length);
+      node.appendChild(extent);
+    }
+
+    if (options.selected) {
+      node.classList.add("is-selected");
+    }
+
+    if (options.preview) {
+      node.classList.add("is-preview");
+      if (options.invalid) {
+        node.classList.add("is-preview-invalid");
+      }
+      return node;
+    }
+
+    node.addEventListener("mousedown", function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (callbacks.onElementPointerDown) {
+        callbacks.onElementPointerDown(element, event);
+      }
+    });
+
+    return node;
+  }
+
+  function previewOverflows(element, screen) {
+    var cols = screen && screen.columns ? screen.columns : COLS;
+    return !element.column || !element.length || element.column + element.length > cols;
   }
 
   function renderElements(state) {
     layer.innerHTML = "";
 
     state.screen.elements.forEach(function (element) {
-      var node = document.createElement("div");
-      var color = String(element.color || "GREEN").toLowerCase();
-      node.className = "field field-" + element.type + " field-color-" + color;
-      node.dataset.id = element.id;
-      node.style.left = (element.column - 1) * cellWidth + "px";
-      node.style.top = (element.row - 1) * cellHeight + "px";
-      node.style.width = element.length * cellWidth + "px";
+      layer.appendChild(
+        fieldNode(element, { selected: element.id === state.selectedId })
+      );
+    });
 
-      var text = displayValue(element);
-      var i;
-      for (i = 0; i < element.length; i += 1) {
-        var ch = document.createElement("span");
-        ch.className = "field-ch";
-        ch.textContent = text.charAt(i) || " ";
-        node.appendChild(ch);
-      }
-
-      if (element.id === state.selectedId) {
-        node.classList.add("is-selected");
-      }
-
-      node.addEventListener("mousedown", function (event) {
-        event.preventDefault();
-        event.stopPropagation();
-        if (callbacks.onElementPointerDown) {
-          callbacks.onElementPointerDown(element, event);
-        }
-      });
-
-      layer.appendChild(node);
+    (state.previewElements || []).forEach(function (element) {
+      layer.appendChild(
+        fieldNode(element, {
+          preview: true,
+          invalid: previewOverflows(element, state.screen)
+        })
+      );
     });
   }
 
