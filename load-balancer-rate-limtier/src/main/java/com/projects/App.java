@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import com.projects.balancer.LoadBalancer;
 import com.projects.balancer.LoadBalancingStrategy;
-import com.projects.balancer.load_balancer_strategies.RoundRobin;
+import com.projects.balancer.loadbalancer.RoundRobin;
 
 public class App 
 {

@@ -1,4 +1,4 @@
-package com.projects.balancer.rate_limit_strategies;
+package com.projects.balancer.ratelimit;
 
 public interface RateLimitStrategy {
     public boolean allow(String clientId);

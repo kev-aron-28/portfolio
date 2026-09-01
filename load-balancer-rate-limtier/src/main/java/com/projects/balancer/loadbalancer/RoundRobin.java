@@ -1,4 +1,4 @@
-package com.projects.balancer.load_balancer_strategies;
+package com.projects.balancer.loadbalancer;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
