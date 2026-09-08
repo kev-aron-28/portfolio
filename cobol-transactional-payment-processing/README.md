@@ -1,47 +1,32 @@
-# Overview
+# COBOL Transactional Payment Processing
 
-This project implements a transactional payment processing system inspired by a simplified banking core, developed in a mainframe environment using COBOL, CICS, and DB2.
-The system manages bank accounts and executes financial operations in real time, ensuring data consistency through transactional control (COMMIT / ROLLBACK) and concurrency handling.
+A CICS/DB2 banking lab: accounts, login, deposits, withdrawals, and transfers on a 3270-style flow.
 
-# Objective
-To simulate a high-volume enterprise system that processes critical financial operations while applying mainframe best practices:
-- Real-time OLTP processing
-- Data integrity and consistency
-- Error handling and recovery
-- Separation of concerns
-- Integeration between CICS, COBOL and DB2
+It is a learning system for COBOL, CICS, DB2, and JCL—not a production core. Work is meant for a mainframe or Hercules-style environment.
 
-# Components:
-- CICS: Transaction management and request handling
-- COBOL: Business logic implementation
-- DB2: Data persistence layer
-- JCL: Compilation, binding, and batch execution
+## What exists
 
-# Features
-- Account Management
-    - Create bank accounts
-    - Check account balance
-    - Validate account existence
-- Financial Operations
-    - Deposit
-    - Withdraw
-    - Transfer between accounts
-- Transaction Control
-    - COMMIT / ROLLBACK usage
-    - Sufficient balance validation
-    - Data consistency enforcement
-- Audit Logging
-    - Record all transactions
-    - Timestamp tracking
-    - Source and destination accounts
+Online programs (pseudo-conversational CICS):
 
-# Screens
-There is a maps folder where we define all the mapset definitions 
-Main
+| Program | Role |
+| --- | --- |
+| `MAINMENU` | Menu (login, new account, exit). TRANSID `BANK` |
+| `LOGINM` | Email/password against `USERS`. TRANSID `BLG` |
+| `NEWACCM` | Register a user, then start an account. TRANSID `BNA` |
+| `STRACCM` | Opening balance on `ACCOUNTS_NEW`. TRANSID `BSA` |
+| `PROFM` | Profile and balance. TRANSID `BPA` |
+| `DEPOSITM` | Deposit |
+| `WITHDRAM` | Withdraw with a funds check. TRANSID `BWA` |
+| `TRANSFRM` | Transfer to another account id. TRANSID `BTA` |
 
+BMS maps live in `maps/`. Compile, map assembly, and BIND jobs live in `jcl/`. `sql/main.sql` creates `USERS` and `ACCOUNTS_NEW`.
 
-#  STRACCM
+There is a `TRANSACTIONS` table in SQL; programs do not write audit rows.
 
-1. [TODO] Should verify user exists from DFHCOMMAREA
-2. [DONE] Validate quantity is >= 0
-3. [TODO] create the new account balance = quantity
+## Stack
+
+- Enterprise COBOL
+- CICS
+- DB2
+- BMS
+- JCL

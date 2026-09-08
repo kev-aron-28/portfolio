@@ -1,84 +1,36 @@
-# Explainable Business Rules Engine in Java
+# Rules Engine
 
-A lightweight and deterministic business rules engine implemented in plain Java.  
-The goal of this project is to demonstrate how complex business rules can be externalized from application code, evaluated sequentially, and explained in a transparent and testable way.
+A small Java rules engine that loads rules from a text file, matches them against a typed context, and runs registered actions.
 
-This engine is inspired by enterprise and legacy systems commonly found in banking, insurance, and ERP platforms.
+Conditions and actions are registered in code. The file only names those identifiers; it does not define new Java behavior. There is no HTTP API, no persistence, and no audit log of why a rule fired.
 
----
+## Rule file
 
-## Goals
-
-- Separate business rules from application logic
-- Allow rules to be added or modified without changing core code
-- Provide deterministic and predictable rule execution
-- Make rule execution explainable and auditable
-- Keep the implementation simple and dependency-free
-
-## What is a Rules Engine?
-So instead of hardcoding business logic like:
-
-``` java
-if (task.isOverdue() && task.getPriority() == Priority.HIGH) {
-    task.addScore(10);
-}
-```
-
-You can write an external file with the rules to be matched like this:
-
-```
-RULE OVERDUE_HIGH_PRIORITY
-WHEN is_overdue
-AND priority_is_high
-THEN add_score 10
-```
-
-# Rules of the engine rule file:
-
-## Rule Identifier
-TO start a new rule you must write RULE <ruleId>
-
-```
-RULE <rulId>
-```
-
-## Conditions
-Each line should have a condition with AND or OR and the conditions section starts with
-the WHEN keyword
-Only one condition per line
-```
-RULE <id>
-WHEN <condition>
-OR <condition>
-AND <condition>
-```
-
-## Actions
-And once you write the condition section comes the actions section that starts with the
-THEN keyword, each action to perform must be on a separate THEN 
-
-```
-RULE <id>
-WHEN <condition>
-OR <condition>
-AND <condition>
-THEN <action>
-THEN <action>
-THEN <action>
-```
-
-## Examples
-1. 
-```
-RULE rule_1
-WHEN condition_1
-THEN sum_one
-```
-2. 
 ```
 RULE rule_2
 WHEN condition_one
 AND condition_two
 THEN sum_one
 THEN mult_two
+```
+
+- Start a rule with `RULE <id>`
+- Conditions: `WHEN`, then `AND` / `OR` (one condition per line)
+- Actions: one `THEN` per line
+
+Every matching rule runs, not only the first one. `NOT` exists as a class but is not parsed from the file.
+
+`Main` loads a sample file under `domain/test_rules/` and evaluates a numeric context.
+
+## Stack
+
+- Java 17
+- Maven
+- JUnit 4
+
+## Run
+
+```bash
+mvn test
+mvn exec:java -Dexec.mainClass=com.projects.Main
 ```

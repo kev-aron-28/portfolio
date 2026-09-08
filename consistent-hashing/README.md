@@ -1,33 +1,33 @@
-# Consistent hashing project
+# Consistent Hashing
 
-Build a production-inspired Consistent Hashing Library completely from scratch using plain Java.
+An in-process Java library that models a consistent-hash ring with virtual nodes, replication, and rebalancing.
 
-The objective is to understand the ideas behind systems like:
+It is a learning implementation of ideas used by systems such as Cassandra, DynamoDB, and Redis Cluster. There is no network layer: nodes and storage live in the same JVM.
 
-Cassandra
-DynamoDB
-Riak
-Redis Cluster
-Hazelcast
-Akka Cluster
-Memcached client sharding
+## What it does
 
-Everything should be implemented manually whenever reasonable.
-If Java already provides a primitive (SHA-256, TreeMap, networking, threads), it is perfectly fine to use it.
+- Places keys on a hash ring using SHA-256
+- Maps each physical node to several virtual nodes
+- Looks up the clockwise successor for a key
+- Replicates values across a configurable number of nodes
+- Moves keys when a node joins or leaves (`Rebalancer`)
+- Stores data in memory (`ConcurrentHashMap`)
 
-# Topics
-- Hash functions
-- Ring topology
-- Consistent hashing
-- Virtual nodes
-- Data movement during scaling
-- Load balancing
-- Replication
-- Noe failures
-- Gossip basics
-- Quorum concepts
+A small `App` class demonstrates put/get on a four-node ring.
 
-# Tech stack
-- Language: Java 21
-- Build Tool: maven
-- Testing: JUnit 5
+## What it does not do
+
+Gossip, quorum reads/writes, disk persistence, or RPC between nodes.
+
+## Stack
+
+- Java 17
+- Maven
+- JUnit 5
+
+## Run
+
+```bash
+mvn test
+mvn exec:java -Dexec.mainClass=com.projects.App
+```

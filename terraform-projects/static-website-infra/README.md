@@ -1,26 +1,20 @@
-# Static website project
+# Static Website Infrastructure
 
-## Overview
+Terraform for a private S3 bucket in front of CloudFront, with an ACM certificate in `us-east-1` and Route 53 records used for certificate validation.
 
-This project provisions a production-style static website infrastructure on AWS using Terraform.
+This is an IaC lab, not a full production site pipeline. It does not upload objects to the bucket or create a Route 53 alias from a custom domain to CloudFront.
 
-The goal is not only to deploy a website, but also to learn Infrastructure as Code (IaC) by building and understanding each AWS component individually.
+## Resources
 
-- Amazon S3 for static content storage
-- Amazon CloudFront as the Content Delivery Network (CDN)
-- AWS Certificate Manager (ACM) for HTTPS
-- Amazon Route 53 for DNS management
+- S3 bucket (versioning, public access blocked, AES-256)
+- CloudFront distribution (OAC, HTTPS redirect, GET/HEAD)
+- Bucket policy allowing that distribution
+- ACM certificate and DNS validation records
 
-![infra](./image.png)
+## Learning focus
 
-### Learning objectives
-- S3
-- Cloudfront
-- Route 53
-- AWS certificate manager
-- DNS fundamentals
-- HTTP certificates
-- CDN concepts
-- Static website hosting
-- Bucket policies
+S3, CloudFront, OAC, ACM, DNS validation, bucket policies.
 
+## Layout
+
+Terraform lives in `src/`. Apply from there after setting the variables in `variables.tf`.

@@ -1,20 +1,35 @@
-# Algorithm Study Tracker
+# Knowledge Manager
 
-Algorithm Study Tracker is a personal knowledge management platform designed to help software engineers retain algorithmic knowledge over time.
+A personal study tracker for interview preparation. It stores problems, notes, and solutions, and schedules reviews with spaced repetition.
 
-Instead of acting as an online judge, the application stores solved problems, personal notes, explanations, source code, and review history.
+It is not an online judge: it does not compile or run code.
 
-The system applies spaced repetition techniques to determine when each problem should be reviewed again, helping users build long-term memory instead of repeatedly solving the same problems from scratch.
+## What it does
 
-## Goals
+Server-rendered Spring Boot app (Thymeleaf) with PostgreSQL:
 
-- Organize algorithm topics
-- Register solved problems
-- Store personal solutions
-- Save explanations and notes
-- Track review history
-- Schedule future reviews automatically
-- Visualize learning progress
+- Topics, tags, and algorithm problems (including bulk import)
+- Personal solutions and notes
+- Review sessions using SM-2 (default) or a fixed-interval scheduler
+- Dashboard of items due for review
+- Statistics
+- Behavioral questions and practice
+- System-design notes, practice, and a simple whiteboard save
+- Mock interviews driven by interview profiles
+- Vision boards
 
-The platform does **not** compile or execute code.
-It is a learning and review management system.
+## Stack
+
+- Java 21
+- Spring Boot
+- Thymeleaf
+- PostgreSQL
+- Flyway
+- Docker Compose
+
+## Run
+
+```bash
+docker compose up -d
+./mvnw spring-boot:run
+```
