@@ -244,6 +244,7 @@
 		  method="post"
 		  class="bulk-delete-form"
 		  onsubmit="return confirmBulkDelete(this);">
+		<th:block th:replace="~{fragments/components :: jobListStateFields}"></th:block>
 		<div class="bulk-actions panel mb-3">
 			<div class="bulk-actions-body">
 				<label class="bulk-select-all form-check">
@@ -315,7 +316,8 @@
 								   th:value="${job.id()}" th:attr="data-job-id=${job.id()}">
 						</td>
 						<td class="cell-truncate">
-							<a th:href="@{/jobs/{id}(id=${job.id()})}" th:text="${job.title()}">Title</a>
+							<a th:href="@{/jobs/{id}(id=${job.id()}, keyword=${keyword}, companyName=${companyName}, source=${source}, location=${location}, category=${category}, workMode=${workMode}, employmentType=${employmentType}, minSalary=${minSalary}, maxSalary=${maxSalary}, applicationStatus=${applicationStatus}, onlyUnapplied=${onlyUnapplied}, sortBy=${sortBy}, sortDirection=${sortDirection}, groupBy=${groupBy.param()}, view=${viewMode.param()}, segmentId=${segmentId})}"
+							   th:text="${job.title()}">Title</a>
 						</td>
 						<td th:text="${job.companyName()}">Company</td>
 						<td class="cell-muted" th:text="${job.location() ?: '—'}">—</td>

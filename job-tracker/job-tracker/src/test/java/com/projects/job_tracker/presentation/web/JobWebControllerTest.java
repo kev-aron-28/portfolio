@@ -2,11 +2,13 @@ package com.projects.job_tracker.presentation.web;
 
 import static com.projects.job_tracker.testutil.TestJobs.job;
 import static com.projects.job_tracker.testutil.TestJobs.listing;
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -83,6 +85,19 @@ class JobWebControllerTest {
 	}
 
 	@Test
+	void bulkDeleteFormKeepsTechnologyGrouping() throws Exception {
+		when(listJobListingsUseCase.execute(any())).thenReturn(List.of(
+				listing(1L, "Java Dev", "Acme", "CDMX", "linkedin", BigDecimal.valueOf(30000), BigDecimal.valueOf(50000),
+						Instant.parse("2026-01-01T00:00:00Z"), "https://example.com/1", null)));
+
+		mockMvc.perform(get("/jobs").param("groupBy", "technology"))
+				.andExpect(status().isOk())
+				.andExpect(content().string(containsString("name=\"groupBy\"")))
+				.andExpect(content().string(containsString("value=\"technology\"")))
+				.andExpect(content().string(containsString("groupBy=technology")));
+	}
+
+	@Test
 	void rendersNewJobForm() throws Exception {
 		when(listMarketSegmentsUseCase.execute()).thenReturn(List.of());
 
@@ -144,6 +159,19 @@ class JobWebControllerTest {
 	}
 
 	@Test
+	void deletesJobAndKeepsListGroupingAndFilters() throws Exception {
+		mockMvc.perform(post("/jobs/42/delete")
+						.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+						.param("groupBy", "technology")
+						.param("view", "grouped")
+						.param("keyword", "java")
+						.param("onlyUnapplied", "true"))
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("/jobs?keyword=java&onlyUnapplied=true&groupBy=technology&view=grouped"))
+				.andExpect(flash().attributeExists("successMessage"));
+	}
+
+	@Test
 	void bulkDeletesSelectedJobs() throws Exception {
 		when(deleteJobUseCase.execute(org.mockito.ArgumentMatchers.<java.util.List<Long>>any()))
 				.thenReturn(2);
@@ -153,6 +181,22 @@ class JobWebControllerTest {
 						.param("jobIds", "1", "2"))
 				.andExpect(status().is3xxRedirection())
 				.andExpect(redirectedUrl("/jobs"))
+				.andExpect(flash().attributeExists("successMessage"));
+	}
+
+	@Test
+	void bulkDeletesAndKeepsListGrouping() throws Exception {
+		when(deleteJobUseCase.execute(org.mockito.ArgumentMatchers.<java.util.List<Long>>any()))
+				.thenReturn(1);
+
+		mockMvc.perform(post("/jobs/bulk-delete")
+						.contentType(MediaType.APPLICATION_FORM_URLENCODED)
+						.param("jobIds", "8")
+						.param("groupBy", "technology")
+						.param("view", "grouped")
+						.param("source", "linkedin"))
+				.andExpect(status().is3xxRedirection())
+				.andExpect(redirectedUrl("/jobs?source=linkedin&groupBy=technology&view=grouped"))
 				.andExpect(flash().attributeExists("successMessage"));
 	}
 

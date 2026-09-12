@@ -22,6 +22,25 @@
 
 <span th:fragment="sourceBadge(source)" class="badge source-badge" th:text="${source}">occ</span>
 
+<th:block th:fragment="jobListStateFields">
+	<input type="hidden" name="keyword" th:if="${keyword != null && !#strings.isEmpty(keyword)}" th:value="${keyword}">
+	<input type="hidden" name="companyName" th:if="${companyName != null && !#strings.isEmpty(companyName)}" th:value="${companyName}">
+	<input type="hidden" name="source" th:if="${source != null && !#strings.isEmpty(source)}" th:value="${source}">
+	<input type="hidden" name="location" th:if="${location != null && !#strings.isEmpty(location)}" th:value="${location}">
+	<input type="hidden" name="category" th:if="${category != null && !#strings.isEmpty(category)}" th:value="${category}">
+	<input type="hidden" name="workMode" th:if="${workMode != null && !#strings.isEmpty(workMode)}" th:value="${workMode}">
+	<input type="hidden" name="employmentType" th:if="${employmentType != null && !#strings.isEmpty(employmentType)}" th:value="${employmentType}">
+	<input type="hidden" name="minSalary" th:if="${minSalary != null}" th:value="${minSalary}">
+	<input type="hidden" name="maxSalary" th:if="${maxSalary != null}" th:value="${maxSalary}">
+	<input type="hidden" name="applicationStatus" th:if="${applicationStatus != null}" th:value="${applicationStatus}">
+	<input type="hidden" name="onlyUnapplied" th:if="${onlyUnapplied}" value="true">
+	<input type="hidden" name="segmentId" th:if="${segmentId != null}" th:value="${segmentId}">
+	<input type="hidden" name="sortBy" th:if="${sortBy != null}" th:value="${sortBy}">
+	<input type="hidden" name="sortDirection" th:if="${sortDirection != null}" th:value="${sortDirection}">
+	<input type="hidden" name="groupBy" th:if="${groupBy != null}" th:value="${groupBy.param()}">
+	<input type="hidden" name="view" th:if="${viewMode != null}" th:value="${viewMode.param()}">
+</th:block>
+
 <article th:fragment="jobCard(job)" class="job-card">
 	<label class="job-card-select">
 		<input class="form-check-input job-select" type="checkbox" name="jobIds"
@@ -29,7 +48,9 @@
 		<span class="visually-hidden">Seleccionar vacante</span>
 	</label>
 	<div class="job-card-header">
-		<a class="job-card-title" th:href="@{/jobs/{id}(id=${job.id()})}" th:text="${job.title()}">Title</a>
+		<a class="job-card-title"
+		   th:href="@{/jobs/{id}(id=${job.id()}, keyword=${keyword}, companyName=${companyName}, source=${source}, location=${location}, category=${category}, workMode=${workMode}, employmentType=${employmentType}, minSalary=${minSalary}, maxSalary=${maxSalary}, applicationStatus=${applicationStatus}, onlyUnapplied=${onlyUnapplied}, sortBy=${sortBy}, sortDirection=${sortDirection}, groupBy=${groupBy != null ? groupBy.param() : null}, view=${viewMode != null ? viewMode.param() : null}, segmentId=${segmentId})}"
+		   th:text="${job.title()}">Title</a>
 		<div class="job-card-badges">
 			<span th:replace="~{fragments/components :: sourceBadge(source=${job.source()})}"></span>
 			<span th:if="${job.applicationStatus() != null}"
@@ -63,7 +84,8 @@
 		<span class="job-card-salary cell-muted"
 			  th:if="${job.salaryMin() != null && job.salaryMax() == null}"
 			  th:text="${job.salaryMin()}">—</span>
-		<a class="job-card-link" th:href="@{/jobs/{id}(id=${job.id()})}">Ver detalle</a>
+		<a class="job-card-link"
+		   th:href="@{/jobs/{id}(id=${job.id()}, keyword=${keyword}, companyName=${companyName}, source=${source}, location=${location}, category=${category}, workMode=${workMode}, employmentType=${employmentType}, minSalary=${minSalary}, maxSalary=${maxSalary}, applicationStatus=${applicationStatus}, onlyUnapplied=${onlyUnapplied}, sortBy=${sortBy}, sortDirection=${sortDirection}, groupBy=${groupBy != null ? groupBy.param() : null}, view=${viewMode != null ? viewMode.param() : null}, segmentId=${segmentId})}">Ver detalle</a>
 		<a class="job-card-link" th:if="${job.url() != null}" th:href="${job.url()}" target="_blank" rel="noopener noreferrer">Original</a>
 	</div>
 </article>

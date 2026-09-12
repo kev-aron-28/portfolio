@@ -5,7 +5,7 @@
 	<div th:replace="~{fragments/components :: alerts}"></div>
 	<div class="job-detail-wrap">
 		<nav class="job-detail-nav" aria-label="Navegación de vacante">
-			<a class="job-detail-back" th:href="@{/jobs}">
+			<a class="job-detail-back" th:href="@{${jobListViewState.listPath()}}">
 				<i data-lucide="arrow-left" aria-hidden="true"></i>
 				Vacantes
 			</a>
@@ -16,6 +16,7 @@
 				</a>
 				<form th:action="@{/jobs/{id}/delete(id=${job.id()})}" method="post"
 					  onsubmit="return confirm('¿Eliminar esta vacante? También se borrarán sus postulaciones.');">
+					<th:block th:replace="~{fragments/components :: jobListStateFields}"></th:block>
 					<button type="submit" class="btn btn-sm btn-outline-danger">
 						<i data-lucide="trash-2" aria-hidden="true"></i>
 						Eliminar

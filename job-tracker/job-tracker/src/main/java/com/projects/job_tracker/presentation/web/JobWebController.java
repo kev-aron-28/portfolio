@@ -208,7 +208,7 @@ public class JobWebController {
 	}
 
 	@GetMapping(value = "/{id}", produces = MediaType.TEXT_HTML_VALUE)
-	public String jobDetail(@PathVariable Long id, Model model) {
+	public String jobDetail(@PathVariable Long id, JobListViewState listView, Model model) {
 		JobDetail detail = getJobDetailUseCase.execute(id);
 		JobDetailPresenter.JobDetailView view = JobDetailPresenter.present(detail);
 		model.addAttribute("detail", detail);
@@ -219,6 +219,7 @@ public class JobWebController {
 		model.addAttribute("breadcrumbSection", "jobs");
 		model.addAttribute("pageDescription", view.subtitle());
 		model.addAttribute("detailLayout", true);
+		addListViewAttributes(model, listView);
 		return "jobs/detail";
 	}
 
@@ -232,11 +233,14 @@ public class JobWebController {
 	}
 
 	@PostMapping("/{id}/delete")
-	public String deleteJob(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+	public String deleteJob(
+			@PathVariable Long id,
+			JobListViewState listView,
+			RedirectAttributes redirectAttributes) {
 		try {
 			deleteJobUseCase.execute(id);
 			redirectAttributes.addFlashAttribute("successMessage", "Vacante eliminada.");
-			return "redirect:/jobs";
+			return listView.redirectToList();
 		} catch (RuntimeException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 			return "redirect:/jobs/" + id;
@@ -246,6 +250,7 @@ public class JobWebController {
 	@PostMapping(value = "/bulk-delete", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 	public String bulkDeleteJobs(
 			@RequestParam(required = false) List<Long> jobIds,
+			JobListViewState listView,
 			RedirectAttributes redirectAttributes) {
 		try {
 			int deleted = deleteJobUseCase.execute(jobIds);
@@ -255,7 +260,36 @@ public class JobWebController {
 		} catch (RuntimeException ex) {
 			redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
 		}
-		return "redirect:/jobs";
+		return listView.redirectToList();
+	}
+
+	private void addListViewAttributes(Model model, JobListViewState listView) {
+		model.addAttribute("keyword", listView.keyword());
+		model.addAttribute("source", listView.source());
+		model.addAttribute("location", listView.location());
+		model.addAttribute("companyName", listView.companyName());
+		model.addAttribute("minSalary", listView.minSalary());
+		model.addAttribute("maxSalary", listView.maxSalary());
+		model.addAttribute("workMode", listView.workMode());
+		model.addAttribute("employmentType", listView.employmentType());
+		model.addAttribute("category", listView.category());
+		if (listView.applicationStatus() != null && !listView.applicationStatus().isBlank()) {
+			try {
+				model.addAttribute("applicationStatus", ApplicationStatus.valueOf(listView.applicationStatus()));
+			} catch (IllegalArgumentException ignored) {
+				model.addAttribute("applicationStatus", null);
+			}
+		}
+		model.addAttribute("onlyUnapplied", Boolean.TRUE.equals(listView.onlyUnapplied()));
+		model.addAttribute("segmentId", listView.segmentId());
+		model.addAttribute("sortBy", listView.sortBy());
+		model.addAttribute("sortDirection", listView.sortDirection());
+		if (listView.groupBy() != null && !listView.groupBy().isBlank()) {
+			model.addAttribute("groupBy", JobGroupField.fromParam(listView.groupBy()));
+		}
+		if (listView.view() != null && !listView.view().isBlank()) {
+			model.addAttribute("viewMode", JobListViewMode.fromParam(listView.view()));
+		}
 	}
 
 	private static String blankToNull(String value) {

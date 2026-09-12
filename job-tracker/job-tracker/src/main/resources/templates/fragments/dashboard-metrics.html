@@ -55,27 +55,69 @@
 		<div>
 			<div class="panel h-100">
 				<div class="panel-header">
-					<h2>Postulaciones por estado</h2>
+					<h2>Embudo de postulaciones</h2>
+					<span class="funnel-header-meta" th:if="${metrics.totalApplications() > 0}">
+						<span th:text="${metrics.offerCount()}">0</span>
+						ofertas ·
+						<span th:text="${metrics.offerRatePercent()} + '%'">0%</span>
+					</span>
 				</div>
-				<div class="panel-body" th:if="${!metrics.applicationsByStatus().isEmpty()}">
-					<table class="dist-table">
-						<tbody>
-						<tr th:each="entry : ${metrics.applicationsByStatus()}">
-							<td th:text="${entry.key}">APPLIED</td>
-							<td>
-								<div class="dist-bar">
-									<div class="dist-bar-fill"
-										 th:style="${metrics.totalApplications() > 0}
-											? 'width:' + (${entry.value} * 100 / ${metrics.totalApplications()}) + '%'
-											: 'width:0%'"></div>
+				<div class="panel-body" th:if="${metrics.totalApplications() > 0}">
+					<div class="funnel" role="img" aria-label="Embudo de postulaciones por estado">
+						<div class="funnel-stack">
+							<a class="funnel-stage"
+							   th:each="stage, stageStat : ${metrics.applicationFunnel()}"
+							   th:classappend="|funnel-${#strings.toLowerCase(stage.status().name())}${stage.count() == 0 ? ' funnel-stage--empty' : ''}${stageStat.last ? ' funnel-stage--last' : ''}|"
+							   th:style="|--top: ${stage.displayWidthPercent()}%; --bottom: ${stage.nextWidthPercent()}%|"
+							   th:href="${segment != null}
+									? @{/jobs(applicationStatus=${stage.status()}, segmentId=${segment.id()})}
+									: @{/jobs(applicationStatus=${stage.status()})}"
+							   th:title="${stage.status().label()} + ': ' + ${stage.count()} + ' postulaciones (' + ${stage.sharePercent()} + '%)'">
+								<div class="funnel-visual">
+									<span class="funnel-shape" aria-hidden="true"></span>
+									<span class="funnel-overlay">
+										<span class="funnel-stage-label">
+											<i class="funnel-icon" th:attr="data-lucide=${stage.status().icon()}" aria-hidden="true"></i>
+											<span class="funnel-name" th:text="${stage.status().label()}">Postulado</span>
+										</span>
+										<span class="funnel-metrics">
+											<span class="funnel-count" th:text="${stage.count()}">0</span>
+											<span class="funnel-share" th:text="${stage.sharePercent()} + '%'">0%</span>
+										</span>
+									</span>
 								</div>
-							</td>
-							<td th:text="${entry.value}">0</td>
-						</tr>
-						</tbody>
-					</table>
+								<span class="funnel-conversion"
+									  th:unless="${stageStat.last}"
+									  th:with="next=${metrics.applicationFunnel().get(stageStat.index + 1)}"
+									  th:classappend="${next.count() == 0} ? ' funnel-conversion--empty'"
+									  th:title="'Porcentaje que avanza a ' + ${next.status().label()}">
+									<span th:text="${next.conversionPercent()} + '%'">50%</span>
+								</span>
+							</a>
+						</div>
+						<div class="funnel-outcomes">
+							<p class="funnel-outcomes-title">Salidas del pipeline</p>
+							<div class="funnel-outcomes-grid">
+								<a class="funnel-outcome"
+								   th:each="stage : ${metrics.applicationOutcomes()}"
+								   th:classappend="|funnel-outcome-${#strings.toLowerCase(stage.status().name())}|"
+								   th:href="${segment != null}
+										? @{/jobs(applicationStatus=${stage.status()}, segmentId=${segment.id()})}
+										: @{/jobs(applicationStatus=${stage.status()})}">
+									<span class="funnel-outcome-main">
+										<i class="funnel-outcome-icon" th:attr="data-lucide=${stage.status().icon()}" aria-hidden="true"></i>
+										<span class="funnel-outcome-copy">
+											<span class="funnel-outcome-label" th:text="${stage.status().label()}">Rechazado</span>
+											<span class="funnel-outcome-share" th:text="${stage.sharePercent()} + '% del total'">0% del total</span>
+										</span>
+									</span>
+									<span class="funnel-outcome-count" th:text="${stage.count()}">0</span>
+								</a>
+							</div>
+						</div>
+					</div>
 				</div>
-				<div class="empty-state" th:if="${metrics.applicationsByStatus().isEmpty()}">
+				<div class="empty-state" th:if="${metrics.totalApplications() == 0}">
 					<i data-lucide="clipboard-list" aria-hidden="true"></i>
 					<div>Sin postulaciones registradas.</div>
 				</div>
