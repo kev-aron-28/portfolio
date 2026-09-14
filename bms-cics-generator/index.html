@@ -39,9 +39,35 @@
         <label>Map <input id="cfg-map-name" type="text" maxlength="8" spellcheck="false" value="MPFT00"></label>
         <label>Screen <input id="cfg-screen-name" type="text" maxlength="8" spellcheck="false" value="SCRN1"></label>
       </form>
+
+      <div class="toolbar-sep" aria-hidden="true"></div>
+
+      <div class="toolbar-block">
+        <span class="toolbar-label">Saves</span>
+        <div class="tool-group" role="group" aria-label="Map saves">
+          <button type="button" id="btn-save" class="primary-btn" title="Save this map now">Save</button>
+          <button type="button" id="btn-save-as" class="tool-btn" title="Save a copy under a new name">Save as</button>
+          <button type="button" id="btn-duplicate-map" class="tool-btn" title="Duplicate this map in the same folder">Duplicate</button>
+          <button type="button" id="btn-new-map" class="tool-btn" title="Start a blank map">New</button>
+          <button type="button" id="btn-import-bms" class="tool-btn" title="Build a map by pasting BMS source">Import BMS</button>
+        </div>
+      </div>
     </div>
 
     <div class="workspace">
+      <section class="pane maps-pane" aria-label="Projects and saved maps">
+        <div class="pane-bar">
+          <span class="pane-title">Projects</span>
+          <span id="save-status" class="pane-meta">Not saved</span>
+        </div>
+        <div class="maps-toolbar">
+          <button type="button" id="btn-new-project" class="ghost-btn" title="Create a project">Project</button>
+          <button type="button" id="btn-new-folder" class="ghost-btn" title="Create a folder inside a project">Folder</button>
+          <button type="button" id="btn-new-map-here" class="ghost-btn" title="Create a map in the selected folder">Map</button>
+        </div>
+        <p id="maps-path" class="maps-hint">Select a project or folder. Maps are saved inside it.</p>
+        <div id="maps-list" class="maps-list"></div>
+      </section>
       <section class="pane screen-pane" aria-label="3270 screen">
         <div class="pane-bar">
           <span class="pane-title">3270 Screen</span>
@@ -70,6 +96,15 @@
             <button type="button" id="btn-copy-fields" class="ghost-btn" title="Copy only DFHMDF statements">Copy DFHMDF</button>
             <button type="button" id="btn-download" class="ghost-btn">Download .bms</button>
           </div>
+        </div>
+        <div class="bms-pager">
+          <label class="bms-pager-size">Lines
+            <input id="bms-page-size" type="number" min="1" max="200" value="20" title="How many source lines to copy and scroll at a time">
+          </label>
+          <button type="button" id="btn-page-prev" class="ghost-btn" title="Previous page">Prev</button>
+          <span id="bms-page-meta" class="bms-pager-meta">Page 1/1</span>
+          <button type="button" id="btn-page-next" class="ghost-btn" title="Next page">Next</button>
+          <button type="button" id="btn-copy-page" class="primary-btn" title="Copy the highlighted page, then go to the next">Copy page</button>
         </div>
         <div class="bms-scroll">
           <div class="bms-grid">
@@ -104,16 +139,18 @@
       <form id="modal-form" class="modal-form"></form>
       <div class="modal-actions">
         <button type="button" class="ghost-btn" data-modal-cancel>Cancel</button>
-        <button type="submit" form="modal-form" class="primary-btn">Place</button>
+        <button type="submit" id="modal-submit" form="modal-form" class="primary-btn">Place</button>
       </div>
     </div>
   </div>
 
   <script src="js/validation.js"></script>
   <script src="js/elements.js"></script>
+  <script src="js/storage.js"></script>
   <script src="js/components.js"></script>
   <script src="js/bms-formatter.js"></script>
   <script src="js/bms-generator.js"></script>
+  <script src="js/bms-parser.js"></script>
   <script src="js/screen.js"></script>
   <script src="js/app.js"></script>
 </body>

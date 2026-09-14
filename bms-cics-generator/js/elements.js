@@ -38,6 +38,10 @@
       copy.name = element.name;
     }
 
+    if (element.type === "input") {
+      copy.numeric = !!element.numeric;
+    }
+
     if (element.align) {
       copy.align = element.align;
     }
@@ -64,6 +68,16 @@
       .toUpperCase()
       .replace(/[^A-Z0-9]/g, "")
       .slice(0, 7);
+  }
+
+  function normalizeNumeric(value) {
+    if (value === true || value === 1) {
+      return true;
+    }
+    var text = String(value || "")
+      .toUpperCase()
+      .trim();
+    return text === "NUM" || text === "NUMERIC" || text === "TRUE" || text === "1";
   }
 
   function normalizeColor(value) {
@@ -144,6 +158,10 @@
       name: normalizeFieldName(name),
       color: normalizeColor(extra && extra.color)
     };
+
+    if (type === "input") {
+      element.numeric = normalizeNumeric(extra && extra.numeric);
+    }
 
     if (extra && extra.groupId) {
       element.groupId = extra.groupId;
@@ -271,6 +289,9 @@
     if (patch.color !== undefined) {
       next.color = normalizeColor(patch.color);
     }
+    if (patch.numeric !== undefined && next.type === "input") {
+      next.numeric = normalizeNumeric(patch.numeric);
+    }
     if (patch.align !== undefined) {
       next.align = normalizeAlign(patch.align);
       if (!next.align) {
@@ -311,6 +332,9 @@
     } else {
       current.name = next.name;
     }
+    if (current.type === "input") {
+      current.numeric = !!next.numeric;
+    }
 
     return { ok: true, element: current };
   }
@@ -332,6 +356,42 @@
     return { ok: true };
   }
 
+  function resetIdsFrom(elements) {
+    var max = 0;
+    (elements || []).forEach(function (el) {
+      var match = String(el && el.id ? el.id : "").match(/(\d+)$/);
+      if (match) {
+        max = Math.max(max, Number(match[1]));
+      }
+    });
+    nextId = max + 1;
+  }
+
+  function cloneScreen(screen) {
+    var source = screen || createScreen();
+    return {
+      rows: 24,
+      columns: 80,
+      mapName: normalizeName(source.mapName || "MPFT00"),
+      mapset: normalizeName(source.mapset || source.mapName || "MPFT00"),
+      screenName: normalizeName(source.screenName || "SCRN1"),
+      elements: (source.elements || []).map(function (element) {
+        return clone(element);
+      })
+    };
+  }
+
+  function importScreen(raw) {
+    var screen = cloneScreen(raw && typeof raw === "object" ? raw : createScreen());
+    resetIdsFrom(screen.elements);
+    screen.elements.forEach(function (element) {
+      if (!element.id) {
+        element.id = createId();
+      }
+    });
+    return screen;
+  }
+
   BMS.Elements = {
     createScreen: createScreen,
     createId: createId,
@@ -339,6 +399,7 @@
     normalizeText: normalizeText,
     normalizeName: normalizeName,
     normalizeFieldName: normalizeFieldName,
+    normalizeNumeric: normalizeNumeric,
     normalizeColor: normalizeColor,
     buildText: buildText,
     buildField: buildField,
@@ -353,7 +414,9 @@
     alignedColumn: alignedColumn,
     normalizeAlign: normalizeAlign,
     updateElement: updateElement,
-    deleteElement: deleteElement
+    deleteElement: deleteElement,
+    cloneScreen: cloneScreen,
+    importScreen: importScreen
   };
 
   global.BMS = BMS;

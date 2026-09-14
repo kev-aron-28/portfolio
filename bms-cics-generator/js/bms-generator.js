@@ -5,11 +5,36 @@
 (function (global) {
   var BMS = global.BMS || {};
 
-  function attrbFor(element) {
-    if (element.type === "input") {
-      return "UNPROT";
+  function firstInput(screen) {
+    var list = Array.isArray(screen) ? screen : (screen && screen.elements) || [];
+    var i;
+    for (i = 0; i < list.length; i += 1) {
+      if (list[i] && list[i].type === "input") {
+        return list[i];
+      }
     }
-    return "PROT";
+    return null;
+  }
+
+  function isInitialCursor(element, screen) {
+    var first = firstInput(screen);
+    return !!(first && element && first.id === element.id);
+  }
+
+  function attrbFor(element, screen) {
+    if (element.type !== "input") {
+      return "PROT";
+    }
+
+    var parts = ["UNPROT"];
+    if (element.numeric) {
+      parts.push("NUM");
+    }
+    if (isInitialCursor(element, screen)) {
+      parts.push("IC");
+    }
+    parts.push("FSET");
+    return "(" + parts.join(",") + ")";
   }
 
   function fieldLabel(element) {
@@ -22,11 +47,11 @@
       .slice(0, 7);
   }
 
-  function fieldParams(element) {
+  function fieldParams(element, screen) {
     var params = [
       "POS=(" + element.row + "," + element.column + ")",
       "LENGTH=" + element.length,
-      "ATTRB=" + attrbFor(element),
+      "ATTRB=" + attrbFor(element, screen),
       "COLOR=" + (element.color || "GREEN").toUpperCase()
     ];
 
@@ -60,7 +85,12 @@
         name: mapName,
         opcode: "DFHMDI",
         packed: true,
-        params: ["SIZE=(" + screen.rows + "," + screen.columns + ")", "LINE=1", "COLUMN=1"]
+        params: [
+          "SIZE=(" + screen.rows + "," + screen.columns + ")",
+          "LINE=1",
+          "COLUMN=1",
+          "MAPATTS=COLOR"
+        ]
       }
     ];
 
@@ -69,7 +99,7 @@
         name: fieldLabel(element),
         opcode: "DFHMDF",
         packed: false,
-        params: fieldParams(element)
+        params: fieldParams(element, screen)
       });
     });
 
@@ -94,22 +124,25 @@
     return generateDefinitions(screen).map(formatDefinition).join("\n\n") + "\n";
   }
 
-  function generateField(element) {
+  function generateField(element, screen) {
     return formatDefinition({
       name: fieldLabel(element),
       opcode: "DFHMDF",
       packed: false,
-      params: fieldParams(element)
+      params: fieldParams(element, screen)
     }) + "\n";
   }
 
-  function generateFields(elements) {
+  function generateFields(elements, screen) {
+    var context = screen || { elements: elements || [] };
     return (elements || []).map(function (element) {
-      return generateField(element).replace(/\n$/, "");
+      return generateField(element, context).replace(/\n$/, "");
     }).join("\n\n") + "\n";
   }
 
   BMS.Generator = {
+    firstInput: firstInput,
+    isInitialCursor: isInitialCursor,
     attrbFor: attrbFor,
     fieldLabel: fieldLabel,
     generateDefinitions: generateDefinitions,

@@ -7,8 +7,8 @@
 
   var ROWS = 24;
   var COLS = 80;
-  var cellWidth = 11;
-  var cellHeight = 18;
+  var cellWidth = 16;
+  var cellHeight = 24;
 
   var stage;
   var grid;
