@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content">
+  <div class="wr">
+    <header class="wr-header">
+      <div class="wr-header-main">
+        <div class="wr-eyebrow">
+          <span>Practice report</span>
+          <span class="wr-dot" aria-hidden="true"></span>
+          <span th:text="${report.currentWeek()} ? 'Current week' : 'Historical week'">Current week</span>
+        </div>
+        <h1 class="wr-title">Weekly summary</h1>
+        <p class="wr-period" th:text="${report.rangeLabel()}">Mar 10 – 16, 2026</p>
+        <p class="wr-lead" th:text="|${report.headline()}. ${report.summaryLine()}|">
+          Solid progress this week.
+        </p>
+      </div>
+      <div class="wr-controls" role="group" aria-label="Week navigation">
+        <a class="wr-ctrl"
+           th:href="@{/reports/weekly(week=${report.weekOffset() - 1})}"
+           title="Previous week">
+          <i class="bi bi-chevron-left"></i>
+        </a>
+        <a class="wr-ctrl wr-ctrl-label"
+           th:if="${!report.currentWeek()}"
+           th:href="@{/reports/weekly(week=0)}">This week</a>
+        <span class="wr-ctrl wr-ctrl-label is-current" th:if="${report.currentWeek()}">This week</span>
+        <a class="wr-ctrl"
+           th:if="${report.weekOffset() < 0}"
+           th:href="@{/reports/weekly(week=${report.weekOffset() + 1})}"
+           title="Next week">
+          <i class="bi bi-chevron-right"></i>
+        </a>
+        <span class="wr-ctrl is-disabled" th:if="${report.weekOffset() >= 0}" aria-disabled="true">
+          <i class="bi bi-chevron-right"></i>
+        </span>
+      </div>
+    </header>
+
+    <section class="wr-kpis" aria-label="Key metrics">
+      <div class="wr-kpi">
+        <div class="wr-kpi-value" th:text="${report.totalSessions()}">0</div>
+        <div class="wr-kpi-label">Sessions</div>
+      </div>
+      <div class="wr-kpi">
+        <div class="wr-kpi-value" th:text="${report.totalMinutes()}">0</div>
+        <div class="wr-kpi-label">Minutes</div>
+      </div>
+      <div class="wr-kpi">
+        <div class="wr-kpi-value" th:text="${report.activeDays()}">0</div>
+        <div class="wr-kpi-label">Active days</div>
+      </div>
+      <div class="wr-kpi">
+        <div class="wr-kpi-value" th:text="${report.averageRating() > 0 ? report.averageRating() : '—'}">—</div>
+        <div class="wr-kpi-label">Avg rating</div>
+      </div>
+    </section>
+
+    <section class="wr-panel">
+      <div class="wr-panel-head">
+        <h2 class="wr-panel-title">Weekly activity</h2>
+        <span class="wr-panel-meta">Monday – Sunday</span>
+      </div>
+      <div class="wr-weekgrid">
+        <div class="wr-weekday"
+             th:each="day : ${report.days()}"
+             th:classappend="${(day.today() ? ' is-today' : '') + (day.future() ? ' is-future' : '') + (day.sessionCount() == 0 and !day.future() ? ' is-idle' : '')}">
+          <div class="wr-weekday-name" th:text="${day.shortLabel()}">Mon</div>
+          <div class="wr-weekday-date" th:text="${#temporals.format(day.date(), 'd')}">10</div>
+          <div class="wr-weekday-meter" aria-hidden="true">
+            <span th:style="'width:' + ${(day.intensity() * 25)} + '%'"></span>
+          </div>
+          <div class="wr-weekday-count"
+               th:text="${(day.future() or day.sessionCount() == 0) ? '—' : day.sessionCount()}">—</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="wr-layout">
+      <div class="wr-main">
+        <section class="wr-panel" th:if="${!report.hasActivity()}">
+          <div class="wr-empty">
+            <h2 class="wr-panel-title">No activity recorded</h2>
+            <p>
+              This report aggregates algorithm reviews, behavioral practice,
+              system design sessions, and mock interviews logged during the selected week.
+            </p>
+            <div class="wr-empty-actions">
+              <a class="btn btn-sm btn-primary" th:href="@{/dashboard}">Go to dashboard</a>
+              <a class="btn btn-sm btn-outline-secondary" th:href="@{/problems}">Browse problems</a>
+            </div>
+          </div>
+        </section>
+
+        <section class="wr-panel" th:if="${report.hasActivity()}">
+          <div class="wr-panel-head">
+            <h2 class="wr-panel-title">Activity log</h2>
+            <span class="wr-panel-meta" th:text="${report.totalSessions()} + ' sessions'">0 sessions</span>
+          </div>
+
+          <div class="wr-day" th:each="day : ${report.days()}" th:if="${!day.future()}">
+            <div class="wr-day-head">
+              <div class="wr-day-title">
+                <span th:text="${day.dayLabel()}">Monday</span>
+                <span class="wr-day-date" th:text="${#temporals.format(day.date(), 'MMM d')}">Mar 10</span>
+                <span class="wr-pill" th:if="${day.today()}">Today</span>
+              </div>
+              <div class="wr-day-meta"
+                   th:if="${day.sessionCount() > 0}"
+                   th:text="|${day.sessionCount()} session${day.sessionCount() == 1 ? '' : 's'} · ${day.durationMinutes()} min|">
+                2 sessions · 40 min
+              </div>
+            </div>
+
+            <div class="wr-idle" th:if="${day.sessionCount() == 0}">No sessions</div>
+
+            <table class="wr-table" th:if="${day.sessionCount() > 0}">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Item</th>
+                  <th class="wr-num">Rating</th>
+                  <th class="wr-num">Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="entry : ${day.entries()}">
+                  <td>
+                    <span class="wr-type" th:classappend="' is-' + ${entry.kind().cssClass}"
+                          th:text="${entry.kind().label}">Algorithms</span>
+                  </td>
+                  <td>
+                    <a class="wr-item-link" th:href="${entry.href()}" th:text="${entry.title()}">Two Sum</a>
+                    <div class="wr-item-sub" th:text="${entry.subtitle()}">Arrays</div>
+                  </td>
+                  <td class="wr-num" th:text="${entry.rating() != null ? entry.rating() : '—'}">4</td>
+                  <td class="wr-num"
+                      th:text="${entry.durationMinutes() > 0 ? entry.durationMinutes() + 'm' : '—'}">12m</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <aside class="wr-aside">
+        <section class="wr-panel" th:if="${!#lists.isEmpty(report.breakdown())}">
+          <div class="wr-panel-head">
+            <h2 class="wr-panel-title">Composition</h2>
+          </div>
+          <ul class="wr-comp">
+            <li th:each="item : ${report.breakdown()}">
+              <div class="wr-comp-row">
+                <span th:text="${item.kind().label}">Algorithms</span>
+                <span class="wr-comp-val"
+                      th:text="|${item.sessions()} · ${item.durationMinutes()}m|">3 · 40m</span>
+              </div>
+              <div class="wr-comp-track">
+                <span th:style="'width:' + ${item.barWidth()} + '%'"></span>
+              </div>
+              <div class="wr-comp-note" th:if="${item.averageRating() > 0}"
+                   th:text="'Average rating ' + ${item.averageRating()}">Average rating 4.2</div>
+            </li>
+          </ul>
+        </section>
+
+        <section class="wr-panel" th:if="${!#lists.isEmpty(report.topTopics())}">
+          <div class="wr-panel-head">
+            <h2 class="wr-panel-title">Topics</h2>
+          </div>
+          <table class="wr-mini-table">
+            <tbody>
+              <tr th:each="topic : ${report.topTopics()}">
+                <td>
+                  <span class="wr-topic-swatch" th:style="'background:' + ${topic.color()}"></span>
+                  <span th:text="${topic.name()}">Arrays</span>
+                </td>
+                <td class="wr-num" th:text="${topic.sessions()}">2</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="wr-panel" th:if="${!#lists.isEmpty(report.highlights())}">
+          <div class="wr-panel-head">
+            <h2 class="wr-panel-title">Highest rated</h2>
+          </div>
+          <ol class="wr-ranked">
+            <li th:each="entry : ${report.highlights()}">
+              <div class="wr-ranked-main">
+                <a th:href="${entry.href()}" th:text="${entry.title()}">Title</a>
+                <span th:text="${entry.kind().label}">Algorithms</span>
+              </div>
+              <div class="wr-ranked-score" th:if="${entry.rating() != null}" th:text="${entry.rating()}">5</div>
+            </li>
+          </ol>
+        </section>
+
+        <section class="wr-panel wr-panel-muted">
+          <div class="wr-panel-head">
+            <h2 class="wr-panel-title">Scope</h2>
+          </div>
+          <p class="wr-footnote">
+            Includes algorithm reviews, behavioral practices, system design sessions,
+            and mock interviews. Vision skill-tree training is not included.
+          </p>
+        </section>
+      </aside>
+    </div>
+  </div>
+</div>
+</body>
+</html>

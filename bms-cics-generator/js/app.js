@@ -1087,6 +1087,24 @@
     };
   }
 
+  function fieldTypeSelect(type) {
+    var select = document.createElement("select");
+    select.name = "type";
+    [
+      { value: "input", label: "Input" },
+      { value: "output", label: "Output" }
+    ].forEach(function (option) {
+      var opt = document.createElement("option");
+      opt.value = option.value;
+      opt.textContent = option.label;
+      if (option.value === type) {
+        opt.selected = true;
+      }
+      select.appendChild(opt);
+    });
+    return select;
+  }
+
   function labeled(labelText, control) {
     var wrap = document.createElement("label");
     wrap.className = "prop-field";
@@ -1110,10 +1128,14 @@
     var grid = document.createElement("div");
     grid.className = "prop-grid";
 
-    var type = document.createElement("div");
-    type.className = "prop-field";
-    type.innerHTML = "Type<span class=\"prop-type\">" + typeLabel(el.type) + "</span>";
-    grid.appendChild(type);
+    if (el.type === "input" || el.type === "output") {
+      grid.appendChild(labeled("Type", fieldTypeSelect(el.type)));
+    } else {
+      var type = document.createElement("div");
+      type.className = "prop-field";
+      type.innerHTML = "Type<span class=\"prop-type\">" + typeLabel(el.type) + "</span>";
+      grid.appendChild(type);
+    }
 
     if (el.type !== "text") {
       var nameInput = inputEl("name", el.name, "wide");
@@ -1161,8 +1183,10 @@
       grid.appendChild(labeled("Value", inputEl("value", el.value, "wide")));
     }
 
-    if (el.type === "input") {
-      grid.appendChild(labeled("Data type", dataTypeSelect(el.numeric)));
+    if (el.type === "input" || el.type === "output") {
+      if (el.type === "input") {
+        grid.appendChild(labeled("Data type", dataTypeSelect(el.numeric)));
+      }
       var attrb = document.createElement("div");
       attrb.className = "prop-field";
       attrb.id = "prop-attrb";
@@ -1210,7 +1234,15 @@
 
     grid.addEventListener("input", function (event) {
       var target = event.target;
-      if (!target.name || target.readOnly) {
+      if (!target.name || target.readOnly || target.tagName === "SELECT") {
+        return;
+      }
+      applyProperty(target.name, target.value);
+    });
+
+    grid.addEventListener("change", function (event) {
+      var target = event.target;
+      if (!target.name || target.tagName !== "SELECT") {
         return;
       }
       applyProperty(target.name, target.value);
@@ -1229,7 +1261,8 @@
         name: current.name,
         value: current.value,
         color: current.color,
-        numeric: current.numeric ? "NUM" : "CHAR"
+        numeric: current.numeric ? "NUM" : "CHAR",
+        type: current.type
       };
       if (live[field] !== undefined) {
         event.target.value = String(live[field]);
@@ -1256,6 +1289,10 @@
     }
 
     showError("");
+    if (name === "type") {
+      render();
+      return;
+    }
     BMS.Screen.render(state);
     refreshBms();
 

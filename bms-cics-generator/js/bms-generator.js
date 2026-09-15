@@ -6,7 +6,9 @@
   var BMS = global.BMS || {};
 
   function firstInput(screen) {
-    var list = Array.isArray(screen) ? screen : (screen && screen.elements) || [];
+    var list = BMS.Elements.sortedElements(
+      Array.isArray(screen) ? screen : (screen && screen.elements) || []
+    );
     var i;
     for (i = 0; i < list.length; i += 1) {
       if (list[i] && list[i].type === "input") {
@@ -94,7 +96,7 @@
       }
     ];
 
-    (screen.elements || []).forEach(function (element) {
+    BMS.Elements.sortedElements(screen.elements || []).forEach(function (element) {
       definitions.push({
         name: fieldLabel(element),
         opcode: "DFHMDF",
@@ -134,8 +136,9 @@
   }
 
   function generateFields(elements, screen) {
-    var context = screen || { elements: elements || [] };
-    return (elements || []).map(function (element) {
+    var list = BMS.Elements.sortedElements(elements || []);
+    var context = screen || { elements: list };
+    return list.map(function (element) {
       return generateField(element, context).replace(/\n$/, "");
     }).join("\n\n") + "\n";
   }

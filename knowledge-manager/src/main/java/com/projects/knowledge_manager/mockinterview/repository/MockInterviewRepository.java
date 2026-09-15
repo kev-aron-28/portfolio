@@ -89,4 +89,14 @@ public interface MockInterviewRepository extends JpaRepository<MockInterview, Lo
       WHERE i.finishedAt IS NOT NULL
       """)
   long sumFinishedQuestions();
+
+  @Query(
+      """
+      SELECT i FROM MockInterview i
+      WHERE i.startedAt >= :startInclusive
+        AND i.startedAt < :endExclusive
+      ORDER BY i.startedAt DESC
+      """)
+  List<MockInterview> findByStartedAtBetweenOrderByStartedAtDesc(
+      @Param("startInclusive") Instant startInclusive, @Param("endExclusive") Instant endExclusive);
 }

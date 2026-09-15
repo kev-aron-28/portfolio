@@ -1,0 +1,153 @@
+MPFT03  DFHMSD TYPE=MAP,STORAGE=AUTO,LANG=COBOL,TIOAPFX=YES,TERM=3270, X
+               CTRL=FREEKB,MODE=INOUT                                   
+SCRN1   DFHMDI SIZE=(24,80),LINE=1,COLUMN=1,MAPATTS=COLOR               
+        DFHMDF POS=(1,1),                                              X
+               LENGTH=79,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=BLUE,                                             X
+               INITIAL='===============================================X
+               ================================'                        
+        DFHMDF POS=(2,27),                                             X
+               LENGTH=26,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=BLUE,                                             X
+               INITIAL='AIRLINE RESERVATION SYSTEM'                     
+        DFHMDF POS=(3,34),                                             X
+               LENGTH=11,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=BLUE,                                             X
+               INITIAL='SEARCH MENU'                                    
+        DFHMDF POS=(4,1),                                              X
+               LENGTH=79,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=BLUE,                                             X
+               INITIAL='===============================================X
+               ================================'                        
+        DFHMDF POS=(6,4),                                              X
+               LENGTH=4,                                               X
+               ATTRB=PROT,                                             X
+               COLOR=GREEN,                                            X
+               INITIAL='ORG:'                                           
+ORG     DFHMDF POS=(6,9),                                              X
+               LENGTH=3,                                               X
+               ATTRB=(UNPROT,FSET)                                     X
+               COLOR=GREEN                                              
+        DFHMDF POS=(6,15),                                             X
+               LENGTH=4,                                               X
+               ATTRB=PROT,                                             X
+               COLOR=GREEN,                                            X
+               INITIAL='DST:'                                           
+DST     DFHMDF POS=(6,20),                                             X
+               LENGTH=3,                                               X
+               ATTRB=(UNPROT,FSET),                                    X
+               COLOR=GREEN                                              
+        DFHMDF POS=(6,26),                                             X
+               LENGTH=10,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=GREEN,                                            X
+               INITIAL='DEPARTURE:'                                     
+        DFHMDF POS=(5,37),                                             X
+               LENGTH=10,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=GREEN,                                            X
+               INITIAL='YYYY-MM-DD'                                     
+DPT     DFHMDF POS=(6,37),                                             X
+               LENGTH=10,                                              X
+               ATTRB=(UNPROT,FSET),                                    X
+               COLOR=GREEN                                              
+        DFHMDF POS=(8,10),                                             X
+               LENGTH=59,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=NEUTRAL,                                          X
+               INITIAL='---------- --- --- ---------------- -----------X
+               ----- ------'                                            
+        DFHMDF POS=(9,10),                                             X
+               LENGTH=59,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=NEUTRAL,                                          X
+               INITIAL='FLIGHT     ORG DST DEPARTURE        ARRIVAL    X
+                     STATUS'                                            
+        DFHMDF POS=(10,10),                                            X
+               LENGTH=59,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=NEUTRAL,                                          X
+               INITIAL='---------- --- --- ---------------- -----------X
+               ----- ------'                                            
+ROW1    DFHMDF POS=(11,10),                                            X
+               LENGTH=59,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=NEUTRAL                                            
+ROW2    DFHMDF POS=(12,10),                                            X
+               LENGTH=59,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=NEUTRAL                                            
+ROW3    DFHMDF POS=(13,10),                                            X
+               LENGTH=59,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=NEUTRAL                                            
+ROW4    DFHMDF POS=(14,10),                                            X
+               LENGTH=59,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=NEUTRAL                                            
+ROW5    DFHMDF POS=(15,10),                                            X
+               LENGTH=59,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=NEUTRAL                                            
+ROW6    DFHMDF POS=(16,10),                                            X
+               LENGTH=59,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=NEUTRAL                                            
+ROW7    DFHMDF POS=(17,10),                                            X
+               LENGTH=59,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=NEUTRAL                                            
+ROW8    DFHMDF POS=(18,10),                                            X
+               LENGTH=59,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=NEUTRAL                                            
+ROW9    DFHMDF POS=(19,10),                                            X
+               LENGTH=59,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=NEUTRAL                                            
+        DFHMDF POS=(21,1),                                             X
+               LENGTH=79,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=BLUE,                                             X
+               INITIAL='===============================================X
+               ================================'                        
+        DFHMDF POS=(22,10),                                            X
+               LENGTH=14,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=BLUE,                                             X
+               INITIAL='ENTER - SEARCH'                                 
+        DFHMDF POS=(22,27),                                            X
+               LENGTH=12,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=BLUE,                                             X
+               INITIAL='PF3 - RETURN'                                   
+        DFHMDF POS=(22,42),                                            X
+               LENGTH=14,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=BLUE,                                             X
+               INITIAL='PF7 - PREVIOUS'                                 
+        DFHMDF POS=(22,59),                                            X
+               LENGTH=10,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=BLUE,                                             X
+               INITIAL='PF8 - NEXT'                                     
+        DFHMDF POS=(24,1),                                             X
+               LENGTH=79,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=BLUE,                                             X
+               INITIAL='===============================================X
+               ================================'                        
+        DFHMDF POS=(23,10),                                            X
+               LENGTH=8,                                               X
+               ATTRB=PROT,                                             X
+               COLOR=BLUE,                                             X
+               INITIAL='MESSAGE:'                                       
+MSG     DFHMDF POS=(23,19),                                            X
+               LENGTH=40,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=BLUE                                               
+        DFHMSD TYPE=FINAL                                               

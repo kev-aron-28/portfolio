@@ -1,0 +1,84 @@
+MPAT02  DFHMSD TYPE=MAP,STORAGE=AUTO,LANG=COBOL,TIOAPFX=YES,TERM=3270, X
+               CTRL=FREEKB,MODE=INOUT                                   
+SCRN1   DFHMDI SIZE=(24,80),LINE=1,COLUMN=1,MAPATTS=COLOR               
+        DFHMDF POS=(1,1),                                              X
+               LENGTH=79,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=BLUE,                                             X
+               INITIAL='===============================================X
+               ================================'                        
+        DFHMDF POS=(2,27),                                             X
+               LENGTH=26,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=BLUE,                                             X
+               INITIAL='AIRLINE RESERVATION SYSTEM'                     
+        DFHMDF POS=(3,32),                                             X
+               LENGTH=15,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=BLUE,                                             X
+               INITIAL='CREATE AIRCRAFT'                                
+        DFHMDF POS=(4,1),                                              X
+               LENGTH=79,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=BLUE,                                             X
+               INITIAL='===============================================X
+               ================================'                        
+        DFHMDF POS=(7,4),                                              X
+               LENGTH=15,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=GREEN,                                            X
+               INITIAL='AIRCRAFT MODEL:'                                
+AT02MD  DFHMDF POS=(7,20),                                             X
+               LENGTH=50,                                              X
+               ATTRB=(UNPROT,IC,FSET),                                 X
+               COLOR=GREEN                                              
+        DFHMDF POS=(9,4),                                              X
+               LENGTH=18,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=GREEN,                                            X
+               INITIAL='AIRCRAFT CAPACITY:'                             
+AT02CA  DFHMDF POS=(9,23),                                             X
+               LENGTH=3,                                               X
+               ATTRB=(UNPROT,FSET,NUM)                                 X
+               COLOR=GREEN                                              
+        DFHMDF POS=(11,4),                                             X
+               LENGTH=7,                                               X
+               ATTRB=PROT,                                             X
+               COLOR=GREEN,                                            X
+               INITIAL='STATUS:'                                        
+AT02ST  DFHMDF POS=(11,12),                                            X
+               LENGTH=1,                                               X
+               ATTRB=(UNPROT,FSET),                                    X
+               COLOR=GREEN                                              
+        DFHMDF POS=(21,1),                                             X
+               LENGTH=79,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=BLUE,                                             X
+               INITIAL='===============================================X
+               ================================'                        
+        DFHMDF POS=(22,7),                                             X
+               LENGTH=14,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=BLUE,                                             X
+               INITIAL='ENTER - CREATE'                                 
+        DFHMDF POS=(22,24),                                            X
+               LENGTH=12,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=BLUE,                                             X
+               INITIAL='PF3 - RETURN'                                   
+        DFHMDF POS=(23,7),                                             X
+               LENGTH=8,                                               X
+               ATTRB=PROT,                                             X
+               COLOR=BLUE,                                             X
+               INITIAL='MESSAGE:'                                       
+APMSG   DFHMDF POS=(23,16),                                            X
+               LENGTH=40,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=BLUE                                               
+        DFHMDF POS=(24,1),                                             X
+               LENGTH=79,                                              X
+               ATTRB=PROT,                                             X
+               COLOR=BLUE,                                             X
+               INITIAL='===============================================X
+               ================================'                        
+        DFHMSD TYPE=FINAL                                               

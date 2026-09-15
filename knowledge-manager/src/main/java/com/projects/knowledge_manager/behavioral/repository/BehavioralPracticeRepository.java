@@ -33,4 +33,14 @@ public interface BehavioralPracticeRepository extends JpaRepository<BehavioralPr
       FROM BehavioralPractice p
       """)
   Optional<LocalDate> findLastPracticeDate();
+
+  @Query(
+      """
+      SELECT p FROM BehavioralPractice p
+      JOIN FETCH p.question q
+      WHERE p.practiceDate BETWEEN :startDate AND :endDate
+      ORDER BY p.practiceDate DESC, p.id DESC
+      """)
+  List<BehavioralPractice> findByPracticeDateBetweenOrderByPracticeDateDesc(
+      @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 }

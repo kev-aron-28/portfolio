@@ -62,4 +62,14 @@ public interface SystemDesignReviewRepository extends JpaRepository<SystemDesign
       FROM SystemDesignReview r
       """)
   Optional<LocalDate> findLastReviewDate();
+
+  @Query(
+      """
+      SELECT r FROM SystemDesignReview r
+      JOIN FETCH r.problem p
+      WHERE r.reviewDate BETWEEN :startDate AND :endDate
+      ORDER BY r.reviewDate DESC, r.id DESC
+      """)
+  List<SystemDesignReview> findByReviewDateBetweenOrderByReviewDateDesc(
+      @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 }

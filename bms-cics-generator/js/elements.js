@@ -228,12 +228,39 @@
     return name;
   }
 
+  function comparePosition(a, b) {
+    var rowA = Number(a && a.row) || 0;
+    var rowB = Number(b && b.row) || 0;
+    if (rowA !== rowB) {
+      return rowA - rowB;
+    }
+    var colA = Number(a && a.column) || 0;
+    var colB = Number(b && b.column) || 0;
+    if (colA !== colB) {
+      return colA - colB;
+    }
+    return String(a && a.id ? a.id : "").localeCompare(String(b && b.id ? b.id : ""));
+  }
+
+  function sortedElements(elements) {
+    return (elements || []).slice().sort(comparePosition);
+  }
+
+  function sortElements(screen) {
+    if (!screen || !screen.elements) {
+      return screen;
+    }
+    screen.elements.sort(comparePosition);
+    return screen;
+  }
+
   function addElement(screen, element) {
     var errors = BMS.Validation.validatePlacement(element, screen);
     if (errors.length) {
       return { ok: false, errors: errors };
     }
     screen.elements.push(element);
+    sortElements(screen);
     return { ok: true, element: element };
   }
 
@@ -260,6 +287,7 @@
     pending.forEach(function (element) {
       screen.elements.push(element);
     });
+    sortElements(screen);
 
     return { ok: true, elements: pending };
   }
@@ -292,6 +320,20 @@
     if (patch.numeric !== undefined && next.type === "input") {
       next.numeric = normalizeNumeric(patch.numeric);
     }
+    if (patch.type !== undefined) {
+      var nextType = String(patch.type).toLowerCase();
+      if (
+        (next.type === "input" || next.type === "output") &&
+        (nextType === "input" || nextType === "output")
+      ) {
+        next.type = nextType;
+        if (nextType === "input") {
+          next.numeric = !!next.numeric;
+        } else {
+          delete next.numeric;
+        }
+      }
+    }
     if (patch.align !== undefined) {
       next.align = normalizeAlign(patch.align);
       if (!next.align) {
@@ -322,6 +364,7 @@
     current.column = next.column;
     current.length = next.length;
     current.color = next.color;
+    current.type = next.type;
     if (next.align) {
       current.align = next.align;
     } else {
@@ -329,11 +372,20 @@
     }
     if (current.type === "text") {
       current.value = next.value;
+      delete current.name;
+      delete current.numeric;
     } else {
       current.name = next.name;
+      delete current.value;
+      if (current.type === "input") {
+        current.numeric = !!next.numeric;
+      } else {
+        delete current.numeric;
+      }
     }
-    if (current.type === "input") {
-      current.numeric = !!next.numeric;
+
+    if (patch.row !== undefined || patch.column !== undefined || patch.align !== undefined) {
+      sortElements(screen);
     }
 
     return { ok: true, element: current };
@@ -375,7 +427,7 @@
       mapName: normalizeName(source.mapName || "MPFT00"),
       mapset: normalizeName(source.mapset || source.mapName || "MPFT00"),
       screenName: normalizeName(source.screenName || "SCRN1"),
-      elements: (source.elements || []).map(function (element) {
+      elements: sortedElements(source.elements || []).map(function (element) {
         return clone(element);
       })
     };
@@ -389,6 +441,7 @@
         element.id = createId();
       }
     });
+    sortElements(screen);
     return screen;
   }
 
@@ -416,7 +469,10 @@
     updateElement: updateElement,
     deleteElement: deleteElement,
     cloneScreen: cloneScreen,
-    importScreen: importScreen
+    importScreen: importScreen,
+    comparePosition: comparePosition,
+    sortedElements: sortedElements,
+    sortElements: sortElements
   };
 
   global.BMS = BMS;

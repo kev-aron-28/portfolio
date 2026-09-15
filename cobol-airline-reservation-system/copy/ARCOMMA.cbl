@@ -1,0 +1,1 @@
+       05 WS-CONTINUE PIC X.                                           

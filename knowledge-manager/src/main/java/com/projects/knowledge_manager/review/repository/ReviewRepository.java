@@ -46,6 +46,17 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
       SELECT DISTINCT r FROM Review r
       JOIN FETCH r.problem p
       LEFT JOIN FETCH p.topics
+      WHERE r.reviewDate BETWEEN :startDate AND :endDate
+      ORDER BY r.reviewDate DESC, r.id DESC
+      """)
+  List<Review> findByReviewDateBetweenOrderByReviewDateDesc(
+      @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+  @Query(
+      """
+      SELECT DISTINCT r FROM Review r
+      JOIN FETCH r.problem p
+      LEFT JOIN FETCH p.topics
       WHERE p.archived = false
       ORDER BY r.reviewDate DESC, r.id DESC
       """)
