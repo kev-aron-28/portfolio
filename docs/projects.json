@@ -1,47 +1,51 @@
 [
   {
-    "repo": "cobol-transactional-payment-processing",
+    "repo": "feature-flag-system",
     "featured": true,
     "order": 1
   },
   {
-    "repo": "cobol-airline-reservation-system",
+    "repo": "notification-system",
     "featured": true,
     "order": 2
   },
   {
-    "repo": "bms-cics-generator",
-    "title": "BMS CICS Generator",
+    "repo": "url-shortener",
     "featured": true,
     "order": 3
   },
   {
-    "repo": "consistent-hashing",
+    "repo": "knowledge-manager",
     "featured": true,
     "order": 4
   },
   {
-    "repo": "knowledge-manager",
+    "repo": "job-tracker",
     "featured": true,
     "order": 5
   },
   {
-    "repo": "job-tracker",
+    "repo": "consistent-hashing",
     "featured": true,
     "order": 6
   },
   {
-    "repo": "feature-flag-system"
+    "repo": "cobol-transactional-payment-processing",
+    "featured": true,
+    "order": 7
   },
   {
-    "repo": "notification-system"
+    "repo": "cobol-airline-reservation-system",
+    "featured": true,
+    "order": 8
+  },
+  {
+    "repo": "bms-cics-generator",
+    "title": "BMS CICS Generator"
   },
   {
     "repo": "load-balancer-rate-limtier",
     "title": "Load Balancer & Rate Limiter"
-  },
-  {
-    "repo": "url-shortener"
   },
   {
     "repo": "rulesengine",

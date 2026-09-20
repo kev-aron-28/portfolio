@@ -271,7 +271,54 @@ nav a:hover {
 
 #about p {
   max-width: 40rem;
+  margin: 0 0 1rem;
+}
+
+#about p:last-child {
+  margin-bottom: 0;
+}
+
+.experience-item {
+  max-width: 42rem;
+}
+
+.experience-item h3 {
+  margin-bottom: 0.25rem;
+}
+
+.experience-meta {
+  margin: 0 0 0.85rem;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+}
+
+.experience-summary {
+  margin: 0 0 1rem;
+}
+
+.experience-list {
   margin: 0;
+  padding-left: 1.15rem;
+}
+
+.experience-list li + li {
+  margin-top: 0.55rem;
+}
+
+.tech-group {
+  margin-bottom: 1.35rem;
+}
+
+.tech-group:last-child {
+  margin-bottom: 0;
+}
+
+.tech-group h3 {
+  margin: 0 0 0.55rem;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--muted);
 }
 
 .site-footer {

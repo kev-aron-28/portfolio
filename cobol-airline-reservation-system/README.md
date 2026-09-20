@@ -381,48 +381,65 @@ ARBD  Boarding
 - [x] Test complete Aircraft flow
 
 ### 9. Flight
+
 - [x] Create Flight Menu BMS
 - [x] Create Flight Menu COBOL program
 - [x] Create Flight Menu transaction
-
 - [x] Create Flight Inquiry
 - [x] Create Flight Create
 - [ ] Create Flight Update
 - [x] Create Flight Search
-
+- [ ] Select Flight from Search
+- [ ] Integrate Flight Search → Reservation
 - [x] Test complete Flight flow
 
 ### 10. Seat
+
 - [ ] Create Seat Inquiry
 - [ ] Create Seat Availability
+- [ ] Integrate Seat Availability → Reservation
 - [ ] Create Seat Assignment
 - [ ] Test Seat flow
 
 ### 11. Reservation
+
 - [ ] Create Reservation Menu
 - [ ] Create Reservation Search
 - [ ] Create Reservation Create
+- [ ] Receive Flight from Flight Search
+- [ ] Receive Passenger
+- [ ] Display Seat Availability
+- [ ] Select Seat
+- [ ] Validate Seat Availability
+- [ ] Create Reservation
 - [ ] Create Reservation Inquiry
 - [ ] Create Reservation Cancellation
 - [ ] Test Reservation flow
+- [ ] Test Flight → Reservation → Seat → Reservation flow
 
 ### 12. Check-in
+
 - [ ] Create Check-in BMS
 - [ ] Create Check-in COBOL program
 - [ ] Create Check-in transaction
 - [ ] Search reservation
 - [ ] Validate reservation
 - [ ] Confirm passenger
+- [ ] Confirm flight
 - [ ] Confirm seat
 - [ ] Update reservation
 - [ ] Test Check-in flow
 
 ### 13. Boarding
+
 - [ ] Create Boarding BMS
 - [ ] Create Boarding COBOL program
 - [ ] Create Boarding transaction
+- [ ] Search reservation
 - [ ] Validate check-in
 - [ ] Confirm passenger
+- [ ] Confirm flight
+- [ ] Confirm seat
 - [ ] Update boarding status
 - [ ] Test Boarding flow
 
