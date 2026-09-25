@@ -16,6 +16,7 @@ public final class ApplicationMapper {
 				entity.getJob().getId(),
 				ApplicationStatus.valueOf(entity.getStatus()),
 				entity.getAppliedAt(),
+				entity.getStatusChangedAt(),
 				entity.getNotes());
 	}
 
@@ -25,6 +26,7 @@ public final class ApplicationMapper {
 		entity.setJob(job);
 		entity.setStatus(application.status().name());
 		entity.setAppliedAt(application.appliedAt());
+		entity.setStatusChangedAt(application.statusSince());
 		entity.setNotes(application.notes());
 		return entity;
 	}

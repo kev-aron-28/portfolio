@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+	  th:replace="~{layout :: layout(~{::section})}">
+<section>
+	<div class="report-hero mb-3">
+		<p class="report-headline" th:text="${report.headline()}">Resumen</p>
+		<p class="report-disclaimer">
+			El tiempo de respuesta se infiere del tiempo en cada estado y de los cambios de estado que registraste.
+			No es un dato enviado por la empresa.
+		</p>
+	</div>
+
+	<div class="empty-state" th:if="${!report.hasApplications()}">
+		<i data-lucide="clipboard-list" aria-hidden="true"></i>
+		<div>Registra postulaciones para ver el análisis de pipeline, espera y mercado.</div>
+		<a th:href="@{/jobs}" class="btn btn-sm btn-primary mt-2">Ir a vacantes</a>
+	</div>
+
+	<th:block th:if="${report.hasApplications()}">
+		<div class="metrics-row report-snapshot mb-3">
+			<div class="metric-cell" th:each="metric : ${report.snapshot()}">
+				<div class="metric-label" th:text="${metric.label()}">Métrica</div>
+				<div class="metric-value metric-value-sm" th:text="${metric.value()}">0</div>
+				<div class="metric-hint" th:text="${metric.hint()}">detalle</div>
+			</div>
+		</div>
+
+		<div class="panel mb-3" th:if="${!report.findings().isEmpty()}">
+			<div class="panel-header">
+				<h2>Hallazgos</h2>
+			</div>
+			<div class="panel-body-flush">
+				<div class="report-finding"
+					 th:each="finding : ${report.findings()}"
+					 th:classappend="' report-finding--' + ${finding.tone()}">
+					<div class="report-finding-title" th:text="${finding.title()}">Título</div>
+					<p class="report-finding-body" th:text="${finding.body()}">Detalle</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel-grid-2 mb-3">
+			<div class="panel h-100">
+				<div class="panel-header">
+					<h2>Postulaciones por estado</h2>
+				</div>
+				<div class="panel-body">
+					<table class="dist-table">
+						<tbody>
+						<tr th:each="item : ${report.byStatus()}">
+							<td th:text="${item.label()}">Postulado</td>
+							<td>
+								<div class="dist-bar">
+									<div class="dist-bar-fill" th:style="'width:' + ${item.percent()} + '%'"></div>
+								</div>
+							</td>
+							<td th:text="${item.count()}">0</td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div class="panel h-100">
+				<div class="panel-header">
+					<h2>Tiempo en el estado actual</h2>
+				</div>
+				<div class="panel-body" th:if="${!report.waitByStatus().isEmpty()}">
+					<table class="dist-table dist-table-wide">
+						<tbody>
+						<tr th:each="item : ${report.waitByStatus()}">
+							<td th:text="${item.label()}">Postulado</td>
+							<td class="text-end" th:text="${item.daysLabel()}">12 días</td>
+							<td th:text="${item.count()}">0</td>
+						</tr>
+						</tbody>
+					</table>
+					<p class="panel-footnote">Mediana de días en procesos abiertos. Rechazadas y retiradas no entran.</p>
+				</div>
+				<div class="empty-state" th:if="${report.waitByStatus().isEmpty()}">
+					<div>Sin procesos abiertos para medir espera.</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel mb-3">
+			<div class="panel-header">
+				<h2>Ritmo de postulaciones</h2>
+				<span class="toolbar-meta">últimas 6 semanas</span>
+			</div>
+			<div class="panel-body">
+				<div class="report-weeks">
+					<div class="report-week" th:each="week : ${report.weeklyApplications()}">
+						<div class="report-week-bar" aria-hidden="true">
+							<span th:style="'height:' + ${week.percent() == 0 ? 8 : week.percent()} + '%'"></span>
+						</div>
+						<div class="report-week-count" th:text="${week.count()}">0</div>
+						<div class="report-week-label" th:text="${week.label()}">1 sep</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel-grid-2 mb-3">
+			<div class="panel h-100">
+				<div class="panel-header">
+					<h2>Dónde postulaste vs fuentes</h2>
+				</div>
+				<div class="panel-body" th:if="${!report.appliedBySource().isEmpty()}">
+					<table class="dist-table">
+						<tbody>
+						<tr th:each="item : ${report.appliedBySource()}">
+							<td th:text="${item.label()}">occ</td>
+							<td>
+								<div class="dist-bar">
+									<div class="dist-bar-fill dist-bar-fill-accent" th:style="'width:' + ${item.percent()} + '%'"></div>
+								</div>
+							</td>
+							<td th:text="${item.count()}">0</td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<div class="panel h-100">
+				<div class="panel-header">
+					<h2>Modalidad de lo postulado</h2>
+				</div>
+				<div class="panel-body" th:if="${!report.appliedByWorkMode().isEmpty()}">
+					<table class="dist-table">
+						<tbody>
+						<tr th:each="item : ${report.appliedByWorkMode()}">
+							<td th:text="${item.label()}">Remoto</td>
+							<td>
+								<div class="dist-bar">
+									<div class="dist-bar-fill dist-bar-fill-muted" th:style="'width:' + ${item.percent()} + '%'"></div>
+								</div>
+							</td>
+							<td th:text="${item.count()}">0</td>
+						</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<div class="panel mb-3">
+			<div class="panel-header">
+				<h2>Ubicaciones a las que postulaste</h2>
+			</div>
+			<div class="panel-body" th:if="${!report.appliedByLocation().isEmpty()}">
+				<table class="dist-table dist-table-wide">
+					<tbody>
+					<tr th:each="item : ${report.appliedByLocation()}">
+						<td th:text="${item.label()}">CDMX</td>
+						<td>
+							<div class="dist-bar">
+								<div class="dist-bar-fill dist-bar-fill-muted" th:style="'width:' + ${item.percent()} + '%'"></div>
+							</div>
+						</td>
+						<td th:text="${item.count()}">0</td>
+					</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</th:block>
+</section>
+</html>

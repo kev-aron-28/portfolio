@@ -1,5 +1,7 @@
 package com.projects.job_tracker.application.application;
 
+import java.time.Instant;
+
 import org.springframework.stereotype.Service;
 
 import com.projects.job_tracker.domain.exception.ResourceNotFoundException;
@@ -22,8 +24,17 @@ public class UpdateApplicationUseCase {
 
 		ApplicationStatus status = command.status() != null ? command.status() : existing.status();
 		String notes = command.notes() != null ? command.notes() : existing.notes();
+		Instant statusChangedAt = status == existing.status()
+				? existing.statusSince()
+				: Instant.now();
 
-		Application updated = new Application(existing.id(), existing.jobId(), status, existing.appliedAt(), notes);
+		Application updated = new Application(
+				existing.id(),
+				existing.jobId(),
+				status,
+				existing.appliedAt(),
+				statusChangedAt,
+				notes);
 		return applicationRepository.save(updated);
 	}
 

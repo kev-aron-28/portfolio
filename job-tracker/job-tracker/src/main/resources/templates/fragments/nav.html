@@ -12,12 +12,24 @@
 			<i data-lucide="pie-chart" aria-hidden="true"></i>
 			<span>Segmentos</span>
 		</a>
+		<a th:href="@{/analisis}" class="sidebar-link" th:classappend="${activeNav == 'analysis'} ? 'active'">
+			<i data-lucide="activity" aria-hidden="true"></i>
+			<span>Análisis</span>
+		</a>
 	</div>
 	<div class="sidebar-section">
 		<span class="sidebar-label">Pipeline</span>
 		<a th:href="@{/jobs}" class="sidebar-link" th:classappend="${activeNav == 'jobs'} ? 'active'">
 			<i data-lucide="briefcase" aria-hidden="true"></i>
 			<span>Vacantes</span>
+		</a>
+		<a th:href="@{/seguimiento}" class="sidebar-link" th:classappend="${activeNav == 'followup'} ? 'active'">
+			<i data-lucide="clock" aria-hidden="true"></i>
+			<span>Seguimiento</span>
+		</a>
+		<a th:href="@{/historial}" class="sidebar-link" th:classappend="${activeNav == 'history'} ? 'active'">
+			<i data-lucide="history" aria-hidden="true"></i>
+			<span>Historial</span>
 		</a>
 		<a th:href="@{/scraping}" class="sidebar-link" th:classappend="${activeNav == 'scraping'} ? 'active'">
 			<i data-lucide="radar" aria-hidden="true"></i>

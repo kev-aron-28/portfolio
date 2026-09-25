@@ -29,6 +29,9 @@ public class ApplicationEntity {
 	@Column(name = "applied_at")
 	private Instant appliedAt;
 
+	@Column(name = "status_changed_at", nullable = false)
+	private Instant statusChangedAt;
+
 	@Column(columnDefinition = "TEXT")
 	private String notes;
 
@@ -62,6 +65,14 @@ public class ApplicationEntity {
 
 	public void setAppliedAt(Instant appliedAt) {
 		this.appliedAt = appliedAt;
+	}
+
+	public Instant getStatusChangedAt() {
+		return statusChangedAt;
+	}
+
+	public void setStatusChangedAt(Instant statusChangedAt) {
+		this.statusChangedAt = statusChangedAt;
 	}
 
 	public String getNotes() {

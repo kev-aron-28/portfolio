@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+	  th:replace="~{layout :: layout(~{::section})}">
+<section>
+	<div class="followup-legend mb-3">
+		La estimación se basa en el tiempo que una postulación lleva en el mismo estado. No es una respuesta de la empresa.
+		<a th:href="@{/analisis}">Ver análisis completo</a>
+		·
+		<a th:href="@{/historial}">Ver historial</a>
+	</div>
+
+	<div class="metrics-row metrics-row-4 mb-3">
+		<div class="metric-cell">
+			<div class="metric-label">En espera</div>
+			<div class="metric-value" th:text="${overview.active()}">0</div>
+			<div class="metric-hint">tiempo habitual</div>
+		</div>
+		<div class="metric-cell">
+			<div class="metric-label">Revisar</div>
+			<div class="metric-value" th:text="${overview.watch()}">0</div>
+			<div class="metric-hint">convienen follow-up</div>
+		</div>
+		<div class="metric-cell">
+			<div class="metric-label">Probable silencio</div>
+			<div class="metric-value" th:text="${overview.likelySilent()}">0</div>
+			<div class="metric-hint">posible que no respondan</div>
+		</div>
+		<div class="metric-cell">
+			<div class="metric-label">Cerradas</div>
+			<div class="metric-value" th:text="${overview.closed()}">0</div>
+			<div class="metric-hint">rechazadas o retiradas</div>
+		</div>
+	</div>
+
+	<div class="panel mb-3" th:if="${!overview.attention().isEmpty()}">
+		<div class="panel-header">
+			<h2>Requieren atención</h2>
+			<span class="toolbar-meta" th:text="${overview.attention().size()} + ' postulaciones'">0</span>
+		</div>
+		<div class="panel-body-flush">
+			<div class="followup-list">
+				<a class="followup-row"
+				   th:each="entry : ${overview.attention()}"
+				   th:href="@{/jobs/{id}(id=${entry.jobId()})}"
+				   th:classappend="' followup-row--' + ${#strings.toLowerCase(entry.signal().name())}">
+					<div class="followup-row-main">
+						<div class="followup-title" th:text="${entry.title()}">Título</div>
+						<div class="followup-meta">
+							<span th:text="${entry.companyName()}">Empresa</span>
+							<span class="followup-dot" aria-hidden="true">·</span>
+							<span th:if="${entry.status() != null}" th:text="${entry.status().label()}">Postulado</span>
+							<span class="followup-dot" aria-hidden="true">·</span>
+							<span th:text="${entry.daysLabel()} + ' en este estado'">21 días</span>
+						</div>
+						<p class="followup-insight" th:text="${entry.insight()}">Insight</p>
+					</div>
+					<span class="followup-signal"
+						  th:classappend="' followup-signal--' + ${#strings.toLowerCase(entry.signal().name())}"
+						  th:text="${entry.signal().label()}">Revisar</span>
+				</a>
+			</div>
+		</div>
+	</div>
+
+	<div class="panel">
+		<div class="panel-header">
+			<h2>Por fecha registrada</h2>
+			<span class="toolbar-meta" th:text="${overview.totalJobs()} + ' vacantes'">0 vacantes</span>
+		</div>
+		<div class="panel-body" th:if="${overview.days().isEmpty()}">
+			<div class="empty-state">
+				<i data-lucide="inbox" aria-hidden="true"></i>
+				<div>Sin vacantes registradas.</div>
+			</div>
+		</div>
+		<div class="panel-body-flush" th:if="${!overview.days().isEmpty()}">
+			<div class="followup-day" th:each="day : ${overview.days()}">
+				<div class="followup-day-header">
+					<div>
+						<div class="followup-day-title" th:text="${day.label()}">19 sep 2026</div>
+						<div class="followup-day-sub">
+							<span th:text="${day.jobCount()} + (${day.jobCount()} == 1 ? ' vacante' : ' vacantes')">3 vacantes</span>
+							<span th:if="${day.attentionCount() > 0}"
+								  th:text="' · ' + ${day.attentionCount()} + (${day.attentionCount()} == 1 ? ' requiere atención' : ' requieren atención')"> · 1 requiere atención</span>
+						</div>
+					</div>
+				</div>
+				<div class="followup-list">
+					<a class="followup-row"
+					   th:each="entry : ${day.entries()}"
+					   th:href="@{/jobs/{id}(id=${entry.jobId()})}"
+					   th:classappend="' followup-row--' + ${#strings.toLowerCase(entry.signal().name())}">
+						<div class="followup-row-main">
+							<div class="followup-title" th:text="${entry.title()}">Título</div>
+							<div class="followup-meta">
+								<span th:text="${entry.companyName()}">Empresa</span>
+								<span class="followup-dot" aria-hidden="true">·</span>
+								<span th:if="${entry.status() != null}" th:text="${entry.status().label()}">Postulado</span>
+								<span th:if="${entry.status() == null}">Sin postular</span>
+								<span th:if="${entry.status() != null}" class="followup-dot" aria-hidden="true">·</span>
+								<span th:if="${entry.status() != null}" th:text="${entry.daysLabel()} + ' en este estado'">21 días</span>
+							</div>
+							<p class="followup-insight" th:text="${entry.insight()}">Insight</p>
+						</div>
+						<span class="followup-signal"
+							  th:classappend="' followup-signal--' + ${#strings.toLowerCase(entry.signal().name())}"
+							  th:text="${entry.signal().label()}">En espera</span>
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+</html>

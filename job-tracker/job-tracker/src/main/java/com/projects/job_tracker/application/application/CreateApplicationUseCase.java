@@ -27,12 +27,14 @@ public class CreateApplicationUseCase {
 		}
 
 		ApplicationStatus status = command.status() != null ? command.status() : ApplicationStatus.APPLIED;
+		Instant appliedAt = command.appliedAt() != null ? command.appliedAt() : Instant.now();
 
 		Application application = new Application(
 				null,
 				command.jobId(),
 				status,
-				command.appliedAt() != null ? command.appliedAt() : Instant.now(),
+				appliedAt,
+				appliedAt,
 				command.notes());
 
 		return applicationRepository.save(application);

@@ -10,6 +10,7 @@ public record ApplicationResponse(
 		Long jobId,
 		ApplicationStatus status,
 		Instant appliedAt,
+		Instant statusChangedAt,
 		String notes) {
 
 	public static ApplicationResponse from(Application application) {
@@ -18,6 +19,7 @@ public record ApplicationResponse(
 				application.jobId(),
 				application.status(),
 				application.appliedAt(),
+				application.statusChangedAt(),
 				application.notes());
 	}
 }

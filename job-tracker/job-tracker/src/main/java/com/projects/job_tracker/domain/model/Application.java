@@ -7,6 +7,7 @@ public record Application(
 		Long jobId,
 		ApplicationStatus status,
 		Instant appliedAt,
+		Instant statusChangedAt,
 		String notes) {
 
 	public Application {
@@ -16,5 +17,9 @@ public record Application(
 		if (status == null) {
 			throw new IllegalArgumentException("Application status is required");
 		}
+	}
+
+	public Instant statusSince() {
+		return statusChangedAt != null ? statusChangedAt : appliedAt;
 	}
 }

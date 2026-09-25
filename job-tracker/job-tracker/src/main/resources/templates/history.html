@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+	  th:replace="~{layout :: layout(~{::section})}">
+<section>
+	<div class="followup-legend mb-3">
+		Ordenado por la fecha en que registraste la postulación, no por la fecha en que se importó la vacante.
+	</div>
+
+	<div class="empty-state" th:if="${history.total() == 0}">
+		<i data-lucide="send" aria-hidden="true"></i>
+		<div>Aún no hay postulaciones para armar el historial.</div>
+		<a th:href="@{/jobs}" class="btn btn-sm btn-primary mt-2">Ir a vacantes</a>
+	</div>
+
+	<div class="panel" th:if="${history.total() > 0}">
+		<div class="panel-header">
+			<h2>Línea de tiempo</h2>
+			<span class="toolbar-meta" th:text="${history.total()} + ' postulaciones'">0 postulaciones</span>
+		</div>
+		<div class="panel-body">
+			<div class="timeline" th:each="month : ${history.months()}">
+				<div class="timeline-month">
+					<div class="timeline-month-title" th:text="${month.label()}">Septiembre 2026</div>
+					<div class="timeline-month-count"
+						 th:text="${month.count()} + (${month.count()} == 1 ? ' postulación' : ' postulaciones')">3 postulaciones</div>
+				</div>
+				<div class="timeline-day" th:each="day : ${month.days()}">
+					<div class="timeline-day-label" th:text="${day.label()}">23 sep</div>
+					<div class="timeline-day-track">
+						<a class="timeline-item"
+						   th:each="item : ${day.items()}"
+						   th:href="@{/jobs/{id}(id=${item.jobId()})}">
+							<span class="timeline-dot"
+								  th:classappend="${item.status() != null} ? ' timeline-dot--' + ${#strings.toLowerCase(item.status().name())} : ''"
+								  aria-hidden="true"></span>
+							<span class="timeline-card">
+								<span class="timeline-company" th:text="${item.companyName()}">Empresa</span>
+								<span class="timeline-title" th:text="${item.title()}">Vacante</span>
+								<span class="timeline-meta">
+									<span th:if="${item.status() != null}"
+										  th:replace="~{fragments/components :: statusBadge(status=${item.status()})}">Postulado</span>
+									<span class="timeline-source" th:if="${item.source() != null}" th:text="${item.source()}">occ</span>
+								</span>
+							</span>
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
+</html>
