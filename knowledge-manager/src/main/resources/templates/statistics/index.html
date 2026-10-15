@@ -3,91 +3,364 @@
       th:replace="~{layout/main :: layout(~{::content})}">
 <body>
 <div th:fragment="content">
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Statistics</h1>
-      <p class="page-subtitle">Detailed learning metrics and review performance.</p>
+  <div class="sa">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Statistics</h1>
+        <p class="page-subtitle">Performance metrics, knowledge diagnosis, and time investment.</p>
+      </div>
+      <a class="btn btn-outline-secondary btn-sm" th:href="@{/reports/weekly}">Weekly report</a>
     </div>
-  </div>
 
-  <div class="row g-3 mb-4">
-    <div class="col-md-3">
-      <div class="card-surface stat-card">
-        <div class="stat-value" th:text="${statistics.totalReviewTimeMinutes()}">0</div>
-        <div class="stat-label">Minutes studied</div>
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="card-surface stat-card">
+          <div class="stat-value" th:text="${statistics.totalReviewTimeMinutes()}">0</div>
+          <div class="stat-label">Minutes studied</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card-surface stat-card">
+          <div class="stat-value" th:text="${statistics.currentStreak()}">0</div>
+          <div class="stat-label">Current streak</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card-surface stat-card">
+          <div class="stat-value" th:text="${statistics.masteredProblems()}">0</div>
+          <div class="stat-label">Dominated problems</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card-surface stat-card">
+          <div class="stat-value" th:text="${statistics.problemsWithoutReview()}">0</div>
+          <div class="stat-label">Untouched</div>
+        </div>
       </div>
     </div>
-    <div class="col-md-3">
-      <div class="card-surface stat-card">
-        <div class="stat-value" th:text="${statistics.currentStreak()}">0</div>
-        <div class="stat-label">Current streak (days)</div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card-surface stat-card">
-        <div class="stat-value" th:text="${statistics.longestStreak()}">0</div>
-        <div class="stat-label">Longest streak (days)</div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card-surface stat-card">
-        <div class="stat-value" th:text="${statistics.masteredProblems()}">0</div>
-        <div class="stat-label">Mastered problems</div>
-      </div>
-    </div>
-  </div>
 
-  <div class="row g-4">
-    <div class="col-lg-6">
-      <section class="card-surface p-4 mb-4">
-        <h2 class="h5 mb-3">Rating distribution</h2>
-        <div th:each="stat : ${statistics.ratingStats()}" class="mb-3">
-          <div class="d-flex justify-content-between small mb-1">
-            <span th:text="'Rating ' + ${stat.rating()}">Rating 3</span>
-            <span th:text="${stat.count()}">0</span>
+    <!-- Knowledge analysis -->
+    <section class="sa-block">
+      <header class="sa-block-head">
+        <div>
+          <p class="sa-kicker">Knowledge analysis</p>
+          <h2 class="sa-title" th:text="${statistics.knowledge().headline()}">Headline</h2>
+          <p class="sa-summary" th:text="${statistics.knowledge().summary()}">Summary</p>
+        </div>
+      </header>
+
+      <div class="sa-kpis">
+        <div class="sa-kpi">
+          <div class="sa-kpi-value" th:text="${statistics.knowledge().dominatedCount()}">0</div>
+          <div class="sa-kpi-label">Dominated</div>
+        </div>
+        <div class="sa-kpi">
+          <div class="sa-kpi-value" th:text="${statistics.knowledge().weakCount() + statistics.knowledge().failingCount()}">0</div>
+          <div class="sa-kpi-label">Weak / failing</div>
+        </div>
+        <div class="sa-kpi">
+          <div class="sa-kpi-value" th:text="${statistics.knowledge().gapCount()}">0</div>
+          <div class="sa-kpi-label">Gaps</div>
+        </div>
+        <div class="sa-kpi">
+          <div class="sa-kpi-value" th:text="${statistics.knowledge().overdueCount()}">0</div>
+          <div class="sa-kpi-label">Overdue</div>
+        </div>
+      </div>
+
+      <div class="sa-insights" th:if="${!#lists.isEmpty(statistics.knowledge().insights())}">
+        <div class="sa-insight" th:each="insight : ${statistics.knowledge().insights()}"
+             th:classappend="' is-' + ${insight.kind()}">
+          <strong th:text="${insight.title()}">Title</strong>
+          <span th:text="${insight.detail()}">Detail</span>
+        </div>
+      </div>
+
+      <div class="sa-grid">
+        <div class="sa-panel">
+          <div class="sa-panel-head">
+            <h3 class="sa-panel-title">Study next</h3>
+            <span class="sa-panel-meta">Action queue</span>
           </div>
-          <div class="progress-thin">
-            <div class="progress-thin-bar" th:style="'width:' + ${stat.barWidth()} + '%'"></div>
+          <div th:if="${#lists.isEmpty(statistics.knowledge().studyNext())}" class="sa-empty">
+            Nothing urgent — keep logging reviews.
+          </div>
+          <table class="sa-table" th:if="${!#lists.isEmpty(statistics.knowledge().studyNext())}">
+            <thead>
+              <tr>
+                <th>Problem</th>
+                <th>Why</th>
+                <th class="sa-num">Rating</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="item : ${statistics.knowledge().studyNext()}">
+                <td>
+                  <a class="sa-link" th:href="${item.href()}" th:text="${item.title()}">Title</a>
+                  <div class="sa-sub" th:text="|${item.topics()} · ${item.difficulty()}|">Arrays · EASY</div>
+                </td>
+                <td class="sa-reason" th:text="${item.reason()}">Reason</td>
+                <td class="sa-num" th:text="${item.latestRating() != null ? item.latestRating() : '—'}">—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="sa-panel">
+          <div class="sa-panel-head">
+            <h3 class="sa-panel-title">Focus topics</h3>
+            <span class="sa-panel-meta">Needs work</span>
+          </div>
+          <div th:if="${#lists.isEmpty(statistics.knowledge().focusTopics())}" class="sa-empty">
+            No weak topics detected.
+          </div>
+          <div class="sa-topic" th:each="topic : ${statistics.knowledge().focusTopics()}">
+            <div class="sa-topic-top">
+              <div>
+                <span class="sa-swatch" th:style="'background:' + ${topic.color()}"></span>
+                <strong th:text="${topic.name()}">Arrays</strong>
+                <span class="sa-badge" th:text="${topic.health()}">At risk</span>
+              </div>
+              <span class="sa-panel-meta" th:text="${topic.masteryPercent()} + '% mastery'">40%</span>
+            </div>
+            <div class="sa-topic-bar"><span th:style="'width:' + ${topic.masteryPercent()} + '%'"></span></div>
+            <p class="sa-topic-rec" th:text="${topic.recommendation()}">Recommendation</p>
+            <div class="sa-topic-meta"
+                 th:text="|${topic.failing()} failing · ${topic.weak()} weak · ${topic.untouched()} untouched · ${topic.overdue()} overdue|">
+              meta
+            </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      <section class="card-surface p-4">
-        <h2 class="h5 mb-3">Scheduler</h2>
-        <p class="mb-2">
-          Active algorithm:
-          <span class="badge text-bg-light border text-uppercase" th:text="${statistics.schedulerName()}">sm2</span>
-        </p>
-        <p class="text-muted small mb-0">
-          Configure via <code>app.review.scheduler</code> in application.properties
-          (<code>sm2</code> or <code>fixed-interval</code>).
-        </p>
-      </section>
-    </div>
-
-    <div class="col-lg-6">
-      <section class="card-surface p-4 mb-4">
-        <h2 class="h5 mb-3">Reviews by month</h2>
-        <div th:each="stat : ${statistics.monthlyStats()}" class="mb-3">
-          <div class="d-flex justify-content-between small mb-1">
-            <span th:text="${stat.label()}">Jan 2026</span>
-            <span th:text="${stat.count()}">0</span>
+      <div class="sa-grid">
+        <div class="sa-panel">
+          <div class="sa-panel-head">
+            <h3 class="sa-panel-title">What you dominate</h3>
           </div>
-          <div class="progress-thin">
-            <div class="progress-thin-bar" th:style="'width:' + ${stat.barWidth()} + '%'"></div>
+          <div th:if="${#lists.isEmpty(statistics.knowledge().dominatedTopics()) and #lists.isEmpty(statistics.knowledge().dominatedProblems())}"
+               class="sa-empty">
+            No dominated topics yet (need 2 recent reviews rated ≥ 4).
+          </div>
+          <div class="sa-chip-row" th:if="${!#lists.isEmpty(statistics.knowledge().dominatedTopics())}">
+            <span class="sa-chip" th:each="topic : ${statistics.knowledge().dominatedTopics()}">
+              <span class="sa-swatch" th:style="'background:' + ${topic.color()}"></span>
+              <span th:text="${topic.name()}">DP</span>
+              <span class="sa-chip-meta" th:text="${topic.masteryPercent()} + '%'">80%</span>
+            </span>
+          </div>
+          <table class="sa-table mt-3" th:if="${!#lists.isEmpty(statistics.knowledge().dominatedProblems())}">
+            <tbody>
+              <tr th:each="item : ${statistics.knowledge().dominatedProblems()}">
+                <td>
+                  <a class="sa-link" th:href="${item.href()}" th:text="${item.title()}">Title</a>
+                  <div class="sa-sub" th:text="${item.topics()}">Topics</div>
+                </td>
+                <td class="sa-num" th:text="${item.latestRating()}">5</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="sa-panel">
+          <div class="sa-panel-head">
+            <h3 class="sa-panel-title">Coverage gaps</h3>
+          </div>
+          <div th:if="${#lists.isEmpty(statistics.knowledge().gapTopics())}" class="sa-empty">
+            No major coverage gaps by topic.
+          </div>
+          <div class="sa-topic" th:each="topic : ${statistics.knowledge().gapTopics()}">
+            <div class="sa-topic-top">
+              <div>
+                <span class="sa-swatch" th:style="'background:' + ${topic.color()}"></span>
+                <strong th:text="${topic.name()}">Graphs</strong>
+              </div>
+              <span class="sa-panel-meta" th:text="${topic.coveragePercent()} + '% covered'">10%</span>
+            </div>
+            <div class="sa-topic-bar"><span th:style="'width:' + ${topic.coveragePercent()} + '%'"></span></div>
+            <p class="sa-topic-rec" th:text="${topic.recommendation()}">Recommendation</p>
+            <div class="sa-topic-meta"
+                 th:text="|${topic.untouched()} / ${topic.totalProblems()} never reviewed|">0 / 0</div>
+          </div>
+
+          <div class="sa-panel-head mt-3" th:if="${!#lists.isEmpty(statistics.knowledge().failingProblems())}">
+            <h3 class="sa-panel-title">Failing / weak problems</h3>
+          </div>
+          <table class="sa-table" th:if="${!#lists.isEmpty(statistics.knowledge().failingProblems())}">
+            <tbody>
+              <tr th:each="item : ${statistics.knowledge().failingProblems()}">
+                <td>
+                  <a class="sa-link" th:href="${item.href()}" th:text="${item.title()}">Title</a>
+                  <div class="sa-sub" th:text="${item.reason()}">Reason</div>
+                </td>
+                <td class="sa-num" th:text="${item.latestRating() != null ? item.latestRating() : '—'}">2</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Time analysis -->
+    <section class="sa-block">
+      <header class="sa-block-head">
+        <div>
+          <p class="sa-kicker">Time analysis</p>
+          <h2 class="sa-title" th:text="${statistics.time().headline()}">Headline</h2>
+          <p class="sa-summary" th:text="${statistics.time().summary()}">Summary</p>
+        </div>
+      </header>
+
+      <div class="sa-kpis">
+        <div class="sa-kpi">
+          <div class="sa-kpi-value" th:text="${statistics.time().minutesLast7Days()}">0</div>
+          <div class="sa-kpi-label">Min · 7 days</div>
+          <div class="sa-kpi-delta"
+               th:if="${statistics.time().delta7Percent() != null}"
+               th:text="${(statistics.time().delta7Percent() >= 0 ? '+' : '') + statistics.time().delta7Percent() + '% vs prior'}">+0%</div>
+        </div>
+        <div class="sa-kpi">
+          <div class="sa-kpi-value" th:text="${statistics.time().minutesLast30Days()}">0</div>
+          <div class="sa-kpi-label">Min · 30 days</div>
+          <div class="sa-kpi-delta"
+               th:if="${statistics.time().delta30Percent() != null}"
+               th:text="${(statistics.time().delta30Percent() >= 0 ? '+' : '') + statistics.time().delta30Percent() + '% vs prior'}">+0%</div>
+        </div>
+        <div class="sa-kpi">
+          <div class="sa-kpi-value" th:text="${statistics.time().averageSessionMinutes()}">0</div>
+          <div class="sa-kpi-label">Avg session</div>
+        </div>
+        <div class="sa-kpi">
+          <div class="sa-kpi-value" th:text="${statistics.time().activeDaysLast30()}">0</div>
+          <div class="sa-kpi-label">Active days / 30</div>
+          <div class="sa-kpi-delta" th:text="${statistics.time().consistencyLabel()}">Steady</div>
+        </div>
+      </div>
+
+      <div class="sa-insights" th:if="${!#lists.isEmpty(statistics.time().insights())}">
+        <div class="sa-insight" th:each="insight : ${statistics.time().insights()}"
+             th:classappend="' is-' + ${insight.kind()}">
+          <strong th:text="${insight.title()}">Title</strong>
+          <span th:text="${insight.detail()}">Detail</span>
+        </div>
+      </div>
+
+      <div class="sa-grid">
+        <div class="sa-panel">
+          <div class="sa-panel-head">
+            <h3 class="sa-panel-title">Time by topic</h3>
+            <span class="sa-panel-meta"
+                  th:text="'Busiest day: ' + ${statistics.time().busiestWeekday()}">Busiest day</span>
+          </div>
+          <div th:if="${#lists.isEmpty(statistics.time().timeByTopic())}" class="sa-empty">
+            No timed reviews yet.
+          </div>
+          <div th:each="row : ${statistics.time().timeByTopic()}" class="sa-time-row">
+            <div class="d-flex justify-content-between small mb-1">
+              <span>
+                <span class="sa-swatch" th:style="'background:' + ${row.color()}"></span>
+                <span th:text="${row.name()}">Arrays</span>
+              </span>
+              <span class="text-muted" th:text="|${row.minutes()}m · ${row.sessions()} sess.|">10m</span>
+            </div>
+            <div class="progress-thin">
+              <div class="progress-thin-bar" th:style="'width:' + ${row.barWidth()} + '%'"></div>
+            </div>
           </div>
         </div>
-      </section>
 
-      <section class="card-surface p-4">
-        <h2 class="h5 mb-3">Coverage</h2>
-        <dl class="mb-0">
-          <dt class="text-muted small">Problems without review</dt>
-          <dd class="mb-3" th:text="${statistics.problemsWithoutReview()}">0</dd>
-          <dt class="text-muted small">Mastered problems</dt>
-          <dd class="mb-0 text-muted small">Last 2 reviews with rating ≥ 4</dd>
-        </dl>
-      </section>
+        <div class="sa-panel">
+          <div class="sa-panel-head">
+            <h3 class="sa-panel-title">Slow + weak</h3>
+            <span class="sa-panel-meta">High time, low rating</span>
+          </div>
+          <div th:if="${#lists.isEmpty(statistics.time().slowStruggles())}" class="sa-empty">
+            No slow struggles detected.
+          </div>
+          <table class="sa-table" th:if="${!#lists.isEmpty(statistics.time().slowStruggles())}">
+            <tbody>
+              <tr th:each="item : ${statistics.time().slowStruggles()}">
+                <td>
+                  <a class="sa-link" th:href="${item.href()}" th:text="${item.title()}">Title</a>
+                  <div class="sa-sub" th:text="${item.reason()}">Reason</div>
+                </td>
+                <td class="sa-num" th:text="${item.totalMinutes()} + 'm'">40m</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="sa-panel-head mt-3" th:if="${!#lists.isEmpty(statistics.time().efficientMastery())}">
+            <h3 class="sa-panel-title">Efficient mastery</h3>
+            <span class="sa-panel-meta">Fast + solid</span>
+          </div>
+          <table class="sa-table" th:if="${!#lists.isEmpty(statistics.time().efficientMastery())}">
+            <tbody>
+              <tr th:each="item : ${statistics.time().efficientMastery()}">
+                <td>
+                  <a class="sa-link" th:href="${item.href()}" th:text="${item.title()}">Title</a>
+                  <div class="sa-sub" th:text="${item.reason()}">Reason</div>
+                </td>
+                <td class="sa-num" th:text="${item.latestRating()}">5</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Classic metrics -->
+    <div class="row g-4">
+      <div class="col-lg-6">
+        <section class="card-surface p-4 mb-4">
+          <h2 class="h5 mb-3">Rating distribution</h2>
+          <div th:each="stat : ${statistics.ratingStats()}" class="mb-3">
+            <div class="d-flex justify-content-between small mb-1">
+              <span th:text="'Rating ' + ${stat.rating()}">Rating 3</span>
+              <span th:text="${stat.count()}">0</span>
+            </div>
+            <div class="progress-thin">
+              <div class="progress-thin-bar" th:style="'width:' + ${stat.barWidth()} + '%'"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card-surface p-4">
+          <h2 class="h5 mb-3">Scheduler</h2>
+          <p class="mb-2">
+            Active algorithm:
+            <span class="badge text-bg-light border text-uppercase" th:text="${statistics.schedulerName()}">sm2</span>
+          </p>
+          <p class="text-muted small mb-0">
+            Dominated = last 2 reviews with rating ≥ 4. Configure via
+            <code>app.review.scheduler</code>.
+          </p>
+        </section>
+      </div>
+
+      <div class="col-lg-6">
+        <section class="card-surface p-4 mb-4">
+          <h2 class="h5 mb-3">Reviews by month</h2>
+          <div th:each="stat : ${statistics.monthlyStats()}" class="mb-3">
+            <div class="d-flex justify-content-between small mb-1">
+              <span th:text="${stat.label()}">Jan 2026</span>
+              <span th:text="${stat.count()}">0</span>
+            </div>
+            <div class="progress-thin">
+              <div class="progress-thin-bar" th:style="'width:' + ${stat.barWidth()} + '%'"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card-surface p-4">
+          <h2 class="h5 mb-3">Streaks</h2>
+          <dl class="mb-0">
+            <dt class="text-muted small">Current streak</dt>
+            <dd class="mb-3" th:text="${statistics.currentStreak()} + ' days'">0 days</dd>
+            <dt class="text-muted small">Longest streak</dt>
+            <dd class="mb-0" th:text="${statistics.longestStreak()} + ' days'">0 days</dd>
+          </dl>
+        </section>
+      </div>
     </div>
   </div>
 </div>

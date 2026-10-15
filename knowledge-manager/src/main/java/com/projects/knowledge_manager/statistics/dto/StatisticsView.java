@@ -10,4 +10,6 @@ public record StatisticsView(
     List<RatingStatView> ratingStats,
     List<MonthStatView> monthlyStats,
     long masteredProblems,
-    long problemsWithoutReview) {}
+    long problemsWithoutReview,
+    KnowledgeAnalysisView knowledge,
+    TimeAnalysisView time) {}

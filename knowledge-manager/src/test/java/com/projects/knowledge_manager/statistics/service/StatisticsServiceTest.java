@@ -57,5 +57,11 @@ class StatisticsServiceTest {
     assertThat(stats.ratingStats()).hasSize(5);
     assertThat(stats.monthlyStats()).isNotEmpty();
     assertThat(stats.masteredProblems()).isEqualTo(1);
+    assertThat(stats.knowledge()).isNotNull();
+    assertThat(stats.knowledge().dominatedCount()).isEqualTo(1);
+    assertThat(stats.knowledge().studyNext()).isNotNull();
+    assertThat(stats.time()).isNotNull();
+    assertThat(stats.time().minutesLast7Days()).isEqualTo(35);
+    assertThat(stats.time().averageSessionMinutes()).isEqualTo(17.5);
   }
 }
