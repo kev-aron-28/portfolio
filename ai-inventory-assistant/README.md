@@ -23,6 +23,17 @@ Los valores locales se pueden ajustar exportando `POSTGRES_PORT`, `POSTGRES_DB`,
 
 `mvn test` ejecuta las pruebas que se añadan en `src/test/java`. El proyecto incluye JUnit 5 y Mockito a través de `spring-boot-starter-test`.
 
+## OpenAI
+
+La integración real usa la Responses API. Configura la clave y el modelo antes de iniciar la aplicación.
+
+```sh
+export OPENAI_API_KEY=...
+export OPENAI_MODEL=gpt-5.4-mini
+```
+
+La primera ejecución expone únicamente herramientas de consulta. Cuando esas consultas funcionen, habilita la propuesta de movimientos con `ASSISTANT_WRITE_TOOLS_ENABLED=true`. La confirmación sigue siendo un endpoint explícito y no se expone como herramienta del modelo.
+
 ## Primera función de inventario
 
 1. Crear el esquema de inventario, la entidad JPA y la consulta por SKU.

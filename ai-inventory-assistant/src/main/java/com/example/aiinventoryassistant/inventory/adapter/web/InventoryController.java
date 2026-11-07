@@ -32,15 +32,20 @@ public class InventoryController {
     @PostMapping("/stock-movements/{id}/confirm")
     public Movement confirm(@PathVariable UUID id) { return service.confirm(id); }
 
+    @GetMapping("/stock-movements/{id}")
+    public Movement movement(@PathVariable UUID id) { return service.findMovement(id); }
+
     @GetMapping("/stock-movements")
     public List<Movement> movements() { return service.movements(); }
 
     @ExceptionHandler(NoSuchElementException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Map<String, String> missing(NoSuchElementException error) { return Map.of("message", error.getMessage()); }
+
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> invalid(IllegalArgumentException error) { return Map.of("message", error.getMessage()); }
+    
     @ExceptionHandler({IllegalStateException.class, ArithmeticException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
     public Map<String, String> conflict(RuntimeException error) { return Map.of("message", error.getMessage()); }

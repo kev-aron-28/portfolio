@@ -14,5 +14,6 @@ public class InventoryService {
         return inventory.propose(new Movement(UUID.randomUUID(), sku, warehouse, quantity, type, Movement.Status.PENDING));
     }
     public Movement confirm(UUID id) { return inventory.confirm(id); }
+    public Movement findMovement(UUID id) { return inventory.findMovement(id); }
     public List<Movement> movements() { return inventory.movements(); }
 }

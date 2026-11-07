@@ -10,5 +10,6 @@ public interface InventoryPort {
     List<Stock> warehouseStock(String warehouse);
     Movement propose(Movement movement);
     Movement confirm(UUID id);
+    Movement findMovement(UUID id);
     List<Movement> movements();
 }
