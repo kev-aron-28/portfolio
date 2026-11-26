@@ -1,0 +1,11 @@
+ALTER TABLE observatory_posting_versions ADD COLUMN published_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE observatory_posting_versions ADD COLUMN country_code VARCHAR(2);
+ALTER TABLE observatory_posting_versions ADD COLUMN region TEXT;
+ALTER TABLE observatory_posting_versions ADD COLUMN city TEXT;
+ALTER TABLE observatory_posting_versions ADD COLUMN work_mode VARCHAR(10) CHECK (work_mode IN ('ONSITE', 'HYBRID', 'REMOTE'));
+ALTER TABLE observatory_posting_versions ADD COLUMN weekly_hours NUMERIC(5,2) CHECK (weekly_hours > 0 AND weekly_hours <= 168);
+ALTER TABLE observatory_posting_versions ADD COLUMN contract_type VARCHAR(15) CHECK (contract_type IN ('PERMANENT', 'FIXED_TERM', 'INDEPENDENT', 'INTERNSHIP'));
+ALTER TABLE observatory_posting_versions ADD COLUMN seniority VARCHAR(10) CHECK (seniority IN ('TRAINEE', 'JUNIOR', 'MID', 'SENIOR', 'LEAD'));
+ALTER TABLE observatory_posting_versions ADD COLUMN remote_scope VARCHAR(12) CHECK (remote_scope IN ('COUNTRY_ONLY', 'WORLDWIDE', 'RESTRICTED'));
+ALTER TABLE observatory_posting_versions ADD COLUMN remote_details TEXT;
+ALTER TABLE observatory_posting_versions ADD COLUMN context_evidence TEXT;

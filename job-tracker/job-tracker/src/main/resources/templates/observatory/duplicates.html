@@ -1,0 +1,12 @@
+<!DOCTYPE html><html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::section})}"><body><section>
+<a href="/observatory" class="btn btn-outline-secondary mb-3">Volver al observatorio</a>
+<p>Revisa si varios registros describen el mismo anuncio. Las coincidencias son pistas para revisar, sin probabilidad de identidad calculada. Unirlos conserva por separado sus textos, capturas y correcciones.</p>
+<div id="duplicate-notice" role="status" aria-live="polite"></div>
+<h2 class="h5">Candidatos a duplicado</h2><button id="refresh-duplicates" type="button" class="btn btn-outline-primary mb-3">Actualizar revisión</button>
+<div id="duplicate-candidates"></div><button id="candidate-prev" type="button" class="btn btn-outline-secondary">Anteriores</button> <button id="candidate-next" type="button" class="btn btn-outline-secondary">Siguientes</button>
+<div id="pair-detail" class="border rounded p-3 my-4" hidden><h2 class="h5">Comparar registros</h2><div class="row g-3"><div id="pair-left" class="col-md-6"></div><div id="pair-right" class="col-md-6"></div></div>
+<form id="duplicate-decision-form" class="row g-3 mt-2"><div class="col-md-6"><label for="duplicate-decision" class="form-label">Decisión</label><select id="duplicate-decision" class="form-select"><option value="MERGED">Unir para el análisis</option><option value="DISTINCT">Mantener como anuncios distintos</option><option value="UNREVIEWED">Deshacer decisión y volver a revisión</option></select></div>
+<div class="col-md-6"><label for="duplicate-reason" class="form-label">Motivo y evidencia de la decisión</label><textarea id="duplicate-reason" class="form-control" required maxlength="4000"></textarea></div><div><button type="submit" class="btn btn-primary">Guardar decisión</button></div></form><div id="pair-history" class="mt-3"></div></div>
+<h2 class="h5 mt-4">Grupos unidos para el análisis</h2><div id="duplicate-groups"></div>
+<h2 class="h5 mt-4">Decisiones guardadas</h2><p>Puedes deshacer una unión o recuperar un candidato descartado. Si los datos cambiaron desde la revisión, se indicará aquí.</p><div id="duplicate-reviews"></div>
+<script src="/js/observatory-duplicates.js" defer></script></section></body></html>

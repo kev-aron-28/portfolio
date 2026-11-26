@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::section})}"><body><section>
+<a href="/observatory/schedules" class="btn btn-outline-primary mb-3">Programación del observatorio</a>
+<a href="/observatory/captures" class="btn btn-outline-primary mb-3">Segmentos y capturas</a>
+<a href="/observatory/duplicates" class="btn btn-outline-primary mb-3">Revisar duplicados</a>
+<p>Estas vacantes sirven como datos de mercado. El registro manual se identifica como evidencia exploratoria.</p>
+<div id="notice" role="status" aria-live="polite" class="mb-3"></div>
+<details class="border rounded p-3 mb-4"><summary>Catálogo de habilidades</summary>
+<p>Los cambios crean versiones nuevas. Los anuncios anteriores conservan la versión que utilizaban.</p>
+<form id="skill-form" class="row g-3">
+<div class="col-md-6"><label for="catalog-select" class="form-label">Habilidad a editar</label><select id="catalog-select" class="form-select"><option value="">Crear habilidad</option></select></div>
+<div class="col-md-6"><label for="skill-name" class="form-label">Nombre</label><input id="skill-name" class="form-control" required maxlength="200"></div>
+<div class="col-md-6"><label for="skill-aliases" class="form-label">Alias (uno por línea)</label><textarea id="skill-aliases" class="form-control"></textarea></div>
+<div class="col-md-6"><label for="skill-reason" class="form-label">Motivo</label><input id="skill-reason" class="form-control" required></div>
+<div><button type="submit" class="btn btn-outline-primary">Guardar habilidad</button></div>
+</form><pre id="catalog-history" class="text-wrap mt-3"></pre></details>
+<div class="row g-4"><div class="col-lg-5"><h2 class="h5">Vacantes registradas</h2>
+<button id="new-posting" class="btn btn-outline-primary mb-3" type="button">Nuevo registro</button>
+<ul id="postings" class="list-group mb-3"></ul>
+<button id="previous" class="btn btn-outline-secondary" type="button">Anteriores</button>
+<button id="next" class="btn btn-outline-secondary" type="button">Siguientes</button>
+<p id="range" class="mt-2"></p></div>
+<div class="col-lg-7"><h2 id="form-title" class="h5">Registrar vacante</h2>
+<p id="extraction-notice" role="status"></p><p>Los campos vacíos se conservan como desconocidos. Los salarios no se convierten ni se completan automáticamente.</p>
+<form id="posting-form" class="row g-3">
+<fieldset id="evidence" class="row g-3 m-0 p-0"><legend class="h6">Evidencia original</legend>
+<div class="col-md-6"><label class="form-label" for="source">Fuente</label><input id="source" name="source" class="form-control" required maxlength="200"></div>
+<div class="col-md-6"><label for="externalId" class="form-label">Identificador del anuncio en la fuente (opcional)</label><input id="externalId" name="externalId" class="form-control" maxlength="300"></div>
+<div class="col-md-6"><label class="form-label" for="url">URL (opcional)</label><input id="url" name="url" type="url" class="form-control"></div>
+<div class="col-12"><label class="form-label" for="observedAt">Fecha en que viste el anuncio (hora local)</label><input id="observedAt" name="observedAt" type="datetime-local" step="0.001" class="form-control" required></div>
+<div class="col-12"><label class="form-label" for="originalText">Texto original del anuncio</label><textarea id="originalText" name="originalText" class="form-control" required rows="5"></textarea></div>
+</fieldset>
+<div id="identity-conflict" class="col-12" hidden><label for="identityConflictReason" class="form-label">Si confirmaste que es otro anuncio con la misma URL o identificador, explica el motivo para registrarlo independiente</label><textarea id="identityConflictReason" class="form-control" maxlength="4000"></textarea></div>
+<div id="posting-identity" class="col-12" role="status"></div>
+<div class="col-md-6"><label class="form-label" for="title">Título</label><input class="form-control" id="title" name="title" type="text" required></div>
+<div class="col-md-6"><label class="form-label" for="company">Empresa</label><input class="form-control" id="company" name="company" type="text"></div>
+<div class="col-md-6"><label class="form-label" for="location">Ubicación</label><input class="form-control" id="location" name="location" type="text"></div>
+<div class="col-md-6"><label class="form-label" for="salaryMin">Salario mínimo</label><input class="form-control" id="salaryMin" name="salaryMin" type="number" min="0.01" step="0.01"></div>
+<div class="col-md-6"><label class="form-label" for="salaryMax">Salario máximo</label><input class="form-control" id="salaryMax" name="salaryMax" type="number" min="0.01" step="0.01"></div>
+<div class="col-md-6"><label class="form-label" for="currency">Moneda ISO (ej. MXN)</label><input class="form-control" id="currency" name="currency" type="text"></div>
+<div class="col-md-6"><label for="period" class="form-label">Periodicidad</label><select id="period" name="period" class="form-select"><option value="">Desconocida</option><option value="HOUR">Hora</option><option value="DAY">Día</option><option value="WEEK">Semana</option><option value="MONTH">Mes</option><option value="YEAR">Año</option></select></div>
+<div class="col-md-6"><label for="taxBasis" class="form-label">Base salarial</label><select id="taxBasis" name="taxBasis" class="form-select"><option value="">Desconocida</option><option value="GROSS">Bruto</option><option value="NET">Neto</option></select></div>
+<div class="col-12"><label for="requirements" class="form-label">Requisitos transcritos (dejar vacío si se desconocen)</label><textarea id="requirements" name="requirements" class="form-control"></textarea></div>
+
+<fieldset class="col-12"><legend class="h6">Contexto del puesto</legend>
+<p>Transcribe sólo información publicada. Para campos conocidos, incluye una cita exacta del original que los respalde.</p><div class="row g-3">
+<div class="col-md-6"><label for="ctx-publishedAt" class="form-label">Fecha de publicación (hora local; sólo si conoces el instante)</label><input id="ctx-publishedAt" type="datetime-local" class="form-control" step="0.001"></div>
+<div class="col-md-6"><label for="ctx-countryCode" class="form-label">País del mercado salarial (ISO, ej. MX)</label><input id="ctx-countryCode" type="text" class="form-control" maxlength="2"></div>
+<div class="col-md-6"><label for="ctx-region" class="form-label">Estado o región</label><input id="ctx-region" type="text" class="form-control"></div>
+<div class="col-md-6"><label for="ctx-city" class="form-label">Ciudad</label><input id="ctx-city" type="text" class="form-control"></div>
+<div class="col-md-6"><label for="ctx-weeklyHours" class="form-label">Horas por semana</label><input id="ctx-weeklyHours" type="number" class="form-control" min="0.01" max="168" step="0.01"></div>
+<div class="col-md-6"><label for="ctx-workMode" class="form-label">Modalidad</label><select id="ctx-workMode" class="form-select"><option value="">Desconocido</option><option value="ONSITE">Presencial</option><option value="HYBRID">Híbrida</option><option value="REMOTE">Remota</option></select></div>
+<div class="col-md-6"><label for="ctx-contractType" class="form-label">Contratación</label><select id="ctx-contractType" class="form-select"><option value="">Desconocido</option><option value="PERMANENT">Indefinida</option><option value="FIXED_TERM">Plazo fijo</option><option value="INDEPENDENT">Independiente</option><option value="INTERNSHIP">Prácticas</option></select></div>
+<div class="col-md-6"><label for="ctx-seniority" class="form-label">Nivel publicado</label><select id="ctx-seniority" class="form-select"><option value="">Desconocido</option><option value="TRAINEE">Trainee</option><option value="JUNIOR">Junior</option><option value="MID">Intermedio</option><option value="SENIOR">Senior</option><option value="LEAD">Lead</option></select></div>
+<div class="col-md-6"><label for="ctx-remoteScope" class="form-label">Alcance del trabajo remoto</label><select id="ctx-remoteScope" class="form-select"><option value="">Desconocido</option><option value="COUNTRY_ONLY">Sólo país indicado</option><option value="WORLDWIDE">Mundial</option><option value="RESTRICTED">Otras restricciones</option></select></div>
+<div class="col-12"><label for="ctx-remoteDetails" class="form-label">Restricciones remotas (si elegiste otras restricciones)</label><textarea id="ctx-remoteDetails" class="form-control"></textarea></div>
+<div class="col-12"><label for="ctx-evidence" class="form-label">Cita del original que respalda el contexto</label><textarea id="ctx-evidence" class="form-control"></textarea></div>
+</div></fieldset>
+<fieldset class="col-12"><legend class="h6">Habilidades y evidencia</legend>
+<p>Copia un fragmento exacto del texto original para cada habilidad. Seleccionarlas no implica que sean obligatorias.</p>
+<div class="form-check mb-3"><input type="checkbox" id="requirements-reviewed" class="form-check-input"><label for="requirements-reviewed" class="form-check-label">Revisé las habilidades del anuncio (incluso si no identifiqué ninguna)</label></div>
+<div id="skill-requirements"></div><button id="add-requirement" type="button" class="btn btn-outline-secondary">Añadir habilidad</button>
+</fieldset>
+<div id="readiness" class="col-12" role="status"></div>
+<fieldset id="capture-observation" class="col-12" hidden><legend class="h6">Nueva observación en captura</legend>
+<p id="capture-context"></p><p>Conserva el texto que ves ahora. Si cambió, actualiza también los datos estructurados del formulario.</p>
+<label for="capture-availability" class="form-label">Disponibilidad observada</label><select id="capture-availability" class="form-select mb-2"><option value="AVAILABLE">Disponible</option><option value="UNAVAILABLE">No disponible al consultar su página</option><option value="UNKNOWN">No se pudo determinar</option></select>
+<label for="capture-observedAt" class="form-label">Fecha de esta observación (hora local)</label><input id="capture-observedAt" type="datetime-local" step="0.001" class="form-control mb-2">
+<label for="capture-text" class="form-label">Texto original de esta nueva observación</label><textarea id="capture-text" class="form-control" rows="5"></textarea>
+<p>No encontrar un anuncio o no poder acceder a él no demuestra que se haya cubierto el puesto.</p></fieldset>
+<div id="reason-container" class="col-12" hidden><label for="reason" class="form-label">Motivo de corrección</label><textarea id="reason" name="reason" class="form-control"></textarea></div>
+<div class="col-12"><button id="save" class="btn btn-primary" type="submit">Guardar registro</button></div></form>
+<div id="detail" class="mt-4" hidden><h2 class="h5">Original e historial</h2><p id="provenance"></p><pre id="original" class="text-wrap border rounded p-3"></pre><div id="history"></div><h2 class="h5 mt-3">Observaciones del anuncio</h2><div id="posting-observations"></div></div>
+</div></div><script src="/js/observatory.js" defer></script>
+</section></body></html>

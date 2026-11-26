@@ -11,6 +11,11 @@ import com.projects.job_tracker.domain.exception.ResourceNotFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    @ExceptionHandler(com.projects.job_tracker.domain.observatory.DuplicateIdentityException.class)
+    public ResponseEntity<Map<String,Object>> handleDuplicateIdentity(com.projects.job_tracker.domain.observatory.DuplicateIdentityException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error",ex.getMessage(),"matchingPostingIds",ex.getMatches()));
+    }
+
 
 	@ExceptionHandler(ResourceNotFoundException.class)
 	public ResponseEntity<Map<String, String>> handleNotFound(ResourceNotFoundException ex) {

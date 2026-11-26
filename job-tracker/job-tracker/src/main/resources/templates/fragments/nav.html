@@ -8,6 +8,9 @@
 			<i data-lucide="layout-dashboard" aria-hidden="true"></i>
 			<span>Dashboard</span>
 		</a>
+        <a th:href="@{/observatory}" class="sidebar-link" th:classappend="${activeNav == 'observatory'} ? 'active'">
+            <i data-lucide="telescope" aria-hidden="true"></i><span>Observatorio</span>
+        </a>
 		<a th:href="@{/segments}" class="sidebar-link" th:classappend="${activeNav == 'segments'} ? 'active'">
 			<i data-lucide="pie-chart" aria-hidden="true"></i>
 			<span>Segmentos</span>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content" class="learning-page" lang="es">
+  <link rel="stylesheet" th:href="@{/css/learning.css}">
+  <header class="learning-header">
+    <h1 class="learning-title">Aprendizaje</h1>
+  </header>
+
+  <div th:replace="~{learning/focus :: timer(${focus}, ${null}, ${null}, ${null})}"></div>
+
+  <div class="learning-overview">
+    <section class="learning-surface learning-queue" aria-labelledby="learning-today">
+      <div class="learning-section-head">
+        <h2 id="learning-today">Repasos de hoy</h2>
+        <span class="learning-queue-count" th:unless="${due.isEmpty()}" th:text="${due.size()}"
+              th:attr="aria-label=|${due.size()} pendientes|"></span>
+      </div>
+      <p class="learning-empty learning-empty-compact" th:if="${due.isEmpty()}">
+        <i class="bi bi-check2" aria-hidden="true"></i> Estás al día con tus repasos.
+      </p>
+      <ul class="learning-rows" th:unless="${due.isEmpty()}">
+        <li th:each="node : ${due}">
+          <a class="learning-review-row"
+             th:href="@{/learning/{id}(id=${node.treeId},section=${node.sectionId},selected=${node.id})} + '#review'">
+            <span class="learning-row-name">
+              <strong th:text="${node.title}"></strong>
+              <small class="learning-muted" th:text="${treeTitles[node.treeId]}"></small>
+            </span>
+            <time th:datetime="${node.nextReviewOn}" class="learning-review-color"
+                  th:text="${node.nextReviewOn.equals(today) ? 'Hoy' : 'Desde el ' + #temporals.format(node.nextReviewOn, 'd MMM', learningLocale)}"></time>
+            <i class="bi bi-chevron-right learning-row-arrow" aria-hidden="true"></i>
+          </a>
+        </li>
+      </ul>
+    </section>
+
+    <section class="learning-surface learning-library" aria-labelledby="learning-trees">
+      <div class="learning-section-head">
+        <h2 id="learning-trees">Mis árboles</h2>
+        <span class="learning-muted" th:unless="${trees.isEmpty()}"
+              th:text="${trees.size()} == 1 ? '1 área' : | ${trees.size()} áreas|"></span>
+      </div>
+
+      <ul class="learning-rows" th:unless="${trees.isEmpty()}">
+        <li th:each="item : ${trees}">
+          <a class="learning-tree-row" th:href="@{/learning/{id}(id=${item.tree.id})}">
+            <span class="learning-tree-icon" aria-hidden="true"><i class="bi bi-diagram-3"></i></span>
+            <span class="learning-row-name">
+              <strong th:text="${item.tree.title}"></strong>
+              <small class="learning-muted">
+                <span th:if="${item.due > 0}" class="learning-review-color"
+                      th:text="${item.due == 1 ? '1 repaso pendiente' : item.due + ' repasos pendientes'}"></span>
+                <span th:if="${item.due > 0}" aria-hidden="true"> · </span>
+                <span th:replace="~{learning/pieces :: duration(${item.seconds})}"></span> de enfoque
+              </small>
+            </span>
+            <span class="learning-row-progress">
+              <span th:text="${item.total == 0 ? 'Sin temas' : item.completed + ' de ' + item.total + ' completados'}"></span>
+              <progress th:if="${item.total > 0}" th:value="${item.completed}" th:max="${item.total}" aria-label="Avance del temario"></progress>
+            </span>
+            <i class="bi bi-chevron-right learning-row-arrow" aria-hidden="true"></i>
+          </a>
+        </li>
+      </ul>
+      <div th:if="${trees.isEmpty()}" class="learning-empty">
+        <h3>Empieza con un área</h3>
+        <p>Crea un árbol y agrega los temas que quieras aprender.</p>
+      </div>
+
+      <details class="learning-disclosure learning-create-tree" th:open="${trees.isEmpty() or error != null}">
+        <summary class="learning-add"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nuevo árbol</summary>
+        <form method="post" th:action="@{/learning}" class="learning-form">
+          <p class="learning-message learning-message-error" role="alert" th:if="${error}" th:text="${error}"></p>
+          <label class="learning-field" for="tree-title">
+            Nombre del área
+            <input class="form-control" id="tree-title" name="title" maxlength="120" required placeholder="Ej. Electrónica">
+          </label>
+          <button class="learning-button learning-primary">Crear árbol</button>
+        </form>
+      </details>
+    </section>
+
+    <section class="learning-surface learning-profile" aria-labelledby="learning-profile">
+      <div class="learning-section-head">
+        <h2 id="learning-profile">Ficha de personaje</h2>
+      </div>
+      <div class="learning-avatar" th:attr="data-avatar-stage=${avatarStage}">
+        <canvas width="400" height="340" role="img" th:attr="aria-label=|Personaje de nivel ${avatarRank}|"></canvas>
+        <div class="learning-avatar-progress">
+          <div><strong th:text="${avatarRank}"></strong><span th:text="|${power} de poder|"></span></div>
+          <small data-avatar-outfit></small>
+          <progress th:if="${avatarStage < 3}" th:value="${power}" th:max="${nextPower}"
+                    th:attr="aria-label=|Poder para subir a ${nextRank}|"></progress>
+          <small th:if="${avatarStage < 3}" th:text="|${nextPower - power} para llegar a ${nextRank}|"></small>
+          <label class="learning-avatar-turn" hidden>Girar personaje
+            <input type="range" min="-180" max="180" value="18" aria-label="Girar personaje">
+          </label>
+        </div>
+      </div>
+      <dl class="learning-attributes">
+        <div><dt>Entendimiento</dt><dd th:text="${stats.understanding}"></dd></div>
+        <div><dt>Destreza</dt><dd th:text="${stats.dexterity}"></dd></div>
+        <div><dt>Aplicación</dt><dd th:text="${stats.application}"></dd></div>
+        <div><dt>Maestría</dt><dd th:text="${stats.mastery}"></dd></div>
+      </dl>
+      <div class="learning-total">
+        <span><i class="bi bi-stopwatch" aria-hidden="true"></i> Enfoque total</span>
+        <strong th:replace="~{learning/pieces :: duration(${time.seconds})}"></strong>
+      </div>
+    </section>
+  </div>
+  <script defer th:src="@{/js/learning.js}"></script>
+  <script defer th:src="@{/js/learning-avatar.js}"></script>
+</div>
+</body>
+</html>

@@ -1,0 +1,14 @@
+<div th:fragment="timer(focus, treeId, selected, section)" th:if="${focus != null}" class="learning-timer">
+  <span class="learning-timer-icon" aria-hidden="true"><i class="bi bi-stopwatch"></i></span>
+  <div class="learning-timer-label">
+    <strong th:text="${focus.title}"></strong>
+    <small th:text="${focus.activity == 'REVIEW' ? 'Repaso en curso' : (focus.activity == 'PRACTICE' ? 'Práctica en curso' : 'Estudio en curso')}"></small>
+  </div>
+  <span class="learning-timer-clock" data-focus-clock th:attr="data-started-at=${focus.startedAt}" aria-label="Tiempo de enfoque transcurrido">—</span>
+  <form method="post" th:action="@{/learning/focus/{id}/stop(id=${focus.id})}">
+    <input th:if="${treeId != null}" type="hidden" name="treeId" th:value="${treeId}">
+    <input th:if="${section != null}" type="hidden" name="section" th:value="${section}">
+    <input th:if="${selected != null}" type="hidden" name="selected" th:value="${selected}">
+    <button class="learning-button learning-secondary">Terminar enfoque</button>
+  </form>
+</div>

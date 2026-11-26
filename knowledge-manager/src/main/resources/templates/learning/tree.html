@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/main :: layout(~{::content})}">
+<body>
+<div th:fragment="content" class="learning-page learning-tree-page" lang="es">
+  <link rel="stylesheet" th:href="@{/css/learning.css}">
+  <section class="learning-map-panel" aria-label="Mapa de habilidades">
+      <div id="learning-map-viewport" class="learning-map-scroll" tabindex="0" aria-label="Mapa desplazable. Usa las flechas para recorrerlo y más o menos para cambiar el zoom.">
+        <div class="learning-map" data-learning-map
+             th:attr="data-board-section=${currentSection?.id},data-position-limit=${boardPositionLimit},data-position-url=@{/learning/{id}/board-position(id=${tree.id})}">
+          <canvas aria-hidden="true"></canvas>
+          <div class="learning-map-hub">
+            <i class="bi" th:classappend="${currentSection == null ? 'bi-diagram-3' : 'bi-folder2-open'}" aria-hidden="true"></i>
+            <strong th:text="${currentSection == null ? tree.title : currentSection.title}"></strong>
+          </div>
+          <span th:each="edge : ${visibleEdges}" hidden data-learning-edge
+                th:attr="data-from=${edge.prerequisiteId},data-to=${edge.nodeId},data-required=${edge.required}"></span>
+          <ul class="learning-level" th:unless="${sectionChildren.isEmpty()}">
+            <li th:each="child : ${sectionChildren}" th:with="progress=${sectionProgress[child.id]}">
+              <a class="learning-node learning-section-point"
+                 th:href="@{/learning/{id}(id=${tree.id},section=${child.id})}"
+                 th:attr="data-section-point=${child.id},data-section-total=${progress.total},data-board-x=${child.boardX},data-board-y=${child.boardY},aria-label=|Sección ${child.title}. ${progress.completed} de ${progress.total} completados.|">
+                <span class="learning-skill-emblem" data-kind="SECTION" aria-hidden="true">
+                  <i class="bi bi-folder2" aria-hidden="true"></i>
+                </span>
+                <strong th:text="${child.title}"></strong>
+                <span class="learning-section-count" th:text="${progress.total == 0 ? 'Sin nodos' : progress.completed + '/' + progress.total + ' completados'}"></span>
+              </a>
+            </li>
+          </ul>
+          <ul class="learning-level" th:each="level : ${levels}">
+            <li th:each="item : ${level}">
+              <a class="learning-node"
+                 th:href="@{/learning/{id}(id=${tree.id},section=${currentSection?.id},selected=${item.id})} + '#node-detail'"
+                 th:attr="data-node=${item.id},data-board-x=${item.boardX},data-board-y=${item.boardY},data-status=${statuses[item.id].name()},aria-current=${node != null and node.id == item.id ? 'true' : null}">
+                <span class="learning-skill-emblem" th:attr="data-kind=${item.kind.name()}" aria-hidden="true">
+                  <i class="bi" th:classappend="${item.kind.icon}"></i>
+                </span>
+                <strong th:text="${item.title}"></strong>
+                <span th:replace="~{learning/pieces :: status(${statuses[item.id]})}"></span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    <header class="learning-board-toolbar">
+      <a class="learning-button learning-secondary learning-board-back"
+         th:href="${currentSection == null} ? @{/learning} : @{/learning/{id}(id=${tree.id},section=${currentSection.parentId})}"
+         th:attr="aria-label=${currentSection == null ? 'Volver a Aprendizaje' : 'Subir un nivel'}"
+         th:title="${currentSection == null ? 'Volver a Aprendizaje' : 'Subir un nivel'}">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+      </a>
+      <h1 class="learning-board-title" th:text="${currentSection == null ? tree.title : currentSection.title}"></h1>
+      <details class="learning-board-progress">
+        <summary aria-label="Ver progreso del árbol" title="Progreso"><i class="bi bi-bar-chart" aria-hidden="true"></i> <span th:text="|${completed}/${total}|"></span></summary>
+  <dl class="learning-summary learning-surface">
+    <div>
+      <dt>Avance del temario</dt>
+      <dd>
+        <strong th:text="|${completed} de ${total}|"></strong>
+        <progress th:value="${completed}" th:max="${total > 0 ? total : 1}" aria-label="Avance del temario"></progress>
+      </dd>
+    </div>
+    <div>
+      <dt>Puntos disponibles en el árbol</dt>
+      <dd><strong th:text="${points}"></strong></dd>
+    </div>
+    <div>
+      <dt>Tiempo de enfoque</dt>
+      <dd><strong><span th:replace="~{learning/pieces :: duration(${time.seconds})}"></span></strong></dd>
+      <dd class="learning-time-breakdown" th:if="${time.seconds > 0}">
+        <span th:if="${time.study > 0}">Estudio <span th:replace="~{learning/pieces :: duration(${time.study})}"></span></span>
+        <span th:if="${time.practice > 0}">Práctica <span th:replace="~{learning/pieces :: duration(${time.practice})}"></span></span>
+        <span th:if="${time.review > 0}">Repaso <span th:replace="~{learning/pieces :: duration(${time.review})}"></span></span>
+      </dd>
+    </div>
+  </dl>
+      </details>
+      <details class="learning-disclosure learning-add-node" data-node-editor th:open="${nodes.isEmpty() or (error != null and node == null)}">
+        <summary class="learning-add" aria-label="Agregar nodo" title="Agregar nodo"><i class="bi bi-plus-lg" aria-hidden="true"></i> <span class="learning-board-label">Agregar nodo</span></summary>
+        <div data-editor-content>
+          <header class="learning-editor-head">
+            <h2 id="learning-editor-title">Nuevo nodo</h2>
+            <button type="button" class="learning-button learning-secondary" data-editor-close hidden aria-label="Cerrar creador"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+          </header>
+          <form th:replace="~{learning/tree :: editor(${null})}"></form>
+        </div>
+      </details>
+      <details class="learning-disclosure learning-section-menu">
+        <summary th:attr="aria-label=${currentSection == null ? 'Administrar secciones' : 'Administrar subsecciones'}"
+                 th:title="${currentSection == null ? 'Administrar secciones' : 'Administrar subsecciones'}">
+          <i class="bi bi-folder-plus" aria-hidden="true"></i>
+          <span class="learning-board-label" th:text="${currentSection == null ? 'Secciones' : 'Subsecciones'}"></span>
+        </summary>
+        <div class="learning-section-menu-panel">
+          <form method="post" th:action="@{/learning/{id}/sections(id=${tree.id})}" class="learning-form">
+            <input th:if="${currentSection != null}" type="hidden" name="parentId" th:value="${currentSection.id}">
+            <label class="learning-field">
+              <span th:text="${currentSection == null ? 'Nombre de la sección' : 'Nombre de la subsección'}"></span>
+              <input class="form-control" name="title" maxlength="120" required th:placeholder="${currentSection == null ? 'Ej. Concurrencia' : 'Ej. Sincronización'}">
+            </label>
+            <button class="learning-button learning-primary" th:text="${currentSection == null ? 'Crear sección' : 'Crear subsección'}"></button>
+          </form>
+          <form th:if="${currentSection != null}" method="post" th:action="@{/learning/{id}/sections(id=${tree.id})}" class="learning-form learning-section-rename">
+            <input type="hidden" name="id" th:value="${currentSection.id}">
+            <label class="learning-field">
+              Renombrar esta sección
+              <input class="form-control" name="title" maxlength="120" required th:value="${currentSection.title}">
+            </label>
+            <button class="learning-button learning-secondary">Guardar nombre</button>
+          </form>
+        </div>
+      </details>
+  <details class="learning-disclosure learning-tree-delete" th:if="${currentSection == null}">
+    <summary aria-label="Eliminar árbol" title="Eliminar árbol"><i class="bi bi-trash3" aria-hidden="true"></i> <span class="learning-board-label">Eliminar árbol</span></summary>
+    <form method="post" th:action="@{/learning/{id}/delete(id=${tree.id})}" class="learning-form">
+      <p th:text="|Se eliminará «${tree.title}» junto con sus nodos, repasos y sesiones de enfoque.|"></p>
+      <button class="learning-button btn-danger">Eliminar definitivamente</button>
+    </form>
+  </details>
+    </header>
+
+    <div class="learning-board-feedback">
+      <nav th:if="${currentSection != null}" class="learning-board-trail" aria-label="Ruta de secciones">
+        <a th:href="@{/learning/{id}(id=${tree.id})}" th:text="${tree.title}"></a>
+        <span th:each="step : ${sectionTrail}">
+          <i class="bi bi-chevron-right" aria-hidden="true"></i>
+          <a th:if="${step.id != currentSection.id}" th:href="@{/learning/{id}(id=${tree.id},section=${step.id})}" th:text="${step.title}"></a>
+          <strong th:if="${step.id == currentSection.id}" aria-current="page" th:text="${step.title}"></strong>
+        </span>
+      </nav>
+  <div th:replace="~{learning/focus :: timer(${focus}, ${tree.id}, ${node?.id}, ${currentSection?.id})}"></div>
+  <p class="learning-message learning-message-error" th:if="${error != null and node == null}" role="alert" th:text="${error}"></p>
+      <p class="learning-board-hint learning-arrange-hint" data-arrange-help hidden>
+        Arrastra las ramas y los nodos para acomodarlos. Con el teclado, enfócalos y usa las flechas.
+      </p>
+      <p class="learning-board-hint learning-position-status" role="status" data-position-status></p>
+      <p th:if="${visibleNodes.isEmpty() and sectionChildren.isEmpty()}" class="learning-board-hint"
+         th:text="${currentSection == null ? 'Agrega un nodo o crea una sección para empezar.' : 'Agrega un nodo o crea una subsección.'}"></p>
+    </div>
+
+    <div class="learning-board-navigation" th:unless="${visibleNodes.isEmpty() and sectionChildren.isEmpty()}">
+      <div class="learning-board-legend">
+        <div class="learning-legend">
+          <span th:unless="${sectionChildren.isEmpty()}"><i class="learning-section-legend bi bi-folder2" aria-hidden="true"></i> Sección</span>
+          <span><i aria-hidden="true"></i> Requisito</span>
+          <span><i class="learning-legend-suggested" aria-hidden="true"></i> Sugerencia</span>
+        </div>
+        <span>Arrastra para recorrer el mapa</span>
+      </div>
+      <div class="learning-map-controls" hidden>
+        <button type="button" class="learning-board-arrange" data-map-arrange aria-pressed="false"
+                aria-label="Acomodar mapa" title="Acomodar mapa">
+          <i class="bi bi-arrows-move" aria-hidden="true"></i><span>Acomodar</span>
+        </button>
+        <button type="button" data-map-zoom="-1" aria-label="Alejar mapa" title="Alejar mapa"><i class="bi bi-dash-lg" aria-hidden="true"></i></button>
+        <output data-map-scale aria-label="Nivel de zoom">100%</output>
+        <button type="button" data-map-zoom="1" aria-label="Acercar mapa" title="Acercar mapa"><i class="bi bi-plus-lg" aria-hidden="true"></i></button>
+        <button type="button" data-map-fit aria-label="Ajustar todo el árbol" title="Ajustar todo el árbol"><i class="bi bi-arrows-fullscreen" aria-hidden="true"></i></button>
+        <button type="button" data-map-center aria-label="Centrar mapa" title="Centrar mapa"><i class="bi bi-crosshair" aria-hidden="true"></i></button>
+      </div>
+    </div>
+    <section th:replace="~{learning/node :: detail}"></section>
+  </section>
+  <script defer th:src="@{/js/learning.js}"></script>
+</div>
+
+<form th:fragment="editor(edit)" method="post" th:action="@{/learning/{id}/nodes(id=${tree.id})}" class="learning-form"
+      th:with="prefix=${edit == null ? 'add-node' : 'edit-node'}">
+  <input th:if="${edit != null}" type="hidden" name="id" th:value="${edit.id}">
+  <input th:if="${currentSection != null}" type="hidden" name="boardSection" th:value="${currentSection.id}">
+  <label class="learning-field">
+    Nombre
+    <input name="title" class="form-control" required maxlength="120" th:value="${edit?.title}">
+  </label>
+  <label th:unless="${sections.isEmpty()}" class="learning-field">
+    Ubicación en el árbol
+    <select class="form-select" name="sectionId" th:with="destination=${edit == null ? currentSection?.id : edit.sectionId}">
+      <option value="" th:text="|${tree.title} (raíz)|"></option>
+      <option th:each="section : ${sections}" th:value="${section.id}" th:selected="${section.id == destination}"
+              th:text="${sectionPaths[section.id]}"></option>
+    </select>
+  </label>
+  <fieldset th:if="${edit == null}" class="learning-kind-picker">
+    <legend>Tipo de nodo</legend>
+    <div>
+      <label th:each="kind : ${kinds}">
+        <input type="radio" name="kind" th:value="${kind.name()}" th:checked="${kind.name() == 'TOPIC'}"
+               th:disabled="${kind.name() == 'MASTERY' and hasMastery}">
+        <span class="learning-kind-option">
+          <i class="bi" th:classappend="${kind.icon}" aria-hidden="true"></i>
+          <strong th:text="${kind.title}"></strong>
+          <small th:text="${kind.name() == 'MASTERY' and hasMastery ? 'Ya existe en este árbol' : kind.reward}"></small>
+        </span>
+      </label>
+    </div>
+  </fieldset>
+  <div class="learning-field">
+    <label th:for="|${prefix}-goal|">¿Cuándo darás este nodo por aprendido?</label>
+    <p class="learning-field-help" th:id="|${prefix}-goal-help|">
+      Escribe qué deberías poder hacer para marcarlo como completado.
+      <em>Ejemplo. Puedo explicar por qué <code>count++</code> pierde incrementos y arreglar el código.</em>
+    </p>
+    <textarea name="criterion" rows="2" class="form-control" required maxlength="4000"
+              th:id="|${prefix}-goal|" th:attr="aria-describedby=|${prefix}-goal-help|" th:text="${edit?.criterion}"></textarea>
+  </div>
+  <div class="learning-field">
+    <label th:for="|${prefix}-review|">¿Qué harás para recordarlo más adelante?</label>
+    <p class="learning-field-help" th:id="|${prefix}-review-help|">
+      Escribe una pregunta o un ejercicio breve. Lo verás cuando toque repasar.
+      <em>Ejemplo. ¿Qué puede pasar si dos hilos ejecutan <code>count++</code> al mismo tiempo?</em>
+    </p>
+    <textarea name="prompt" rows="2" class="form-control" required maxlength="4000"
+              th:id="|${prefix}-review|" th:attr="aria-describedby=|${prefix}-review-help|" th:text="${edit?.prompt}"></textarea>
+  </div>
+  <details th:if="${!nodes.isEmpty() and (edit == null or !edit.unlocked)}"
+           class="learning-disclosure learning-editor-connections" th:open="${edit != null}">
+    <summary><i class="bi bi-diagram-3" aria-hidden="true"></i> Conexiones opcionales</summary>
+    <fieldset class="learning-connections">
+      <legend class="visually-hidden">Conexiones con nodos anteriores</legend>
+      <p class="learning-field-help">Un requisito bloquea el nodo hasta que lo completes. Una sugerencia solo indica por dónde seguir.</p>
+    <fieldset th:each="candidate : ${nodes}"
+              th:if="${candidate.kind.name() != 'MASTERY' and (edit == null or candidate.id < edit.id)}"
+              class="learning-connection">
+      <legend th:text="${candidate.sectionId == null ? candidate.title : sectionPaths[candidate.sectionId] + ' / ' + candidate.title}"></legend>
+      <label><input type="checkbox" name="prerequisites" th:value="${candidate.id}"
+                    th:checked="${edit != null and requiredEdges.contains(candidate.id)}"> Requisito</label>
+      <label><input type="checkbox" name="recommended" th:value="${candidate.id}"
+                    th:checked="${edit != null and recommendedEdges.contains(candidate.id)}"> Sugerencia</label>
+    </fieldset>
+    </fieldset>
+  </details>
+  <button class="learning-button learning-primary" th:text="${edit == null ? 'Crear nodo' : 'Guardar nodo'}"></button>
+</form>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<section th:fragment="detail" th:if="${node != null}" id="node-detail"
+         class="learning-surface learning-node-detail" aria-labelledby="learning-node-title" tabindex="-1"
+         th:with="status=${statuses[node.id]},reviewDue=${status.name() == 'DUE'},isTopic=${node.kind.name() == 'TOPIC'}">
+  <header class="learning-detail-head">
+    <a class="learning-button learning-secondary learning-board-close" data-close-node th:href="@{/learning/{id}(id=${tree.id},section=${currentSection?.id})}"
+       aria-label="Cerrar detalle del nodo" title="Cerrar detalle"><i class="bi bi-x-lg" aria-hidden="true"></i></a>
+    <div class="learning-node-identity">
+      <span class="learning-node-type-icon" aria-hidden="true"><i class="bi" th:classappend="${node.kind.icon}"></i></span>
+      <div>
+        <span th:replace="~{learning/pieces :: status(${status})}"></span>
+        <h2 id="learning-node-title" th:text="${node.title}"></h2>
+      </div>
+    </div>
+    <div class="learning-node-reward">
+      <span class="learning-muted" th:text="${node.kind.title}"></span>
+      <strong th:text="${node.kind.reward}"></strong>
+    </div>
+  </header>
+
+  <p class="learning-message learning-message-error" role="alert" th:if="${error}" th:text="${error}"></p>
+
+  <section th:if="${reviewDue}" id="review" class="learning-review-callout" aria-labelledby="review-title" tabindex="-1">
+    <h3 id="review-title"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Repasar ahora</h3>
+    <p class="learning-text" th:text="${node.prompt}"></p>
+    <div th:if="${focus == null}">
+      <form th:replace="~{learning/node :: focusForm(true)}"></form>
+    </div>
+    <form method="post" th:action="@{/learning/{tree}/nodes/{id}/review(tree=${tree.id},id=${node.id})}">
+      <input type="hidden" name="scheduledOn" th:value="${node.nextReviewOn}">
+      <fieldset class="learning-rating">
+        <legend>¿Cómo te fue?</legend>
+        <button class="learning-button learning-secondary" name="rating" value="1">No pude</button>
+        <button class="learning-button learning-secondary" name="rating" value="3">Con ayuda</button>
+        <button class="learning-button learning-secondary" name="rating" value="5">Sin ayuda</button>
+      </fieldset>
+    </form>
+  </section>
+
+  <section class="learning-detail-section">
+    <h3>Qué debes poder hacer</h3>
+    <p class="learning-text" th:text="${node.criterion}"></p>
+    <ul class="learning-dependencies" th:if="${!requiredEdges.isEmpty() or !recommendedEdges.isEmpty()}">
+      <li th:each="candidate : ${nodes}" th:if="${requiredEdges.contains(candidate.id) or recommendedEdges.contains(candidate.id)}"
+          th:with="required=${requiredEdges.contains(candidate.id)}">
+        <i class="bi" th:classappend="${required ? (candidate.completedOn != null ? 'bi-check2' : 'bi-lock') : 'bi-signpost'}" aria-hidden="true"></i>
+        <div>
+          <small class="learning-muted" th:text="${(required ? 'Requisito' : 'Sugerencia') + (candidate.sectionId == node.sectionId ? '' : ' · ' + (candidate.sectionId == null ? tree.title : sectionPaths[candidate.sectionId]))}"></small>
+          <a th:href="@{/learning/{id}(id=${tree.id},section=${candidate.sectionId},selected=${candidate.id})} + '#node-detail'" th:text="${candidate.title}"></a>
+        </div>
+      </li>
+    </ul>
+    <p th:if="${node.kind.name() == 'MASTERY' and node.completedOn == null and !ready.contains(node.id)}"
+       class="learning-message">Completa el temario de todo el árbol para acceder al reto final.</p>
+    <p th:if="${!node.unlocked and ready.contains(node.id) and points == 0}"
+       class="learning-message">Completa un nodo activo para recuperar un punto.</p>
+  </section>
+
+  <div class="learning-node-actions" th:if="${(!node.unlocked and ready.contains(node.id) and points > 0)
+      or (node.unlocked and focus == null and !reviewDue)}">
+    <form th:if="${!node.unlocked}" method="post"
+          th:action="@{/learning/{tree}/nodes/{id}/unlock(tree=${tree.id},id=${node.id})}">
+      <button class="learning-button learning-primary"><i class="bi bi-unlock" aria-hidden="true"></i> Activar por 1 punto</button>
+    </form>
+    <div th:if="${node.unlocked}">
+      <form th:replace="~{learning/node :: focusForm(false)}"></form>
+    </div>
+  </div>
+
+  <div th:if="${node.completedOn != null}" class="learning-detail-section learning-detail-meta">
+    <dl class="learning-facts">
+      <div>
+        <dt>Completado</dt>
+        <dd><time th:datetime="${node.completedOn}" th:text="${#temporals.format(node.completedOn, 'd MMM yyyy', learningLocale)}"></time></dd>
+      </div>
+      <div th:if="${node.nextReviewOn != null}">
+        <dt th:text="${reviewDue ? 'Repaso pendiente desde' : 'Próximo repaso'}"></dt>
+        <dd><time th:datetime="${node.nextReviewOn}" th:text="${#temporals.format(node.nextReviewOn, 'd MMM yyyy', learningLocale)}"></time></dd>
+      </div>
+    </dl>
+  </div>
+
+  <details th:if="${node.completedOn == null and ready.contains(node.id)}" class="learning-disclosure learning-detail-disclosure"
+           th:open="${error != null}">
+    <summary><i class="bi bi-check2-circle" aria-hidden="true"></i>
+      <span th:text="${node.unlocked ? 'Marcar como completado' : 'Acreditar aprendizaje previo'}"></span>
+    </summary>
+    <form method="post" th:action="@{/learning/{tree}/nodes/{id}/complete(tree=${tree.id},id=${node.id})}" class="learning-form">
+      <input type="hidden" name="prior" th:value="${!node.unlocked}">
+      <label class="learning-field">
+        <span th:text="${node.unlocked and isTopic ? 'Evidencia (opcional)' : 'Evidencia'}"></span>
+        <textarea class="form-control" name="evidence" maxlength="4000" rows="2"
+                  th:required="${!node.unlocked or !isTopic}" placeholder="Resultado, explicación o enlace"></textarea>
+      </label>
+      <button class="learning-button learning-primary" th:text="${node.unlocked ? 'Completar nodo' : 'Acreditar'}"></button>
+    </form>
+  </details>
+
+  <details class="learning-disclosure learning-detail-disclosure" th:if="${node.completedOn != null and !#strings.isEmpty(node.evidence)}">
+    <summary><i class="bi bi-file-text" aria-hidden="true"></i> Evidencia</summary>
+    <p class="learning-text learning-disclosure-body" th:text="${node.evidence}"></p>
+  </details>
+
+  <details class="learning-disclosure learning-detail-disclosure" th:unless="${history.isEmpty()}">
+    <summary><i class="bi bi-clock-history" aria-hidden="true"></i> Historial de repasos</summary>
+    <ul class="learning-history learning-disclosure-body">
+      <li th:each="entry : ${history}">
+        <time th:datetime="${entry.reviewDate}" th:text="${#temporals.format(entry.reviewDate, 'd MMM yyyy', learningLocale)}"></time>
+        <span th:text="${entry.rating == 1 ? 'No pude' : (entry.rating == 3 ? 'Con ayuda' : 'Sin ayuda')}"></span>
+      </li>
+    </ul>
+  </details>
+
+  <details class="learning-disclosure learning-detail-disclosure" th:if="${nodeTime.seconds > 0 or branchTime > 0}">
+    <summary><i class="bi bi-stopwatch" aria-hidden="true"></i> Tiempo de enfoque</summary>
+    <dl class="learning-facts learning-disclosure-body">
+      <div><dt>Este nodo</dt><dd><span th:replace="~{learning/pieces :: duration(${nodeTime.seconds})}"></span></dd></div>
+      <div><dt>Rama completa</dt><dd><span th:replace="~{learning/pieces :: duration(${branchTime})}"></span></dd></div>
+    </dl>
+  </details>
+
+  <details class="learning-disclosure learning-detail-disclosure">
+    <summary><i class="bi bi-pencil" aria-hidden="true"></i> Editar nodo</summary>
+    <form th:replace="~{learning/tree :: editor(${node})}"></form>
+  </details>
+</section>
+
+<form th:fragment="focusForm(reviewDue)" method="post"
+      th:action="@{/learning/{tree}/nodes/{id}/focus(tree=${tree.id},id=${node.id})}" class="learning-focus-form">
+  <select class="form-select" name="activity" aria-label="Tipo de enfoque">
+    <option value="STUDY">Estudio</option>
+    <option value="PRACTICE" th:selected="${node.kind.name() != 'TOPIC' and node.completedOn == null}">Práctica</option>
+    <option th:if="${node.completedOn != null}" value="REVIEW" th:selected="${reviewDue}">Repaso</option>
+  </select>
+  <button class="learning-button" th:classappend="${reviewDue ? 'learning-secondary' : 'learning-primary'}">
+    <i class="bi bi-play-fill" aria-hidden="true"></i> Empezar enfoque
+  </button>
+</form>

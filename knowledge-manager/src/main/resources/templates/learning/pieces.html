@@ -1,0 +1,8 @@
+<span th:fragment="duration(seconds)" class="learning-duration"
+      th:text="${seconds < 60 ? (seconds == 0 ? '0 min' : seconds + ' s')
+        : (seconds >= 3600 ? (seconds / 3600) + ' h ' : '') + ((seconds / 60) % 60) + ' min'}"></span>
+
+<span th:fragment="status(status)" class="learning-status" th:attr="data-status=${status.name()}">
+  <i class="bi" th:classappend="${status.icon}" aria-hidden="true"></i>
+  <span th:text="${status.label}"></span>
+</span>

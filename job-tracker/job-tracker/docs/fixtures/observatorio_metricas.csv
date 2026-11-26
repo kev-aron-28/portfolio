@@ -1,0 +1,9 @@
+periodo,anuncio,empresa,revisado,habilidades,minimo,maximo,moneda,periodicidad,base
+P1,a,E1,true,Java|SQL,25000,35000,MXN,MONTH,GROSS
+P1,b,E1,true,Java,30000,40000,MXN,MONTH,GROSS
+P1,c,E2,true,SQL,,,MXN,MONTH,GROSS
+P1,d,,false,,1000,2000,USD,MONTH,GROSS
+P2,e,E1,true,Java|Docker,30000,40000,MXN,MONTH,GROSS
+P2,f,E2,true,Java|SQL|Docker,35000,45000,MXN,MONTH,GROSS
+P2,g,E3,true,SQL,40000,,MXN,MONTH,GROSS
+P2,h,E3,true,,,,MXN,MONTH,GROSS

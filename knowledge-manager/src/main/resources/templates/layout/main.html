@@ -62,6 +62,12 @@
         <span>Vision</span>
       </a>
       <a class="app-nav-link"
+         th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/learning') ? ' active' : ''}"
+         th:href="@{/learning}">
+        <i class="bi bi-diagram-3"></i>
+        <span>Aprendizaje</span>
+      </a>
+      <a class="app-nav-link"
          th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/mock-interviews') ? ' active' : ''}"
          th:href="@{/mock-interviews}">
         <i class="bi bi-briefcase"></i>
